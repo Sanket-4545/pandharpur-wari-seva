@@ -1,0 +1,10 @@
+{
+  "name": "Pandharpur Wari NSS Seva Portal",
+  "short_name": "NSS Seva Portal",
+  "description": "Coordinate volunteer support, emergency assistance, medical camps, and pilgrim support during the Pandharpur Wari pilgrimage.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FF7A00",
+  "icons": []
+}
