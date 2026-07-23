@@ -30,6 +30,7 @@ export default function ContactPage() {
     message: ''
   });
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -68,21 +69,28 @@ export default function ContactPage() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setServerError('');
     if (validate()) {
       setIsSubmitting(true);
-      // Simulate API call
-      setTimeout(() => {
-        setIsSubmitting(false);
-        setShowSuccess(true);
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          message: ''
+      try {
+        const res = await fetch('/api/contact-messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
         });
-      }, 1000);
+        const result = await res.json();
+        if (!res.ok) {
+          throw new Error(result.error || 'Failed to submit message');
+        }
+        setShowSuccess(true);
+        setFormData({ name: '', email: '', phone: '', message: '' });
+      } catch (err) {
+        setServerError(err.message);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -170,6 +178,11 @@ export default function ContactPage() {
                     required
                   />
 
+                  {serverError && (
+                    <div className="p-4 bg-red-50 border border-red-200/50 rounded-xl text-sm text-red-700">
+                      {serverError}
+                    </div>
+                  )}
                   <LoadingButton 
                     type="submit" 
                     variant="primary" 

@@ -3,7 +3,7 @@ import {
   successResponse,
   notFoundResponse,
   handleApiError,
-  sanitizeDocIds,
+  sanitizeDocId,
 } from "@/lib/api-helpers";
 
 export async function GET(request, { params }) {
@@ -11,7 +11,7 @@ export async function GET(request, { params }) {
     const coll = await ContactMessages.getCollection();
     const item = await coll.findOne({ _id: params.id });
     if (!item) return notFoundResponse("Contact message");
-    return successResponse(sanitizeDocIds(item));
+    return successResponse(sanitizeDocId(item));
   } catch (error) {
     return handleApiError(error);
   }
@@ -31,7 +31,7 @@ export async function PATCH(request, { params }) {
     }
     await coll.updateOne({ _id: params.id }, { $set: update });
     const updated = await coll.findOne({ _id: params.id });
-    return successResponse(sanitizeDocIds(updated));
+    return successResponse(sanitizeDocId(updated));
   } catch (error) {
     return handleApiError(error);
   }
