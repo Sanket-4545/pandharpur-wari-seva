@@ -3,16 +3,44 @@
 import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { ArrowRight } from 'lucide-react';
+import {
+  ShieldAlert,
+  UserMinus,
+  Briefcase,
+  HeartPulse,
+  Users,
+  HelpCircle,
+  Utensils,
+  Tent,
+  Navigation,
+  Shield,
+} from 'lucide-react';
 
-export default function ServiceCard({ icon: Icon, titleKey, descKey, colorClass, onLearnMore }) {
+const ICON_MAP = {
+  ShieldAlert,
+  UserMinus,
+  Briefcase,
+  HeartPulse,
+  Users,
+  HelpCircle,
+  Utensils,
+  Tent,
+  Navigation,
+  Shield,
+};
+
+export default function ServiceCard({ icon: Icon, iconName, titleKey, descKey, descriptionKey, colorClass, onLearnMore }) {
   const { t } = useLanguage();
+
+  const ResolvedIcon = Icon || (iconName && ICON_MAP[iconName]) || HelpCircle;
+  const resolvedDescKey = descriptionKey || descKey;
 
   return (
     <div className="group p-6.5 rounded-2xl border border-slate-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-premium hover:shadow-premium-hover transition-all duration-300 flex flex-col justify-between hover:-translate-y-1.5 hover:border-primary/35">
       <div>
         {/* Icon wrapper */}
         <div className={`w-13 h-13 rounded-2xl flex items-center justify-center mb-5.5 transition-all duration-300 group-hover:scale-105 group-hover:rotate-2 ${colorClass}`}>
-          <Icon className="w-6 h-6" />
+          <ResolvedIcon className="w-6 h-6" />
         </div>
         
         {/* Title & Description */}
@@ -20,7 +48,7 @@ export default function ServiceCard({ icon: Icon, titleKey, descKey, colorClass,
           {t(titleKey)}
         </h3>
         <p className="mt-3 text-sm text-charcoal-light dark:text-gray-400 leading-relaxed">
-          {t(descKey)}
+          {t(resolvedDescKey)}
         </p>
       </div>
 
