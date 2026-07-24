@@ -2,12 +2,24 @@
 
 import React, { useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { Phone, Copy, Check } from 'lucide-react';
+import { Phone, Copy, Check, Shield, HeartPulse, Flame, UserCheck, ShieldAlert, Users } from 'lucide-react';
 import Button from './Button';
 
-export default function EmergencyCard({ icon: Icon, titleKey, descKey, phoneNumber, colorClass }) {
+const ICON_MAP = {
+  Shield,
+  HeartPulse,
+  Flame,
+  UserCheck,
+  ShieldAlert,
+  Users,
+  Phone,
+};
+
+export default function EmergencyCard({ icon: Icon, iconName, titleKey, descKey, phoneNumber, colorClass }) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
+
+  const ResolvedIcon = Icon || (iconName && ICON_MAP[iconName]) || Phone;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(phoneNumber);
@@ -21,7 +33,7 @@ export default function EmergencyCard({ icon: Icon, titleKey, descKey, phoneNumb
         {/* Header section with Icon & Title */}
         <div className="flex items-center gap-4.5 mb-5">
           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105 group-hover:rotate-2 ${colorClass}`}>
-            <Icon className="w-7 h-7" />
+            <ResolvedIcon className="w-7 h-7" />
           </div>
           <div className="flex flex-col">
             <h3 className="font-heading text-lg font-bold text-charcoal dark:text-white tracking-tight group-hover:text-primary transition-colors duration-200">
