@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import Container from '@/components/Container';
 import HeroBanner from '@/components/HeroBanner';
@@ -8,11 +8,30 @@ import GalleryFilter from '@/components/GalleryFilter';
 import GalleryCard from '@/components/GalleryCard';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
+function LoadingSkeleton() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div key={i} className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 overflow-hidden">
+          <div className="aspect-video bg-slate-200 dark:bg-gray-700 animate-pulse" />
+          <div className="p-4.5 border-t border-slate-50 dark:border-gray-800">
+            <div className="h-5 bg-slate-200 dark:bg-gray-700 rounded animate-pulse w-3/4" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function GalleryPage() {
   const { t } = useLanguage();
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [totalPages, setTotalPages] = useState(1);
 
   const categories = [
     { key: 'all', labelKey: 'gallery_page.filter_all' },
@@ -24,35 +43,42 @@ export default function GalleryPage() {
     { key: 'events', labelKey: 'gallery_page.filter_events' }
   ];
 
-  // 12 mock images distributed across categories
-  const images = [
-    { id: 1, category: 'wari', src: '/images/gallery_wari.png', titleKey: 'about.image_alt' },
-    { id: 2, category: 'nss', src: '/images/nss_volunteers_seva.png', titleKey: 'about.role' },
-    { id: 3, category: 'medical', src: '/images/wari_pilgrimage_hero.png', titleKey: 'services.medical_assistance' },
-    { id: 4, category: 'volunteers', src: '/images/nss_volunteers_seva.png', titleKey: 'stats.volunteers' },
-    { id: 5, category: 'pilgrims', src: '/images/gallery_wari.png', titleKey: 'stats.assisted' },
-    { id: 6, category: 'events', src: '/images/wari_pilgrimage_hero.png', titleKey: 'about_page.timeline.velapur.title' },
-    
-    { id: 7, category: 'wari', src: '/images/wari_pilgrimage_hero.png', titleKey: 'about_page.timeline.alandi.title' },
-    { id: 8, category: 'nss', src: '/images/gallery_wari.png', titleKey: 'cta.title' },
-    { id: 9, category: 'medical', src: '/images/nss_volunteers_seva.png', titleKey: 'stats.support' },
-    { id: 10, category: 'volunteers', src: '/images/gallery_wari.png', titleKey: 'about_page.medical_help' },
-    { id: 11, category: 'pilgrims', src: '/images/nss_volunteers_seva.png', titleKey: 'about_page.crowd_management' },
-    { id: 12, category: 'events', src: '/images/wari_pilgrimage_hero.png', titleKey: 'about_page.timeline.pandharpur.title' }
-  ];
-
-  // Filter items
-  const filteredImages = activeCategory === 'all' 
-    ? images 
-    : images.filter(img => img.category === activeCategory);
-
-  // Pagination config
   const itemsPerPage = 6;
-  const totalPages = Math.ceil(filteredImages.length / itemsPerPage);
-  
-  // Slice active items
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedImages = filteredImages.slice(startIndex, startIndex + itemsPerPage);
+
+  const fetchImages = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const categoryParam = activeCategory === 'all' ? '' : `&category=${activeCategory}`;
+      const res = await fetch(`/api/gallery-images?page=${currentPage}&limit=${itemsPerPage}${categoryParam}`);
+      if (!res.ok) throw new Error('Failed to load gallery images');
+      const json = await res.json();
+      if (json.success && json.data?.items) {
+        // Map API response (imageUrl) to frontend format (src)
+        const mappedItems = json.data.items.map((item) => ({
+          id: item.imageId || item._id,
+          src: item.imageUrl,
+          category: item.category,
+          titleKey: item.titleKey,
+        }));
+        setImages(mappedItems);
+        setTotalPages(json.data.totalPages || 1);
+      } else {
+        setImages([]);
+        setTotalPages(1);
+      }
+    } catch (err) {
+      setError(err.message);
+      setImages([]);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchImages();
+  }, [activeCategory, currentPage]);
 
   const handleCategoryChange = (category) => {
     setActiveCategory(category);
@@ -83,19 +109,26 @@ export default function GalleryPage() {
           />
 
           {/* Grid Layout */}
-          {paginatedImages.length > 0 ? (
+          {loading ? (
+            <LoadingSkeleton />
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-500 dark:text-red-400">{error}</p>
+              <p className="text-sm text-charcoal-light dark:text-gray-400 mt-2">Please try refreshing the page.</p>
+            </div>
+          ) : images.length === 0 ? (
+            <div className="text-center py-16 bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-2xl p-8 max-w-md mx-auto">
+              <p className="text-slate-400 dark:text-gray-500 font-semibold">No images found in this category.</p>
+            </div>
+          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {paginatedImages.map((image) => (
+              {images.map((image) => (
                 <GalleryCard 
                   key={image.id}
                   image={image}
                   onClick={() => setSelectedImage(image)}
                 />
               ))}
-            </div>
-          ) : (
-            <div className="text-center py-16 bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-2xl p-8 max-w-md mx-auto">
-              <p className="text-slate-400 dark:text-gray-500 font-semibold">No images found in this category.</p>
             </div>
           )}
 
