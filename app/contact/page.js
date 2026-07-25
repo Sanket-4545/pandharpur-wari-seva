@@ -7,6 +7,7 @@ import HeroBanner from '@/components/HeroBanner';
 import FormInput from '@/components/FormInput';
 import TextArea from '@/components/TextArea';
 import MapPlaceholder from '@/components/MapPlaceholder';
+import Button from '@/components/Button';
 import LoadingButton from '@/components/LoadingButton';
 import ScrollReveal from '@/components/ScrollReveal';
 import { 
