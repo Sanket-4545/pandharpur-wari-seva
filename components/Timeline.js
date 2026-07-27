@@ -10,24 +10,26 @@ export default function Timeline() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    async function fetchStops() {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/timeline-stops?limit=100");
-        if (!res.ok) throw new Error("Failed to fetch timeline stops");
-        const data = await res.json();
-        if (data.success && data.data?.items) {
-          setStops(data.data.items);
-        } else {
-          throw new Error("Invalid response format");
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  async function fetchStops() {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch("/api/timeline-stops?limit=100");
+      if (!res.ok) throw new Error("Failed to fetch timeline stops");
+      const data = await res.json();
+      if (data.success && data.data?.items) {
+        setStops(data.data.items);
+      } else {
+        throw new Error("Invalid response format");
       }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     fetchStops();
   }, []);
 
@@ -60,7 +62,7 @@ export default function Timeline() {
     return (
       <div className="relative max-w-4xl mx-auto px-4 py-8 text-center text-red-600">
         <p>Failed to load timeline: {error}</p>
-        <button onClick={() => window.location.reload()} className="mt-4 text-primary underline">
+        <button onClick={fetchStops} className="mt-4 px-5 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors">
           Retry
         </button>
       </div>

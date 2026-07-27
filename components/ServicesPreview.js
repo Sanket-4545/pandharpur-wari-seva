@@ -13,23 +13,26 @@ export default function ServicesPreview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    async function fetchServices() {
-      try {
-        const res = await fetch('/api/services?limit=10');
-        if (!res.ok) throw new Error('Failed to load services');
-        const json = await res.json();
-        if (json.success && json.data?.items) {
-          setServices(json.data.items);
-        } else {
-          setServices([]);
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  async function fetchServices() {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch('/api/services?limit=10');
+      if (!res.ok) throw new Error('Failed to load services');
+      const json = await res.json();
+      if (json.success && json.data?.items) {
+        setServices(json.data.items);
+      } else {
+        setServices([]);
       }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     fetchServices();
   }, []);
 
@@ -56,7 +59,9 @@ export default function ServicesPreview() {
         ) : error ? (
           <div className="text-center py-12">
             <p className="text-red-500 dark:text-red-400">{error}</p>
-            <p className="text-sm text-charcoal-light dark:text-gray-400 mt-2">Please try refreshing the page.</p>
+            <button onClick={fetchServices} className="mt-4 px-5 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors">
+              Retry
+            </button>
           </div>
         ) : services.length === 0 ? (
           <div className="text-center py-12">

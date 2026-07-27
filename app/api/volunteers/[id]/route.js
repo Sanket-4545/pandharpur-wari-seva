@@ -23,13 +23,17 @@ export async function PATCH(request, { params }) {
     const existing = await Volunteers.findById(params.id);
     if (!existing) return notFoundResponse("Volunteer");
 
-    if (body.status) {
-      await Volunteers.updateStatus(params.id, body.status);
-    }
+    const updateData = Volunteers.prepareForUpdate(body);
+    const coll = await Volunteers.getCollection();
+    await coll.updateOne(
+      { volunteerId: params.id },
+      { $set: updateData }
+    );
+
     const updated = await Volunteers.findById(params.id);
     return successResponse(sanitizeDocIds(updated));
   } catch (error) {
-    return handleApiError(error);
+    return handleApiError(error, "Failed to update volunteer");
   }
 }
 

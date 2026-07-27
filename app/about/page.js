@@ -74,7 +74,7 @@ export default function AboutPage() {
               <div className="absolute -inset-2 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-[2rem] blur-xl opacity-50 group-hover:opacity-75 transition duration-300" />
               <div className="relative bg-white p-2 rounded-[2rem] border border-slate-100 shadow-premium overflow-hidden">
                 <img 
-                  src="/images/gallery_wari.png" 
+                  src="/images/Wari seva galler 1.jpeg" 
                   alt="Pandharpur Wari Pilgrimage history placeholder"
                   className="w-full h-[300px] md:h-[380px] object-cover rounded-[1.75rem]"
                 />

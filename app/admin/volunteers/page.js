@@ -1,29 +1,77 @@
 "use client";
 
-import React, { useState } from 'react';
-import { volunteersList as initialVolunteers, shifts, skills as allSkills, languages as allLanguages } from '@/data/volunteers';
+import React, { useState, useEffect, useCallback } from 'react';
+import { bloodGroups, shifts, skills as allSkills, languages as allLanguages } from '@/data/volunteers';
 import { useLanguage } from '@/context/LanguageContext';
 import DataTable from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import ConfirmationDialog from '@/components/ConfirmationDialog';
-import { AlertCircle, Plus, Eye, Trash2, Calendar, Phone, CheckCircle, XCircle } from 'lucide-react';
+import Toast from '@/components/Toast';
+import LoadingButton from '@/components/LoadingButton';
+import { AlertCircle, Plus, Eye, Trash2, Calendar, Phone, CheckCircle, XCircle, Save, X } from 'lucide-react';
+
+const FORM_DEFAULTS = {
+  name: '', email: '', phone: '', gender: 'Male', age: '',
+  city: '', college: '', nssUnit: '', bloodGroup: 'O+',
+  emergencyPhone: '', skills: [], languages: [], shift: 'morning', status: 'pending',
+};
 
 export default function VolunteersAdmin() {
   const { t } = useLanguage();
-  const [volunteers, setVolunteers] = useState(initialVolunteers);
-  
+
+  // Data state
+  const [volunteers, setVolunteers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
+
   // Dialog/Modal states
   const [viewingRow, setViewingRow] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [editingVolunteer, setEditingVolunteer] = useState(null);
+  const [form, setForm] = useState(FORM_DEFAULTS);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const showToast = useCallback((message, type = 'success') => {
+    setToast({ message, type, visible: true });
+  }, []);
+
+  // Fetch volunteers from API
+  useEffect(() => {
+    async function fetchVolunteers() {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch('/api/volunteers?limit=100');
+        if (!res.ok) throw new Error('Failed to load volunteers');
+        const json = await res.json();
+        if (json.success && json.data?.items) {
+          const mapped = json.data.items.map(item => ({
+            ...item,
+            id: item.volunteerId,
+          }));
+          setVolunteers(mapped);
+        } else {
+          setVolunteers([]);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchVolunteers();
+  }, []);
 
   // Table Columns config
   const columns = [
-    { key: "id", label: "ID" },
+    { key: "volunteerId", label: "ID" },
     { key: "name", label: "Name", sortable: true },
     { key: "college", label: "College", sortable: true },
     { key: "nssUnit", label: "NSS Unit" },
-    { 
-      key: "shift", 
+    {
+      key: "shift",
       label: "Shift",
       render: (row) => {
         const shiftObj = shifts.find(s => s.value === row.shift);
@@ -33,33 +81,224 @@ export default function VolunteersAdmin() {
     { key: "status", label: "Status" }
   ];
 
-  // Actions
+  // View row
   const handleView = (row) => {
     setViewingRow(row);
   };
 
+  // Delete flow
   const handleDeleteTrigger = (id) => {
     setDeletingId(id);
   };
 
-  const handleDeleteConfirm = () => {
-    if (deletingId) {
-      setVolunteers(volunteers.filter(v => v.id !== deletingId));
+  const handleDeleteConfirm = async () => {
+    if (!deletingId) return;
+    try {
+      const res = await fetch(`/api/volunteers/${deletingId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete volunteer');
+      setVolunteers(prev => prev.filter(v => v.volunteerId !== deletingId));
+      showToast('Volunteer deleted successfully');
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
       setDeletingId(null);
     }
   };
 
-  const updateStatus = (id, newStatus) => {
-    setVolunteers(volunteers.map(v => v.id === id ? { ...v, status: newStatus } : v));
-    if (viewingRow && viewingRow.id === id) {
-      setViewingRow({ ...viewingRow, status: newStatus });
+  // Status update
+  const handleUpdateStatus = async (volunteerId, newStatus) => {
+    try {
+      const res = await fetch(`/api/volunteers/${volunteerId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.error || 'Failed to update status');
+      }
+      const json = await res.json();
+      if (json.success && json.data) {
+        setVolunteers(prev => prev.map(v =>
+          v.volunteerId === volunteerId ? { ...v, ...json.data, id: json.data.volunteerId } : v
+        ));
+        if (viewingRow && viewingRow.volunteerId === volunteerId) {
+          setViewingRow(prev => ({ ...prev, ...json.data }));
+        }
+      }
+      showToast(`Volunteer ${newStatus === 'approved' ? 'approved' : newStatus === 'rejected' ? 'rejected' : 'updated'} successfully`);
+    } catch (err) {
+      showToast(err.message, 'error');
     }
-    alert(`Volunteer status marked as ${newStatus.toUpperCase()} locally.`);
   };
+
+  // Open create modal
+  const openCreateModal = () => {
+    setEditingVolunteer(null);
+    setForm({ ...FORM_DEFAULTS });
+    setShowFormModal(true);
+  };
+
+  // Open edit modal
+  const openEditModal = (volunteer) => {
+    setEditingVolunteer(volunteer);
+    setForm({
+      name: volunteer.name || '',
+      email: volunteer.email || '',
+      phone: volunteer.phone || '',
+      gender: volunteer.gender || 'Male',
+      age: volunteer.age || '',
+      city: volunteer.city || '',
+      college: volunteer.college || '',
+      nssUnit: volunteer.nssUnit || '',
+      bloodGroup: volunteer.bloodGroup || 'O+',
+      emergencyPhone: volunteer.emergencyPhone || '',
+      skills: volunteer.skills || [],
+      languages: volunteer.languages || [],
+      shift: volunteer.shift || 'morning',
+      status: volunteer.status || 'pending',
+    });
+    setShowFormModal(true);
+  };
+
+  const handleFormChange = (field, value) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleToggleArrayField = (field, value) => {
+    setForm(prev => {
+      const arr = prev[field] || [];
+      if (arr.includes(value)) {
+        return { ...prev, [field]: arr.filter(v => v !== value) };
+      }
+      return { ...prev, [field]: [...arr, value] };
+    });
+  };
+
+  // Save (create or update)
+  const handleSave = async () => {
+    if (!form.name || !form.email || !form.phone || !form.city || !form.college || !form.nssUnit || !form.emergencyPhone) {
+      showToast('Please fill in all required fields', 'error');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        ...form,
+        age: Number(form.age),
+      };
+
+      if (editingVolunteer) {
+        // Update
+        const res = await fetch(`/api/volunteers/${editingVolunteer.volunteerId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const json = await res.json();
+          throw new Error(json.error || 'Failed to update volunteer');
+        }
+        const json = await res.json();
+        if (json.success && json.data) {
+          setVolunteers(prev => prev.map(v =>
+            v.volunteerId === editingVolunteer.volunteerId
+              ? { ...v, ...json.data, id: json.data.volunteerId }
+              : v
+          ));
+        }
+        showToast('Volunteer updated successfully');
+      } else {
+        // Create
+        const res = await fetch('/api/volunteers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const json = await res.json();
+          throw new Error(json.error || 'Failed to create volunteer');
+        }
+        // Re-fetch to get full list with new record
+        const fetchRes = await fetch('/api/volunteers?limit=100');
+        if (fetchRes.ok) {
+          const fetchJson = await fetchRes.json();
+          if (fetchJson.success && fetchJson.data?.items) {
+            const mapped = fetchJson.data.items.map(item => ({
+              ...item,
+              id: item.volunteerId,
+            }));
+            setVolunteers(mapped);
+          }
+        }
+        showToast('Volunteer created successfully');
+      }
+      setShowFormModal(false);
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ---- Loading skeleton ----
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="h-7 bg-slate-200 dark:bg-gray-700 rounded animate-pulse w-64" />
+          <div className="h-10 bg-slate-200 dark:bg-gray-700 rounded-2xl animate-pulse w-32" />
+        </div>
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 rounded-3xl p-5 shadow-premium">
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex gap-4">
+                <div className="h-8 w-8 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
+                <div className="flex-1">
+                  <div className="h-4 bg-slate-200 dark:bg-gray-700 rounded animate-pulse w-full mb-2" />
+                  <div className="h-3 bg-slate-200 dark:bg-gray-700 rounded animate-pulse w-3/4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---- Error state ----
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="font-heading text-xl sm:text-2xl font-extrabold text-charcoal dark:text-white">
+            {t("admin.sidebar.volunteers")} Cohort
+          </h1>
+        </div>
+        <div className="text-center py-12">
+          <p className="text-red-500 dark:text-red-400">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 text-primary underline text-sm"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      
+
+      {/* Toast */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.visible}
+        onClose={() => setToast(prev => ({ ...prev, visible: false }))}
+      />
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -70,9 +309,9 @@ export default function VolunteersAdmin() {
             Review registration requests. Approve and allocate volunteers to camps and shift durations.
           </p>
         </div>
-        
+
         <button
-          onClick={() => alert("Creating a new volunteer record is a simulation. Use the registration portal to register.")}
+          onClick={openCreateModal}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-2xl text-xs font-bold transition-all shadow-saffron-glow focus:outline-none self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
@@ -80,25 +319,39 @@ export default function VolunteersAdmin() {
         </button>
       </div>
 
+      {/* Summary */}
+      <div className="flex items-center gap-4 text-xs text-charcoal-light dark:text-gray-400">
+        <span><strong className="text-charcoal dark:text-white">{volunteers.length}</strong> total</span>
+        <span><strong className="text-emerald-650 dark:text-emerald-400">{volunteers.filter(v => v.status === 'approved').length}</strong> approved</span>
+        <span><strong className="text-amber-650 dark:text-amber-400">{volunteers.filter(v => v.status === 'pending').length}</strong> pending</span>
+        <span><strong className="text-red-650 dark:text-red-400">{volunteers.filter(v => v.status === 'rejected').length}</strong> rejected</span>
+      </div>
+
       {/* Main Table */}
-      <DataTable 
-        columns={columns}
-        data={volunteers}
-        searchPlaceholderKey="admin.common.search"
-        onViewRow={handleView}
-        onDeleteRow={handleDeleteTrigger}
-        exportFilename="volunteers-list.csv"
-      />
+      {volunteers.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-charcoal-light dark:text-gray-400">No volunteers found.</p>
+        </div>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={volunteers}
+          searchPlaceholderKey="admin.common.search"
+          onViewRow={handleView}
+          onDeleteRow={handleDeleteTrigger}
+          exportFilename="volunteers-list.csv"
+        />
+      )}
 
       {/* View Volunteer Details Modal */}
       {viewingRow && (
-        <Modal 
-          isOpen={!!viewingRow} 
+        <Modal
+          isOpen={!!viewingRow}
           onClose={() => setViewingRow(null)}
           title={`Volunteer Application: ${viewingRow.name}`}
         >
           <div className="space-y-4">
-            
+
             {/* Visual avatar badge placeholder */}
             <div className="w-full h-24 rounded-2xl bg-gradient-to-tr from-secondary to-blue-800 flex items-center justify-between px-6 text-white relative shadow-sm">
               <div className="flex items-center gap-3">
@@ -111,8 +364,8 @@ export default function VolunteersAdmin() {
                 </div>
               </div>
               <span className={`px-2.5 py-0.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider ${
-                viewingRow.status === 'approved' 
-                  ? 'bg-emerald-50 text-emerald-650 border-emerald-200' 
+                viewingRow.status === 'approved'
+                  ? 'bg-emerald-50 text-emerald-650 border-emerald-200'
                   : viewingRow.status === 'pending'
                   ? 'bg-amber-50 text-amber-650 border-amber-200'
                   : 'bg-red-50 text-red-650 border-red-200'
@@ -128,7 +381,7 @@ export default function VolunteersAdmin() {
                   {viewingRow.college}
                 </span>
               </div>
-              
+
               <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl">
                 <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">Contact Details</span>
                 <span className="font-bold text-charcoal dark:text-white mt-1 block">
@@ -140,7 +393,7 @@ export default function VolunteersAdmin() {
               <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl col-span-2">
                 <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">Skills & Competences</span>
                 <div className="flex flex-wrap gap-1.5 mt-2">
-                  {viewingRow.skills.map(sk => {
+                  {(viewingRow.skills || []).map(sk => {
                     const skObj = allSkills.find(s => s.value === sk);
                     return (
                       <span key={sk} className="bg-slate-200 dark:bg-gray-700 text-charcoal dark:text-gray-300 px-2 py-0.5 rounded text-[10px] font-bold">
@@ -154,7 +407,7 @@ export default function VolunteersAdmin() {
               <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl">
                 <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">Shift & Location</span>
                 <span className="font-bold text-charcoal dark:text-white mt-1 block">
-                  Shift: {viewingRow.shift.toUpperCase()} <br />
+                  Shift: {(viewingRow.shift || '').toUpperCase()} <br />
                   Blood Group: {viewingRow.bloodGroup}
                 </span>
               </div>
@@ -167,22 +420,50 @@ export default function VolunteersAdmin() {
                 </span>
               </div>
 
+              {/* Edit button */}
+              <div className="col-span-2 border-t border-slate-100 dark:border-gray-800 pt-4 mt-2 flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    const v = viewingRow;
+                    setViewingRow(null);
+                    openEditModal(v);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 border border-slate-200 dark:border-gray-800 text-charcoal-light dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-850 rounded-xl transition-all text-xs font-bold"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit
+                </button>
+              </div>
+
               {/* Status Update CTA buttons */}
               {viewingRow.status === 'pending' && (
-                <div className="col-span-2 border-t border-slate-100 dark:border-gray-800 pt-4 mt-2 flex justify-end gap-3">
+                <div className="col-span-2 flex justify-end gap-3 mt-1">
                   <button
-                    onClick={() => updateStatus(viewingRow.id, "rejected")}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all"
+                    onClick={() => handleUpdateStatus(viewingRow.volunteerId, "rejected")}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all text-xs font-bold"
                   >
                     <XCircle className="w-4 h-4" />
                     Reject
                   </button>
                   <button
-                    onClick={() => updateStatus(viewingRow.id, "approved")}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-650 hover:bg-emerald-700 text-white rounded-xl transition-all"
+                    onClick={() => handleUpdateStatus(viewingRow.volunteerId, "approved")}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-650 hover:bg-emerald-700 text-white rounded-xl transition-all text-xs font-bold"
                   >
                     <CheckCircle className="w-4 h-4" />
                     Approve
+                  </button>
+                </div>
+              )}
+              {viewingRow.status !== 'pending' && (
+                <div className="col-span-2 flex justify-end gap-3 mt-1">
+                  <button
+                    onClick={() => handleUpdateStatus(viewingRow.volunteerId, "pending")}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 border border-amber-200 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20 rounded-xl transition-all text-xs font-bold"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    Move to Pending
                   </button>
                 </div>
               )}
@@ -193,8 +474,235 @@ export default function VolunteersAdmin() {
         </Modal>
       )}
 
+      {/* Create/Edit Modal */}
+      {showFormModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setShowFormModal(false)} />
+          <div className="relative bg-white dark:bg-gray-900 rounded-3xl border border-slate-200/60 dark:border-gray-800 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-heading text-lg font-extrabold text-charcoal dark:text-white">
+                {editingVolunteer ? 'Edit Volunteer' : 'Add New Volunteer'}
+              </h2>
+              <button onClick={() => setShowFormModal(false)} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-gray-800 text-slate-400 transition-all">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Row 1: Name + Email */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Full Name *</label>
+                  <input
+                    type="text"
+                    value={form.name}
+                    onChange={e => handleFormChange('name', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
+                    placeholder="Enter full name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Email *</label>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={e => handleFormChange('email', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
+                    placeholder="Enter email"
+                  />
+                </div>
+              </div>
+
+              {/* Row 2: Phone + Gender */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Phone *</label>
+                  <input
+                    type="text"
+                    value={form.phone}
+                    onChange={e => handleFormChange('phone', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
+                    placeholder="10-digit number"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Gender</label>
+                  <select
+                    value={form.gender}
+                    onChange={e => handleFormChange('gender', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 3: Age + Blood Group */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Age</label>
+                  <input
+                    type="number"
+                    min={16}
+                    max={80}
+                    value={form.age}
+                    onChange={e => handleFormChange('age', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
+                    placeholder="16-80"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Blood Group</label>
+                  <select
+                    value={form.bloodGroup}
+                    onChange={e => handleFormChange('bloodGroup', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
+                  >
+                    {bloodGroups.map(bg => (
+                      <option key={bg} value={bg}>{bg}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 4: City + College */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">City *</label>
+                  <input
+                    type="text"
+                    value={form.city}
+                    onChange={e => handleFormChange('city', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
+                    placeholder="Enter city"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">College *</label>
+                  <input
+                    type="text"
+                    value={form.college}
+                    onChange={e => handleFormChange('college', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
+                    placeholder="Enter college name"
+                  />
+                </div>
+              </div>
+
+              {/* Row 5: NSS Unit + Shift */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">NSS Unit *</label>
+                  <input
+                    type="text"
+                    value={form.nssUnit}
+                    onChange={e => handleFormChange('nssUnit', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
+                    placeholder="e.g. NSS-UNIT-01"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Shift</label>
+                  <select
+                    value={form.shift}
+                    onChange={e => handleFormChange('shift', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
+                  >
+                    {shifts.map(s => (
+                      <option key={s.value} value={s.value}>{t(s.labelKey)}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 6: Emergency Phone */}
+              <div>
+                <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Emergency Contact Number *</label>
+                <input
+                  type="text"
+                  value={form.emergencyPhone}
+                  onChange={e => handleFormChange('emergencyPhone', e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
+                  placeholder="Family contact number"
+                />
+              </div>
+
+              {/* Row 7: Skills */}
+              <div>
+                <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Skills</label>
+                <div className="flex flex-wrap gap-2">
+                  {allSkills.map(sk => (
+                    <label key={sk.value} className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={(form.skills || []).includes(sk.value)}
+                        onChange={() => handleToggleArrayField('skills', sk.value)}
+                        className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30"
+                      />
+                      <span className="text-xs text-charcoal-light dark:text-gray-400">{t(sk.labelKey)}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Row 8: Languages */}
+              <div>
+                <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Languages</label>
+                <div className="flex flex-wrap gap-2">
+                  {allLanguages.map(lang => (
+                    <label key={lang.value} className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={(form.languages || []).includes(lang.value)}
+                        onChange={() => handleToggleArrayField('languages', lang.value)}
+                        className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30"
+                      />
+                      <span className="text-xs text-charcoal-light dark:text-gray-400">{t(lang.labelKey)}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Row 9: Status (edit only) */}
+              {editingVolunteer && (
+                <div>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Status</label>
+                  <select
+                    value={form.status}
+                    onChange={e => handleFormChange('status', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-gray-800">
+              <button
+                onClick={() => setShowFormModal(false)}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 text-xs font-bold text-charcoal dark:text-white hover:bg-slate-50 dark:hover:bg-gray-800 transition-all"
+              >
+                Cancel
+              </button>
+              <LoadingButton
+                onClick={handleSave}
+                loading={isSubmitting}
+                className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs font-bold transition-all shadow-saffron-glow"
+              >
+                <Save className="w-4 h-4" />
+                {editingVolunteer ? 'Save Changes' : 'Create Volunteer'}
+              </LoadingButton>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Confirmation Dialog */}
-      <ConfirmationDialog 
+      <ConfirmationDialog
         isOpen={!!deletingId}
         onClose={() => setDeletingId(null)}
         onConfirm={handleDeleteConfirm}
