@@ -469,6 +469,24 @@
       "btn_publish": "Publish Announcement",
       "toast_success": "Announcement created successfully!"
     },
+    "gallery": {
+      "upload_title": "Upload Gallery Photo",
+      "title_label": "Photo Title / Caption",
+      "category_label": "Category Tag",
+      "image_url_label": "Image URL",
+      "image_url_placeholder": "Enter image path or URL",
+      "cancel": "Cancel",
+      "upload_btn": "Upload Asset",
+      "empty_title": "No gallery images yet",
+      "empty_desc": "Upload your first gallery image using the form above.",
+      "delete_confirm": "Are you sure you want to delete this photo?",
+      "delete_success": "Gallery image deleted successfully!",
+      "delete_error": "Failed to delete gallery image",
+      "create_success": "Gallery image uploaded successfully!",
+      "create_error": "Failed to upload gallery image",
+      "loading": "Loading gallery images...",
+      "retry": "Retry"
+    },
     "reports": {
       "title": "System Logs & Reports",
       "daily_summary_title": "Daily Summary Report - 17th July 2026",
