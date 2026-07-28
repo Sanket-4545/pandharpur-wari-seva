@@ -30,7 +30,8 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const result = await Announcements.insertOne(body);
-    const inserted = await Announcements.findByAnnouncementId(result.ops?.[0]?.announcementId);
+    const coll = await Announcements.getCollection();
+    const inserted = await coll.findOne({ _id: result.insertedId });
     return createdResponse(sanitizeDocIds(inserted || { insertedId: result.insertedId }));
   } catch (error) {
     return handleApiError(error, "Failed to create announcement");
