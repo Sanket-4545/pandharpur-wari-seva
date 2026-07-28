@@ -365,6 +365,7 @@
     "err_blood": "Select a blood group.",
     "err_emergency": "Enter emergency contact number.",
     "err_address": "Address is required (min 10 characters).",
+    "err_shift": "Please select a shift.",
     "err_terms": "You must accept the terms to proceed.",
     "toast_validation_error": "Please correct the highlighted errors."
   },

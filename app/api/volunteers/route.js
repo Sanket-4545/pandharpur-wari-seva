@@ -5,6 +5,7 @@ import {
   handleApiError,
   parseQueryParams,
   paginatedResponse,
+  sanitizeDocId,
   sanitizeDocIds,
 } from "@/lib/api-helpers";
 
@@ -12,8 +13,12 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const result = await Volunteers.insertOne(body);
-    const inserted = await Volunteers.findById(result.ops?.[0]?.volunteerId);
-    return createdResponse(sanitizeDocIds(inserted || { insertedId: result.insertedId }));
+    const coll = await Volunteers.getCollection();
+    const inserted = await coll.findOne({ _id: result.insertedId });
+    if (!inserted) {
+      return errorResponse("Failed to retrieve created volunteer", 500);
+    }
+    return createdResponse(sanitizeDocId(inserted));
   } catch (error) {
     return handleApiError(error, "Failed to register volunteer");
   }
