@@ -3,14 +3,14 @@ import {
   successResponse,
   notFoundResponse,
   handleApiError,
-  sanitizeDocIds,
+  sanitizeDocId,
 } from "@/lib/api-helpers";
 
 export async function GET(request, { params }) {
   try {
     const item = await MissingPersons.findByCaseId(params.id);
     if (!item) return notFoundResponse("Missing person case");
-    return successResponse(sanitizeDocIds(item));
+    return successResponse(sanitizeDocId(item));
   } catch (error) {
     return handleApiError(error);
   }
@@ -31,7 +31,7 @@ export async function PATCH(request, { params }) {
       { $set: body },
       { returnDocument: "after" }
     );
-    return successResponse(sanitizeDocIds(updated));
+    return successResponse(sanitizeDocId(updated));
   } catch (error) {
     return handleApiError(error);
   }

@@ -4,6 +4,7 @@ import {
   handleApiError,
   parseQueryParams,
   paginatedResponse,
+  sanitizeDocId,
   sanitizeDocIds,
 } from "@/lib/api-helpers";
 
@@ -28,8 +29,9 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const result = await LostItems.insertOne(body);
-    const inserted = await LostItems.findByItemId(result.ops?.[0]?.itemId);
-    return createdResponse(sanitizeDocIds(inserted || { insertedId: result.insertedId }));
+    const coll = await LostItems.getCollection();
+    const inserted = await coll.findOne({ _id: result.insertedId });
+    return createdResponse(sanitizeDocId(inserted));
   } catch (error) {
     return handleApiError(error, "Failed to create lost item record");
   }

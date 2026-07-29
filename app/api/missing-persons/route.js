@@ -4,6 +4,7 @@ import {
   handleApiError,
   parseQueryParams,
   paginatedResponse,
+  sanitizeDocId,
   sanitizeDocIds,
 } from "@/lib/api-helpers";
 
@@ -28,8 +29,9 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const result = await MissingPersons.insertOne(body);
-    const inserted = await MissingPersons.findByCaseId(result.ops?.[0]?.caseId);
-    return createdResponse(sanitizeDocIds(inserted || { insertedId: result.insertedId }));
+    const coll = await MissingPersons.getCollection();
+    const inserted = await coll.findOne({ _id: result.insertedId });
+    return createdResponse(sanitizeDocId(inserted));
   } catch (error) {
     return handleApiError(error, "Failed to create missing person report");
   }

@@ -4,14 +4,14 @@ import {
   notFoundResponse,
   errorResponse,
   handleApiError,
-  sanitizeDocIds,
+  sanitizeDocId,
 } from "@/lib/api-helpers";
 
 export async function GET(request, { params }) {
   try {
     const item = await Volunteers.findById(params.id);
     if (!item) return notFoundResponse("Volunteer");
-    return successResponse(sanitizeDocIds(item));
+    return successResponse(sanitizeDocId(item));
   } catch (error) {
     return handleApiError(error);
   }
@@ -31,7 +31,7 @@ export async function PATCH(request, { params }) {
     );
 
     const updated = await Volunteers.findById(params.id);
-    return successResponse(sanitizeDocIds(updated));
+    return successResponse(sanitizeDocId(updated));
   } catch (error) {
     return handleApiError(error, "Failed to update volunteer");
   }

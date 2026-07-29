@@ -6,6 +6,7 @@ import {
   errorResponse,
   parseQueryParams,
   paginatedResponse,
+  sanitizeDocId,
   sanitizeDocIds,
 } from "@/lib/api-helpers";
 
@@ -28,7 +29,7 @@ export async function POST(request) {
     const coll = await Settings.getCollection();
     const result = await coll.insertOne(Settings.prepareForInsert(body));
     const inserted = await coll.findOne({ _id: result.insertedId });
-    return createdResponse(sanitizeDocIds(inserted));
+    return createdResponse(sanitizeDocId(inserted));
   } catch (error) {
     return handleApiError(error, "Failed to create setting");
   }
@@ -42,7 +43,7 @@ export async function PATCH(request) {
     }
     await Settings.upsert(body.key, body.value, body.type || "string", body.updatedBy || null);
     const updated = await Settings.findByKey(body.key);
-    return successResponse(sanitizeDocIds(updated));
+    return successResponse(sanitizeDocId(updated));
   } catch (error) {
     return handleApiError(error);
   }

@@ -3,14 +3,14 @@ import {
   successResponse,
   notFoundResponse,
   handleApiError,
-  sanitizeDocIds,
+  sanitizeDocId,
 } from "@/lib/api-helpers";
 
 export async function GET(request, { params }) {
   try {
     const item = await Reports.findByReportId(params.id);
     if (!item) return notFoundResponse("Report");
-    return successResponse(sanitizeDocIds(item));
+    return successResponse(sanitizeDocId(item));
   } catch (error) {
     return handleApiError(error);
   }
@@ -27,7 +27,7 @@ export async function PATCH(request, { params }) {
       { $set: { ...body, updatedAt: new Date() } },
       { returnDocument: "after" }
     );
-    return successResponse(sanitizeDocIds(updated));
+    return successResponse(sanitizeDocId(updated));
   } catch (error) {
     return handleApiError(error);
   }

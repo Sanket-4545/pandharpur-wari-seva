@@ -4,6 +4,7 @@ import {
   handleApiError,
   parseQueryParams,
   paginatedResponse,
+  sanitizeDocId,
   sanitizeDocIds,
 } from "@/lib/api-helpers";
 
@@ -31,7 +32,7 @@ export async function POST(request) {
     const coll = await EmergencyContacts.getCollection();
     const result = await coll.insertOne(EmergencyContacts.prepareForInsert(body));
     const inserted = await coll.findOne({ _id: result.insertedId });
-    return createdResponse(sanitizeDocIds(inserted));
+    return createdResponse(sanitizeDocId(inserted));
   } catch (error) {
     return handleApiError(error, "Failed to create emergency contact");
   }

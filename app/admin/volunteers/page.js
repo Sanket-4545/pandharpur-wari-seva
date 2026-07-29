@@ -44,7 +44,7 @@ export default function VolunteersAdmin() {
         setLoading(true);
         setError(null);
         const res = await fetch('/api/volunteers?limit=100');
-        if (!res.ok) throw new Error('Failed to load volunteers');
+        if (!res.ok) throw new Error(t('admin.volunteers.error'));
         const json = await res.json();
         if (json.success && json.data?.items) {
           const mapped = json.data.items.map(item => ({
@@ -66,19 +66,19 @@ export default function VolunteersAdmin() {
 
   // Table Columns config
   const columns = [
-    { key: "volunteerId", label: "ID" },
-    { key: "name", label: "Name", sortable: true },
-    { key: "college", label: "College", sortable: true },
-    { key: "nssUnit", label: "NSS Unit" },
+    { key: "volunteerId", label: t('admin.volunteers.column_id') },
+    { key: "name", label: t('admin.volunteers.column_name'), sortable: true },
+    { key: "college", label: t('admin.volunteers.column_college'), sortable: true },
+    { key: "nssUnit", label: t('admin.volunteers.column_nss_unit') },
     {
       key: "shift",
-      label: "Shift",
+      label: t('admin.volunteers.column_shift'),
       render: (row) => {
         const shiftObj = shifts.find(s => s.value === row.shift);
         return shiftObj ? t(shiftObj.labelKey).split(' ')[0] : row.shift;
       }
     },
-    { key: "status", label: "Status" }
+    { key: "status", label: t('admin.volunteers.column_status') }
   ];
 
   // View row
@@ -97,7 +97,7 @@ export default function VolunteersAdmin() {
       const res = await fetch(`/api/volunteers/${deletingId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete volunteer');
       setVolunteers(prev => prev.filter(v => v.volunteerId !== deletingId));
-      showToast('Volunteer deleted successfully');
+      showToast(t('admin.volunteers.toast_deleted'));
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -126,7 +126,13 @@ export default function VolunteersAdmin() {
           setViewingRow(prev => ({ ...prev, ...json.data }));
         }
       }
-      showToast(`Volunteer ${newStatus === 'approved' ? 'approved' : newStatus === 'rejected' ? 'rejected' : 'updated'} successfully`);
+      if (newStatus === 'approved') {
+        showToast(t('admin.volunteers.toast_approved'));
+      } else if (newStatus === 'rejected') {
+        showToast(t('admin.volunteers.toast_rejected'));
+      } else {
+        showToast(t('admin.volunteers.toast_status_updated'));
+      }
     } catch (err) {
       showToast(err.message, 'error');
     }
@@ -178,7 +184,7 @@ export default function VolunteersAdmin() {
   // Save (create or update)
   const handleSave = async () => {
     if (!form.name || !form.email || !form.phone || !form.city || !form.college || !form.nssUnit || !form.emergencyPhone) {
-      showToast('Please fill in all required fields', 'error');
+      showToast(t('admin.common.required'), 'error');
       return;
     }
     setIsSubmitting(true);
@@ -197,7 +203,7 @@ export default function VolunteersAdmin() {
         });
         if (!res.ok) {
           const json = await res.json();
-          throw new Error(json.error || 'Failed to update volunteer');
+          throw new Error(json.error || t('admin.volunteers.toast_updated').replace(' successfully', ''));
         }
         const json = await res.json();
         if (json.success && json.data) {
@@ -207,7 +213,7 @@ export default function VolunteersAdmin() {
               : v
           ));
         }
-        showToast('Volunteer updated successfully');
+        showToast(t('admin.volunteers.toast_updated'));
       } else {
         // Create
         const res = await fetch('/api/volunteers', {
@@ -217,7 +223,7 @@ export default function VolunteersAdmin() {
         });
         if (!res.ok) {
           const json = await res.json();
-          throw new Error(json.error || 'Failed to create volunteer');
+          throw new Error(json.error || t('admin.volunteers.toast_created').replace(' successfully', ''));
         }
         // Re-fetch to get full list with new record
         const fetchRes = await fetch('/api/volunteers?limit=100');
@@ -231,7 +237,7 @@ export default function VolunteersAdmin() {
             setVolunteers(mapped);
           }
         }
-        showToast('Volunteer created successfully');
+        showToast(t('admin.volunteers.toast_created'));
       }
       setShowFormModal(false);
     } catch (err) {
@@ -272,7 +278,7 @@ export default function VolunteersAdmin() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="font-heading text-xl sm:text-2xl font-extrabold text-charcoal dark:text-white">
-            {t("admin.sidebar.volunteers")} Cohort
+            {t("admin.volunteers.title")}
           </h1>
         </div>
         <div className="text-center py-12">
@@ -281,7 +287,7 @@ export default function VolunteersAdmin() {
             onClick={() => window.location.reload()}
             className="mt-4 text-primary underline text-sm"
           >
-            Retry
+            {t('admin.volunteers.retry')}
           </button>
         </div>
       </div>
@@ -303,10 +309,10 @@ export default function VolunteersAdmin() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-heading text-xl sm:text-2xl font-extrabold text-charcoal dark:text-white">
-            {t("admin.sidebar.volunteers")} Cohort
+            {t("admin.volunteers.title")}
           </h1>
           <p className="text-xs text-charcoal-light dark:text-gray-450 mt-1">
-            Review registration requests. Approve and allocate volunteers to camps and shift durations.
+            {t('admin.volunteers.subtitle')}
           </p>
         </div>
 
@@ -315,22 +321,22 @@ export default function VolunteersAdmin() {
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-2xl text-xs font-bold transition-all shadow-saffron-glow focus:outline-none self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          Add Volunteer
+          {t('admin.volunteers.add_button')}
         </button>
       </div>
 
       {/* Summary */}
       <div className="flex items-center gap-4 text-xs text-charcoal-light dark:text-gray-400">
-        <span><strong className="text-charcoal dark:text-white">{volunteers.length}</strong> total</span>
-        <span><strong className="text-emerald-650 dark:text-emerald-400">{volunteers.filter(v => v.status === 'approved').length}</strong> approved</span>
-        <span><strong className="text-amber-650 dark:text-amber-400">{volunteers.filter(v => v.status === 'pending').length}</strong> pending</span>
-        <span><strong className="text-red-650 dark:text-red-400">{volunteers.filter(v => v.status === 'rejected').length}</strong> rejected</span>
+        <span><strong className="text-charcoal dark:text-white">{volunteers.length}</strong> {t('admin.volunteers.summary_total')}</span>
+        <span><strong className="text-emerald-650 dark:text-emerald-400">{volunteers.filter(v => v.status === 'approved').length}</strong> {t('admin.volunteers.summary_approved')}</span>
+        <span><strong className="text-amber-650 dark:text-amber-400">{volunteers.filter(v => v.status === 'pending').length}</strong> {t('admin.volunteers.summary_pending')}</span>
+        <span><strong className="text-red-650 dark:text-red-400">{volunteers.filter(v => v.status === 'rejected').length}</strong> {t('admin.volunteers.summary_rejected')}</span>
       </div>
 
       {/* Main Table */}
       {volunteers.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-charcoal-light dark:text-gray-400">No volunteers found.</p>
+          <p className="text-charcoal-light dark:text-gray-400">{t('admin.volunteers.no_volunteers')}</p>
         </div>
       ) : (
         <DataTable
@@ -348,7 +354,7 @@ export default function VolunteersAdmin() {
         <Modal
           isOpen={!!viewingRow}
           onClose={() => setViewingRow(null)}
-          title={`Volunteer Application: ${viewingRow.name}`}
+          title={`${t('admin.volunteers.view_title')}: ${viewingRow.name}`}
         >
           <div className="space-y-4">
 
@@ -376,22 +382,22 @@ export default function VolunteersAdmin() {
 
             <div className="grid grid-cols-2 gap-4 text-xs font-semibold">
               <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl">
-                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">College Name</span>
+                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">{t('admin.volunteers.college_name')}</span>
                 <span className="font-bold text-charcoal dark:text-white mt-1 block leading-normal">
                   {viewingRow.college}
                 </span>
               </div>
 
               <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl">
-                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">Contact Details</span>
+                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">{t('admin.volunteers.contact_details')}</span>
                 <span className="font-bold text-charcoal dark:text-white mt-1 block">
-                  Ph: {viewingRow.phone} <br />
-                  Age: {viewingRow.age} yrs, {viewingRow.gender}
+                  {t('admin.volunteers.ph')} {viewingRow.phone} <br />
+                  {t('admin.volunteers.age')} {viewingRow.age} {t('admin.volunteers.yrs')}, {viewingRow.gender}
                 </span>
               </div>
 
               <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl col-span-2">
-                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">Skills & Competences</span>
+                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">{t('admin.volunteers.skills_competences')}</span>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {(viewingRow.skills || []).map(sk => {
                     const skObj = allSkills.find(s => s.value === sk);
@@ -405,15 +411,15 @@ export default function VolunteersAdmin() {
               </div>
 
               <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl">
-                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">Shift & Location</span>
+                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">{t('admin.volunteers.shift_location')}</span>
                 <span className="font-bold text-charcoal dark:text-white mt-1 block">
-                  Shift: {(viewingRow.shift || '').toUpperCase()} <br />
-                  Blood Group: {viewingRow.bloodGroup}
+                  {t('admin.volunteers.shift_label')} {(viewingRow.shift || '').toUpperCase()} <br />
+                  {t('admin.volunteers.blood_group_label')} {viewingRow.bloodGroup}
                 </span>
               </div>
 
               <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl">
-                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">Emergency Contact</span>
+                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">{t('admin.volunteers.emergency_contact')}</span>
                 <span className="font-bold text-red-650 dark:text-red-400 mt-1 block flex items-center gap-1">
                   <Phone className="w-3.5 h-3.5" />
                   {viewingRow.emergencyPhone}
@@ -433,7 +439,7 @@ export default function VolunteersAdmin() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
-                  Edit
+                  {t('admin.volunteers.edit_button')}
                 </button>
               </div>
 
@@ -445,14 +451,14 @@ export default function VolunteersAdmin() {
                     className="inline-flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all text-xs font-bold"
                   >
                     <XCircle className="w-4 h-4" />
-                    Reject
+                    {t('admin.volunteers.reject_button')}
                   </button>
                   <button
                     onClick={() => handleUpdateStatus(viewingRow.volunteerId, "approved")}
                     className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-650 hover:bg-emerald-700 text-white rounded-xl transition-all text-xs font-bold"
                   >
                     <CheckCircle className="w-4 h-4" />
-                    Approve
+                    {t('admin.volunteers.approve_button')}
                   </button>
                 </div>
               )}
@@ -463,7 +469,7 @@ export default function VolunteersAdmin() {
                     className="inline-flex items-center gap-1.5 px-3 py-2 border border-amber-200 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20 rounded-xl transition-all text-xs font-bold"
                   >
                     <XCircle className="w-4 h-4" />
-                    Move to Pending
+                    {t('admin.volunteers.move_to_pending')}
                   </button>
                 </div>
               )}
@@ -481,7 +487,7 @@ export default function VolunteersAdmin() {
           <div className="relative bg-white dark:bg-gray-900 rounded-3xl border border-slate-200/60 dark:border-gray-800 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-heading text-lg font-extrabold text-charcoal dark:text-white">
-                {editingVolunteer ? 'Edit Volunteer' : 'Add New Volunteer'}
+                {editingVolunteer ? t('admin.volunteers.edit_modal_title') : t('admin.volunteers.add_modal_title')}
               </h2>
               <button onClick={() => setShowFormModal(false)} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-gray-800 text-slate-400 transition-all">
                 <X className="w-4 h-4" />
@@ -492,23 +498,23 @@ export default function VolunteersAdmin() {
               {/* Row 1: Name + Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Full Name *</label>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_full_name')} *</label>
                   <input
                     type="text"
                     value={form.name}
                     onChange={e => handleFormChange('name', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
-                    placeholder="Enter full name"
+                    placeholder={t('admin.volunteers.placeholder_full_name')}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Email *</label>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_email')} *</label>
                   <input
                     type="email"
                     value={form.email}
                     onChange={e => handleFormChange('email', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
-                    placeholder="Enter email"
+                    placeholder={t('admin.volunteers.placeholder_email')}
                   />
                 </div>
               </div>
@@ -516,24 +522,24 @@ export default function VolunteersAdmin() {
               {/* Row 2: Phone + Gender */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Phone *</label>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_phone')} *</label>
                   <input
                     type="text"
                     value={form.phone}
                     onChange={e => handleFormChange('phone', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
-                    placeholder="10-digit number"
+                    placeholder={t('admin.volunteers.placeholder_phone')}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Gender</label>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_gender')}</label>
                   <select
                     value={form.gender}
                     onChange={e => handleFormChange('gender', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
                   >
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
+                    <option value="Male">{t('admin.volunteers.gender_male')}</option>
+                    <option value="Female">{t('admin.volunteers.gender_female')}</option>
                   </select>
                 </div>
               </div>
@@ -541,7 +547,7 @@ export default function VolunteersAdmin() {
               {/* Row 3: Age + Blood Group */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Age</label>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_age')}</label>
                   <input
                     type="number"
                     min={16}
@@ -549,11 +555,11 @@ export default function VolunteersAdmin() {
                     value={form.age}
                     onChange={e => handleFormChange('age', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
-                    placeholder="16-80"
+                    placeholder={t('admin.volunteers.placeholder_age')}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Blood Group</label>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_blood_group')}</label>
                   <select
                     value={form.bloodGroup}
                     onChange={e => handleFormChange('bloodGroup', e.target.value)}
@@ -569,23 +575,23 @@ export default function VolunteersAdmin() {
               {/* Row 4: City + College */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">City *</label>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_city')} *</label>
                   <input
                     type="text"
                     value={form.city}
                     onChange={e => handleFormChange('city', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
-                    placeholder="Enter city"
+                    placeholder={t('admin.volunteers.placeholder_city')}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">College *</label>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_college')} *</label>
                   <input
                     type="text"
                     value={form.college}
                     onChange={e => handleFormChange('college', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
-                    placeholder="Enter college name"
+                    placeholder={t('admin.volunteers.placeholder_college')}
                   />
                 </div>
               </div>
@@ -593,17 +599,17 @@ export default function VolunteersAdmin() {
               {/* Row 5: NSS Unit + Shift */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">NSS Unit *</label>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_nss_unit')} *</label>
                   <input
                     type="text"
                     value={form.nssUnit}
                     onChange={e => handleFormChange('nssUnit', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
-                    placeholder="e.g. NSS-UNIT-01"
+                    placeholder={t('admin.volunteers.placeholder_nss_unit')}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Shift</label>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_shift')}</label>
                   <select
                     value={form.shift}
                     onChange={e => handleFormChange('shift', e.target.value)}
@@ -618,19 +624,19 @@ export default function VolunteersAdmin() {
 
               {/* Row 6: Emergency Phone */}
               <div>
-                <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Emergency Contact Number *</label>
+                <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_emergency_phone')} *</label>
                 <input
                   type="text"
                   value={form.emergencyPhone}
                   onChange={e => handleFormChange('emergencyPhone', e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
-                  placeholder="Family contact number"
+                  placeholder={t('admin.volunteers.placeholder_emergency_phone')}
                 />
               </div>
 
               {/* Row 7: Skills */}
               <div>
-                <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Skills</label>
+                <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_skills')}</label>
                 <div className="flex flex-wrap gap-2">
                   {allSkills.map(sk => (
                     <label key={sk.value} className="flex items-center gap-1.5 cursor-pointer">
@@ -648,7 +654,7 @@ export default function VolunteersAdmin() {
 
               {/* Row 8: Languages */}
               <div>
-                <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Languages</label>
+                <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_languages')}</label>
                 <div className="flex flex-wrap gap-2">
                   {allLanguages.map(lang => (
                     <label key={lang.value} className="flex items-center gap-1.5 cursor-pointer">
@@ -667,15 +673,15 @@ export default function VolunteersAdmin() {
               {/* Row 9: Status (edit only) */}
               {editingVolunteer && (
                 <div>
-                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">Status</label>
+                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_status')}</label>
                   <select
                     value={form.status}
                     onChange={e => handleFormChange('status', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
                   >
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
+                    <option value="pending">{t('admin.volunteers.summary_pending')}</option>
+                    <option value="approved">{t('admin.volunteers.summary_approved')}</option>
+                    <option value="rejected">{t('admin.volunteers.summary_rejected')}</option>
                   </select>
                 </div>
               )}
@@ -686,7 +692,7 @@ export default function VolunteersAdmin() {
                 onClick={() => setShowFormModal(false)}
                 className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 text-xs font-bold text-charcoal dark:text-white hover:bg-slate-50 dark:hover:bg-gray-800 transition-all"
               >
-                Cancel
+                {t('admin.volunteers.cancel')}
               </button>
               <LoadingButton
                 onClick={handleSave}
@@ -694,7 +700,7 @@ export default function VolunteersAdmin() {
                 className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs font-bold transition-all shadow-saffron-glow"
               >
                 <Save className="w-4 h-4" />
-                {editingVolunteer ? 'Save Changes' : 'Create Volunteer'}
+                {editingVolunteer ? t('admin.volunteers.save_changes') : t('admin.volunteers.create_volunteer')}
               </LoadingButton>
             </div>
           </div>
@@ -706,7 +712,7 @@ export default function VolunteersAdmin() {
         isOpen={!!deletingId}
         onClose={() => setDeletingId(null)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Volunteer"
+        title={t('admin.volunteers.delete_title')}
         messageKey="admin.common.confirm"
       />
 

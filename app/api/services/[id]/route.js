@@ -3,7 +3,7 @@ import {
   successResponse,
   notFoundResponse,
   handleApiError,
-  sanitizeDocIds,
+  sanitizeDocId,
 } from "@/lib/api-helpers";
 
 export async function PUT(request, { params }) {
@@ -15,7 +15,7 @@ export async function PUT(request, { params }) {
     const update = Services.prepareForUpdate(body);
     await coll.updateOne({ _id: params.id }, { $set: update });
     const updated = await coll.findOne({ _id: params.id });
-    return successResponse(sanitizeDocIds(updated));
+    return successResponse(sanitizeDocId(updated));
   } catch (error) {
     return handleApiError(error);
   }

@@ -3,14 +3,14 @@ import {
   successResponse,
   notFoundResponse,
   handleApiError,
-  sanitizeDocIds,
+  sanitizeDocId,
 } from "@/lib/api-helpers";
 
 export async function GET(request, { params }) {
   try {
     const item = await Settings.findByKey(params.key);
     if (!item) return notFoundResponse("Setting");
-    return successResponse(sanitizeDocIds(item));
+    return successResponse(sanitizeDocId(item));
   } catch (error) {
     return handleApiError(error);
   }
@@ -21,7 +21,7 @@ export async function PUT(request, { params }) {
     const body = await request.json();
     await Settings.upsert(params.key, body.value, body.type || "string", body.updatedBy || null);
     const updated = await Settings.findByKey(params.key);
-    return successResponse(sanitizeDocIds(updated));
+    return successResponse(sanitizeDocId(updated));
   } catch (error) {
     return handleApiError(error);
   }

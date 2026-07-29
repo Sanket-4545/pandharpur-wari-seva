@@ -4,6 +4,7 @@ import {
   handleApiError,
   parseQueryParams,
   paginatedResponse,
+  sanitizeDocId,
   sanitizeDocIds,
 } from "@/lib/api-helpers";
 
@@ -28,8 +29,9 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const result = await Reports.insertOne(body);
-    const inserted = await Reports.findByReportId(result.ops?.[0]?.reportId);
-    return createdResponse(sanitizeDocIds(inserted || { insertedId: result.insertedId }));
+    const coll = await Reports.getCollection();
+    const inserted = await coll.findOne({ _id: result.insertedId });
+    return createdResponse(sanitizeDocId(inserted));
   } catch (error) {
     return handleApiError(error, "Failed to create report");
   }
