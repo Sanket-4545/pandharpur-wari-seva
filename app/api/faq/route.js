@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Faq } from "@/lib/models";
 import {
   createdResponse,

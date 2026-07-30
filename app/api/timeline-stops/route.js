@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { TimelineStops } from "@/lib/models";
 import {
   createdResponse,

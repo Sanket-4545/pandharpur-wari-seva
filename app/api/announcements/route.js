@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Announcements } from "@/lib/models";
 import {
   createdResponse,

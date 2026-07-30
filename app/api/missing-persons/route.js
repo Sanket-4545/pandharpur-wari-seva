@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { MissingPersons } from "@/lib/models";
 import {
   createdResponse,

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { LostItems } from "@/lib/models";
 import {
   createdResponse,
