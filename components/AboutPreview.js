@@ -30,9 +30,9 @@ export default function AboutPreview() {
             {/* Core Values / Features */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-10">
               {[
-                { icon: HeartPulse, text: "Compassionate Service" },
-                { icon: Shield, text: "Safety & Coordination" },
-                { icon: Award, text: "NSS Dedication" }
+                { icon: HeartPulse, labelKey: "about.values_compassion" },
+                { icon: Shield, labelKey: "about.values_safety" },
+                { icon: Award, labelKey: "about.values_dedication" }
               ].map((value, idx) => {
                 const Icon = value.icon;
                 return (
@@ -40,7 +40,7 @@ export default function AboutPreview() {
                     <div className="p-2.5 rounded-xl bg-primary/10 text-primary mb-3">
                       <Icon className="w-5 h-5" />
                     </div>
-                    <span className="text-[13px] font-bold text-charcoal">{value.text}</span>
+                    <span className="text-[13px] font-bold text-charcoal">{t(value.labelKey)}</span>
                   </div>
                 );
               })}

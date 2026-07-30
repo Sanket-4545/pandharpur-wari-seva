@@ -23,12 +23,12 @@ export default function CallToAction() {
           <p className="mt-6 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
             {t('cta.subtitle')}
           </p>
-          
+
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-sm sm:max-w-none mx-auto px-4">
-            <Button href="#" variant="primary" size="lg" className="w-full sm:w-auto shadow-saffron-glow">
+            <Button href="/register" variant="primary" size="lg" className="w-full sm:w-auto shadow-saffron-glow">
               {t('cta.button_register')}
             </Button>
-            <Button href="#" variant="glass" size="lg" className="w-full sm:w-auto">
+            <Button href="/contact" variant="glass" size="lg" className="w-full sm:w-auto">
               {t('cta.button_contact')}
             </Button>
           </div>

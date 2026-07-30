@@ -69,9 +69,17 @@
     "medical": "Medical Helpline",
     "nss_office": "NSS Camp Office",
     "email": "Email Support",
-    "copyright": "© 2026 Pandharpur Wari NSS Seva Portal. All rights reserved."
+    "copyright": "© 2026 Pandharpur Wari NSS Seva Portal. All rights reserved. Developed by Sanket Dadasaheb Bhojane."
   },
   "about_page": {
+    "heritage_badge": "Heritage & Culture",
+    "history_image_alt": "Pandharpur Wari Pilgrimage history image showing devotees on the route",
+    "values_compassion": "Compassionate Service",
+    "values_safety": "Safety & Coordination",
+    "values_dedication": "NSS Dedication",
+    "timeline": {
+      "subtitle": "Tracing the physical journey of faith across key halting spots along the route."
+    },
     "subtitle": "Discover the heritage of the pilgrimage and our volunteer missions",
     "history_title": "History of Pandharpur Wari",
     "history_desc_1": "The Pandharpur Wari is an 800-year-old pilgrimage tradition in Maharashtra. Pilgrims, known as Warkaris, travel to the Vithoba Temple in Pandharpur, singing devotional songs and carrying palanquins (Palkhis) of saints, notably Sant Dnyaneshwar and Sant Tukaram.",
@@ -406,15 +414,19 @@
       "today_reports": "Today's Reports",
       "recent_activities": "Recent Activities",
       "view_all": "View All",
-      "summary": "Overview Summary"
+      "summary": "Overview Summary",
+      "alerts": "Alerts & Notices",
+      "manage_announcements": "Manage Announcements",
+      "contact_messages": "Contact Messages",
+      "engagement": "Total Engagement"
     },
     "activities": {
-      "volunteer_registered": "Volunteer Rahul Deshmukh registered",
-      "missing_person_reported": "Missing person Vitthal Rao reported",
-      "lost_item_found": "Lost item Black Leather Wallet found",
-      "emergency_received": "Emergency request received: Medical Assistance",
-      "gallery_updated": "Gallery updated with 4 new photos",
-      "announcements_posted": "Announcement posted: Heavy Rain Alert & Shelters"
+      "volunteer_registered": "Volunteer {name} registered",
+      "missing_person_reported": "Missing person {name} reported",
+      "lost_item_found": "Lost item {item} found",
+      "emergency_received": "Emergency request received: {type}",
+      "gallery_updated": "Gallery updated with {count} new photos",
+      "announcements_posted": "Announcement posted: {title}"
     },
     "common": {
       "view": "View",
@@ -438,7 +450,12 @@
       "id": "ID",
       "details": "Details",
       "no_records": "No matching records found.",
-      "loading": "Loading dashboard data..."
+      "loading": "Loading dashboard data...",
+      "no_activities": "No recent activities",
+      "no_alerts": "No active alerts",
+      "no_data": "No data available",
+      "load_error": "Failed to load data",
+      "retry": "Retry"
     },
     "volunteers": {
       "title": "Volunteer Management",
@@ -562,25 +579,44 @@
     },
     "reports": {
       "title": "System Logs & Reports",
-      "daily_summary_title": "Daily Summary Report - 17th July 2026",
-      "daily_summary_desc": "Detailed summary of all events, volunteer check-ins, medical assistances, and resolving actions of the day.",
-      "volunteer_deployment_title": "Volunteer Deployment Mapping",
-      "volunteer_deployment_desc": "Location-wise deployment sheet of NSS units across the Palkhi path and Pandharpur camps.",
-      "emergency_response_title": "Emergency Response & Logistics Logs",
-      "emergency_response_desc": "Consolidated list of emergency requests, response times, medical dispatch coordinate reports.",
-      "lost_found_audit_title": "Lost & Found Custody Audit",
-      "lost_found_audit_desc": "Inventory listing of items currently held, returned to claimants, or unclaimed along the route.",
-      "weekly_consolidation_title": "Weekly Consolidation Report - Week 2",
-      "weekly_consolidation_desc": "Executive summary of cumulative statistics, camp performance, and administrative updates.",
+      "new_report_btn": "New Report",
+      "filter_all": "All",
+      "type_daily": "Daily",
+      "type_weekly": "Weekly",
+      "type_volunteer": "Volunteer",
+      "type_emergency": "Emergency",
+      "type_audit": "Audit",
+      "btn_download": "Download",
       "btn_print": "Print",
-      "btn_pdf": "Download PDF",
       "btn_share": "Share",
-      "toast_print": "Sending document to printer spool...",
-      "toast_pdf": "Generating high-resolution PDF download...",
-      "toast_share": "Copied report share link to clipboard!"
+      "downloads": "dl",
+      "create_title": "Create New Report",
+      "title_label": "Title",
+      "desc_label": "Description",
+      "type_label": "Report Type",
+      "author_label": "Author",
+      "placeholder_title": "Enter report title",
+      "placeholder_desc": "Enter report description",
+      "placeholder_author": "e.g. NSS Coordinator",
+      "btn_create": "Create Report",
+      "btn_cancel": "Cancel",
+      "delete_title": "Delete Report",
+      "empty_title": "No reports found",
+      "empty_desc": "Create your first report to start tracking system logs and administrative summaries.",
+      "toast_created": "Report created successfully!",
+      "toast_create_error": "Failed to create report",
+      "toast_deleted": "Report deleted successfully!",
+      "toast_delete_error": "Failed to delete report",
+      "toast_validation_error": "Please fill in all required fields",
+      "toast_download_unavailable": "Download unavailable. File storage is not yet configured.",
+      "toast_print_opened": "Print dialog opened",
+      "toast_shared": "Shared successfully",
+      "toast_link_copied": "Link copied to clipboard",
+      "toast_share_error": "Unable to share. Try copying the URL manually."
     },
     "analytics": {
       "title": "Advanced Analytics Dashboard",
+      "subtitle": "Real-time logistical performance metrics. Analyze volunteers, report rates, and camp operations.",
       "registrations": "Volunteer Registrations",
       "daily_activities": "Daily Activity Summary",
       "trend_chart": "Reporting Rate vs Resolutions",
@@ -604,7 +640,11 @@
       "logo_desc": "Supports PNG, JPG, or SVG up to 2MB.",
       "contact": "Contact Helpline Info",
       "save_btn": "Save Configurations",
-      "toast_success": "System settings saved successfully!"
+      "saving": "Saving Configurations...",
+      "info_desc": "System settings are stored in MongoDB and updated in real time. Changes are saved securely and persist across sessions.",
+      "toast_success": "System settings saved successfully!",
+      "toast_save_error": "Failed to save settings. Please try again.",
+      "toast_fetch_error": "Failed to load settings from server."
     },
     "profile": {
       "title": "Admin Profile Details",
@@ -616,5 +656,20 @@
       "toast_profile": "Profile data updated successfully!",
       "toast_pwd": "Password updated successfully!"
     }
+  },
+  "login": {
+    "title": "Admin Login",
+    "subtitle": "Sign in to the NSS Seva Portal administration panel",
+    "email": "Email Address",
+    "email_placeholder": "Enter your admin email",
+    "password": "Password",
+    "password_placeholder": "Enter your password",
+    "submit": "Sign In",
+    "submitting": "Signing in...",
+    "error_invalid": "Invalid email or password",
+    "error_inactive": "Account is deactivated. Contact a super administrator.",
+    "error_network": "Connection error. Please try again.",
+    "error_email_required": "Email is required",
+    "error_password_required": "Password is required"
   }
 }

@@ -66,15 +66,13 @@ export default function EmergencyCard({ icon: Icon, iconName, titleKey, descKey,
 
       {/* Action Buttons */}
       <div className="flex items-center gap-2.5">
-        <Button 
-          variant="primary" 
-          size="sm"
-          className="flex-grow gap-2"
-          onClick={() => alert(`Calling ${phoneNumber} (Simulation only)`)}
+        <a
+          href={`tel:${phoneNumber}`}
+          className="flex-grow inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-heading font-semibold rounded-xl transition-all duration-300 transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-primary text-white hover:bg-primary-dark shadow-saffron-glow focus:ring-primary/50"
         >
           <Phone className="w-3.5 h-3.5 fill-current" />
           {t('emergency_page.call')}
-        </Button>
+        </a>
       </div>
     </div>
   );

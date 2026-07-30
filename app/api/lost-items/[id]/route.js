@@ -4,6 +4,8 @@ import {
   notFoundResponse,
   handleApiError,
   sanitizeDocId,
+  requireRole,
+  handleAuthError,
 } from "@/lib/api-helpers";
 
 export async function GET(request, { params }) {
@@ -18,31 +20,34 @@ export async function GET(request, { params }) {
 
 export async function PATCH(request, { params }) {
   try {
+    await requireRole(request, ["super_admin", "admin"]);
     const existing = await LostItems.findByItemId(params.id);
     if (!existing) return notFoundResponse("Lost item");
     const body = await request.json();
+    const update = LostItems.prepareForUpdate(body);
+    const coll = await LostItems.getCollection();
     if (body.status) {
       await LostItems.updateStatus(params.id, body.status);
     }
-    const coll = await LostItems.getCollection();
     const updated = await coll.findOneAndUpdate(
       { itemId: params.id },
-      { $set: body },
+      { $set: update },
       { returnDocument: "after" }
     );
     return successResponse(sanitizeDocId(updated));
   } catch (error) {
-    return handleApiError(error);
+    return handleAuthError(error);
   }
 }
 
 export async function DELETE(request, { params }) {
   try {
+    await requireRole(request, ["super_admin", "admin"]);
     const coll = await LostItems.getCollection();
     const result = await coll.deleteOne({ itemId: params.id });
     if (result.deletedCount === 0) return notFoundResponse("Lost item");
     return successResponse({ deleted: true });
   } catch (error) {
-    return handleApiError(error);
+    return handleAuthError(error);
   }
 }

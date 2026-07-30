@@ -1,8 +1,11 @@
-import { getDbStats, listCollections } from "@/lib/models";
-import { successResponse, handleApiError } from "@/lib/api-helpers";
+export const dynamic = "force-dynamic";
 
-export async function GET() {
+import { getDbStats, listCollections } from "@/lib/models";
+import { successResponse, handleApiError, requireRole, handleAuthError } from "@/lib/api-helpers";
+
+export async function GET(request) {
   try {
+    await requireRole(request, ["super_admin", "admin"]);
     const [stats, collections] = await Promise.all([
       getDbStats(),
       listCollections(),
@@ -13,6 +16,6 @@ export async function GET() {
       stats,
     });
   } catch (error) {
-    return handleApiError(error, "Failed to get database info");
+    return handleAuthError(error);
   }
 }

@@ -57,7 +57,7 @@ export default function AboutPage() {
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <History className="w-5 h-5" />
                 </div>
-                <span className="text-xs uppercase font-extrabold tracking-wider">Heritage & Culture</span>
+                <span className="text-xs uppercase font-extrabold tracking-wider">{t('about_page.heritage_badge')}</span>
               </div>
               <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-charcoal tracking-tight">
                 {t('about_page.history_title')}
@@ -75,7 +75,7 @@ export default function AboutPage() {
               <div className="relative bg-white p-2 rounded-[2rem] border border-slate-100 shadow-premium overflow-hidden">
                 <img 
                   src="/images/Wari seva galler 1.jpeg" 
-                  alt="Pandharpur Wari Pilgrimage history placeholder"
+                  alt={t('about_page.history_image_alt')}
                   className="w-full h-[300px] md:h-[380px] object-cover rounded-[1.75rem]"
                 />
               </div>
@@ -182,7 +182,7 @@ export default function AboutPage() {
           <div className="max-w-3xl mx-auto text-center mb-16">
             <SectionTitle 
               title={t('about_page.timeline_title')}
-              subtitle="Tracing the physical journey of faith across key halting spots along the route."
+              subtitle={t('about_page.timeline.subtitle')}
             />
           </div>
           <Timeline />

@@ -1,15 +1,51 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { navLinks, emergencyContacts } from '@/data/dummyData';
+import { navLinks } from '@/data/dummyData';
 import Link from 'next/link';
 import Container from './Container';
 import LanguageSwitcher from './LanguageSwitcher';
-import { Flame, Twitter, Facebook, Instagram, Youtube } from 'lucide-react';
+import { Flame, Phone, ShieldAlert, HeartPulse, Mail } from 'lucide-react';
+
+const ICON_MAP = {
+  Phone,
+  ShieldAlert,
+  HeartPulse,
+  Mail,
+};
+
+const FALLBACK_CONTACTS = [
+  { labelKey: "footer.police", value: "100 / 112", icon: ShieldAlert },
+  { labelKey: "footer.medical", value: "108 / 102", icon: HeartPulse },
+  { labelKey: "footer.nss_office", value: "+91 22 2202 4444", icon: Phone },
+  { labelKey: "footer.email", value: "nss-seva@wariportal.org", icon: Mail },
+];
 
 export default function Footer() {
   const { t } = useLanguage();
+  const [contacts, setContacts] = useState(FALLBACK_CONTACTS);
+
+  useEffect(() => {
+    async function fetchContacts() {
+      try {
+        const res = await fetch('/api/emergency-contacts?limit=4');
+        if (!res.ok) throw new Error('Failed');
+        const json = await res.json();
+        if (json.success && json.data?.items && json.data.items.length > 0) {
+          const mapped = json.data.items.map(c => ({
+            labelKey: c.titleKey || "footer.nss_office",
+            value: c.phoneNumber || c.value || "N/A",
+            icon: ICON_MAP[c.iconName] || Phone,
+          }));
+          setContacts(mapped);
+        }
+      } catch {
+        // keep fallback
+      }
+    }
+    fetchContacts();
+  }, []);
 
   return (
     <footer className="bg-slate-900 text-slate-300 border-t border-slate-800/80 pt-16 pb-8">
@@ -28,26 +64,6 @@ export default function Footer() {
             <p className="text-sm text-slate-400 leading-relaxed">
               {t('footer.desc')}
             </p>
-            <div className="flex items-center gap-3.5 mt-2">
-              {[
-                { icon: Facebook, label: 'Facebook' },
-                { icon: Twitter, label: 'Twitter' },
-                { icon: Instagram, label: 'Instagram' },
-                { icon: Youtube, label: 'Youtube' }
-              ].map((item, index) => {
-                const Icon = item.icon;
-                return (
-                  <a 
-                    key={index} 
-                    href="#" 
-                    className="w-8.5 h-8.5 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white hover:scale-105 transition-all duration-200" 
-                    aria-label={item.label}
-                  >
-                    <Icon className="w-4 h-4" />
-                  </a>
-                );
-              })}
-            </div>
           </div>
 
           {/* Quick Links */}
@@ -72,7 +88,7 @@ export default function Footer() {
               {t('footer.emergency_contacts')}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {emergencyContacts.map((contact, index) => {
+              {contacts.map((contact, index) => {
                 const IconComponent = contact.icon;
                 return (
                   <div key={index} className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-slate-800/30 border border-slate-800 hover:border-slate-700/80 transition-colors duration-300">

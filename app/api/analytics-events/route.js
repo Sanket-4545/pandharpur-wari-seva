@@ -7,10 +7,13 @@ import {
   sanitizeDocId,
   sanitizeDocIds,
   errorResponse,
+  requireRole,
+  handleAuthError,
 } from "@/lib/api-helpers";
 
 export async function GET(request) {
   try {
+    await requireRole(request, ["super_admin", "admin", "coordinator"]);
     const { page, limit, skip } = parseQueryParams(request);
     const { searchParams } = new URL(request.url);
     const eventType = searchParams.get("eventType");
@@ -22,18 +25,19 @@ export async function GET(request) {
     ]);
     return paginatedResponse(sanitizeDocIds(items), total, page, limit);
   } catch (error) {
-    return handleApiError(error);
+    return handleAuthError(error);
   }
 }
 
 export async function POST(request) {
   try {
+    await requireRole(request, ["super_admin", "admin"]);
     const body = await request.json();
     const coll = await AnalyticsEvents.getCollection();
     const result = await coll.insertOne(AnalyticsEvents.prepareForInsert(body));
     const inserted = await coll.findOne({ _id: result.insertedId });
     return createdResponse(sanitizeDocId(inserted));
   } catch (error) {
-    return handleApiError(error, "Failed to log analytics event");
+    return handleAuthError(error);
   }
 }

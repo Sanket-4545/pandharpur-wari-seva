@@ -6,10 +6,13 @@ import {
   paginatedResponse,
   sanitizeDocId,
   sanitizeDocIds,
+  requireRole,
+  handleAuthError,
 } from "@/lib/api-helpers";
 
 export async function GET(request) {
   try {
+    await requireRole(request, ["super_admin", "admin", "coordinator"]);
     const { page, limit, skip } = parseQueryParams(request);
     const { searchParams } = new URL(request.url);
     const typeFilter = searchParams.get("type");
@@ -21,18 +24,19 @@ export async function GET(request) {
     ]);
     return paginatedResponse(sanitizeDocIds(items), total, page, limit);
   } catch (error) {
-    return handleApiError(error);
+    return handleAuthError(error);
   }
 }
 
 export async function POST(request) {
   try {
+    await requireRole(request, ["super_admin", "admin"]);
     const body = await request.json();
     const result = await Reports.insertOne(body);
     const coll = await Reports.getCollection();
     const inserted = await coll.findOne({ _id: result.insertedId });
     return createdResponse(sanitizeDocId(inserted));
   } catch (error) {
-    return handleApiError(error, "Failed to create report");
+    return handleAuthError(error);
   }
 }

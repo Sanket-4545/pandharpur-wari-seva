@@ -6,6 +6,8 @@ import {
   paginatedResponse,
   sanitizeDocId,
   sanitizeDocIds,
+  requireRole,
+  handleAuthError,
 } from "@/lib/api-helpers";
 
 export async function GET(request) {
@@ -28,12 +30,13 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
+    await requireRole(request, ["super_admin", "admin"]);
     const body = await request.json();
     const coll = await EmergencyContacts.getCollection();
     const result = await coll.insertOne(EmergencyContacts.prepareForInsert(body));
     const inserted = await coll.findOne({ _id: result.insertedId });
     return createdResponse(sanitizeDocId(inserted));
   } catch (error) {
-    return handleApiError(error, "Failed to create emergency contact");
+    return handleAuthError(error);
   }
 }

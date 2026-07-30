@@ -253,29 +253,7 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                {/* Social Links */}
-                <div className="mt-8 border-t border-slate-100 pt-6">
-                  <div className="flex items-center gap-3.5">
-                    {[
-                      { icon: Facebook, label: 'Facebook' },
-                      { icon: Twitter, label: 'Twitter' },
-                      { icon: Instagram, label: 'Instagram' },
-                      { icon: Youtube, label: 'Youtube' }
-                    ].map((item, index) => {
-                      const Icon = item.icon;
-                      return (
-                        <a 
-                          key={index} 
-                          href="#" 
-                          className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white hover:scale-105 transition-all duration-200" 
-                          aria-label={item.label}
-                        >
-                          <Icon className="w-4.5 h-4.5" />
-                        </a>
-                      );
-                    })}
-                  </div>
-                </div>
+
               </div>
 
               {/* Map Placeholder */}

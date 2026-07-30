@@ -6,6 +6,8 @@ import {
   paginatedResponse,
   sanitizeDocId,
   sanitizeDocIds,
+  requireRole,
+  handleAuthError,
 } from "@/lib/api-helpers";
 
 export async function GET(request) {
@@ -27,12 +29,13 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
+    await requireRole(request, ["super_admin", "admin"]);
     const body = await request.json();
     const coll = await GalleryImages.getCollection();
     const result = await coll.insertOne(GalleryImages.prepareForInsert(body));
     const inserted = await coll.findOne({ _id: result.insertedId });
     return createdResponse(sanitizeDocId(inserted));
   } catch (error) {
-    return handleApiError(error, "Failed to add gallery image");
+    return handleAuthError(error);
   }
 }

@@ -7,10 +7,22 @@ import {
   paginatedResponse,
   sanitizeDocId,
   sanitizeDocIds,
+  requireRole,
+  handleAuthError,
+  rateLimitedResponse,
 } from "@/lib/api-helpers";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+
+const registerLimiter = rateLimit({ interval: 60000, max: 10 });
 
 export async function POST(request) {
   try {
+    const ip = getClientIp(request);
+    const limit = registerLimiter(ip);
+    if (!limit.allowed) {
+      return rateLimitedResponse();
+    }
+
     const body = await request.json();
     const result = await Volunteers.insertOne(body);
     const coll = await Volunteers.getCollection();
@@ -26,6 +38,7 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
+    await requireRole(request, ["super_admin", "admin", "coordinator"]);
     const { page, limit, skip, status, search } = parseQueryParams(request);
     const filter = {};
     if (status) filter.status = status;
@@ -36,6 +49,6 @@ export async function GET(request) {
     ]);
     return paginatedResponse(sanitizeDocIds(items), total, page, limit);
   } catch (error) {
-    return handleApiError(error);
+    return handleAuthError(error);
   }
 }
