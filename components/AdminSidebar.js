@@ -9,17 +9,17 @@ import {
   Package, 
   Users, 
   Phone, 
-  Image, 
+  Image as ImageIcon, 
   Megaphone, 
   FileText, 
   BarChart3, 
   Settings, 
   User, 
   LogOut,
-  Flame,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
+import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function AdminSidebar({ isCollapsed, toggleCollapse, isMobileOpen, closeMobileDrawer }) {
@@ -32,7 +32,7 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isMobileOpen
     { href: "/admin/lost-found", labelKey: "admin.sidebar.lost_found", icon: Package },
     { href: "/admin/volunteers", labelKey: "admin.sidebar.volunteers", icon: Users },
     { href: "/admin/emergency-contacts", labelKey: "admin.sidebar.emergency_contacts", icon: Phone },
-    { href: "/admin/gallery", labelKey: "admin.sidebar.gallery", icon: Image },
+    { href: "/admin/gallery", labelKey: "admin.sidebar.gallery", icon: ImageIcon },
     { href: "/admin/announcements", labelKey: "admin.sidebar.announcements", icon: Megaphone },
     { href: "/admin/reports", labelKey: "admin.sidebar.reports", icon: FileText },
     { href: "/admin/analytics", labelKey: "admin.sidebar.analytics", icon: BarChart3 },
@@ -50,8 +50,8 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isMobileOpen
       <div>
         {/* Brand Header */}
         <div className="flex items-center gap-3 px-2 mb-8 select-none">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow shrink-0 animate-pulse">
-            <Flame className="w-5 h-5 fill-current" />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow shrink-0 animate-pulse relative overflow-hidden">
+            <Image src="/images/logo.jpg" alt="NSS Seva Portal logo" fill sizes="36px" className="object-cover" />
           </div>
           {!isCollapsed && (
             <div className="flex flex-col animate-in fade-in duration-200">

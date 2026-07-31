@@ -1,4 +1,5 @@
 import { Admin } from "@/lib/models";
+import { toObjectId } from "@/lib/models/helpers";
 import { hashPassword, comparePassword } from "@/lib/password";
 import {
   successResponse,
@@ -11,6 +12,7 @@ import {
 export async function POST(request) {
   try {
     const payload = await requireAuth(request);
+    const adminId = toObjectId(payload.userId);
     const { currentPassword, newPassword } = await request.json();
 
     if (!currentPassword || !newPassword) {
@@ -21,8 +23,7 @@ export async function POST(request) {
       return errorResponse("New password must be at least 8 characters", 400);
     }
 
-    const coll = await Admin.getCollection();
-    const admin = await coll.findOne({ _id: payload.userId });
+    const admin = await Admin.findById(adminId);
     if (!admin) return notFoundResponse("Admin");
 
     if (!comparePassword(currentPassword, admin.passwordHash)) {
@@ -34,8 +35,9 @@ export async function POST(request) {
     }
 
     const newHash = hashPassword(newPassword);
+    const coll = await Admin.getCollection();
     await coll.updateOne(
-      { _id: payload.userId },
+      { _id: adminId },
       { $set: { passwordHash: newHash, updatedAt: new Date() } }
     );
 

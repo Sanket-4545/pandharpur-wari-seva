@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Flame } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import Container from './Container';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -35,8 +36,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between">
           {/* Logo & Brand */}
           <Link href="/" className="flex items-center gap-3 group focus:outline-none" aria-label="NSS Seva Portal Home">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow transition-all duration-350 group-hover:scale-105 group-hover:rotate-3">
-              <Flame className="w-5.5 h-5.5 fill-current animate-pulse" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow transition-all duration-350 group-hover:scale-105 group-hover:rotate-3 relative overflow-hidden">
+              <Image src="/images/logo.jpg" alt="NSS Seva Portal logo" fill sizes="40px" className="object-cover" priority />
             </div>
             <div className="flex flex-col">
               <span className="font-heading text-lg md:text-xl font-extrabold text-secondary tracking-tight leading-tight">

@@ -6,7 +6,8 @@ import { navLinks } from '@/data/dummyData';
 import Link from 'next/link';
 import Container from './Container';
 import LanguageSwitcher from './LanguageSwitcher';
-import { Flame, Phone, ShieldAlert, HeartPulse, Mail } from 'lucide-react';
+import { Phone, ShieldAlert, HeartPulse, Mail } from 'lucide-react';
+import Image from 'next/image';
 
 const ICON_MAP = {
   Phone,
@@ -54,8 +55,8 @@ export default function Footer() {
           {/* Brand Info */}
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-3 group focus:outline-none">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow">
-                <Flame className="w-5 h-5 fill-current" />
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow relative overflow-hidden">
+                <Image src="/images/logo.jpg" alt="NSS Seva Portal logo" fill sizes="36px" className="object-cover" />
               </div>
               <span className="font-heading text-lg font-extrabold text-white tracking-tight">
                 {t('nav.title')}

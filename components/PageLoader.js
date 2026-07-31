@@ -1,13 +1,13 @@
 "use client";
 
 import React from 'react';
-import { Flame } from 'lucide-react';
+import Image from 'next/image';
 
 export default function PageLoader({ text = 'Loading...' }) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm">
-      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow animate-pulse">
-        <Flame className="w-7 h-7 fill-current" />
+      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow animate-pulse relative overflow-hidden">
+        <Image src="/images/logo.jpg" alt="NSS Seva Portal logo" fill sizes="56px" className="object-cover" priority />
       </div>
       <div className="mt-5 flex gap-1.5">
         <span className="w-2.5 h-2.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />

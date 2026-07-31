@@ -1,12 +1,12 @@
 "use client";
 
-import { Flame } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Error({ error, reset }) {
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center px-4">
-      <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow mb-6">
-        <Flame className="w-10 h-10 fill-current" />
+      <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow mb-6 relative overflow-hidden">
+        <Image src="/images/logo.jpg" alt="NSS Seva Portal logo" fill sizes="80px" className="object-cover" priority />
       </div>
       <h1 className="font-heading text-3xl md:text-4xl font-extrabold text-secondary dark:text-white tracking-tight">
         Something went wrong

@@ -1,12 +1,12 @@
 "use client";
 
-import { Flame } from 'lucide-react';
+import Image from 'next/image';
 
 export default function AdminError({ error, reset }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 px-4">
-      <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow mb-5">
-        <Flame className="w-8 h-8 fill-current" />
+      <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow mb-5 relative overflow-hidden">
+        <Image src="/images/logo.jpg" alt="NSS Seva Portal logo" fill sizes="64px" className="object-cover" priority />
       </div>
       <h2 className="font-heading text-xl font-extrabold text-charcoal dark:text-white">
         Dashboard Error

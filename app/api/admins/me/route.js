@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { Admin } from "@/lib/models";
+import { toObjectId } from "@/lib/models/helpers";
 import {
   successResponse,
   notFoundResponse,
@@ -12,8 +13,7 @@ import {
 export async function GET(request) {
   try {
     const payload = await requireAuth(request);
-    const coll = await Admin.getCollection();
-    const admin = await coll.findOne({ _id: payload.userId });
+    const admin = await Admin.findById(toObjectId(payload.userId));
     if (!admin) return notFoundResponse("Admin");
     return successResponse(Admin.sanitizeAdmin(admin));
   } catch (error) {
@@ -24,6 +24,7 @@ export async function GET(request) {
 export async function PUT(request) {
   try {
     const payload = await requireAuth(request);
+    const adminId = toObjectId(payload.userId);
     const body = await request.json();
 
     const allowedFields = {};
@@ -39,12 +40,12 @@ export async function PUT(request) {
     delete update.role;
     delete update.isActive;
 
-    const coll = await Admin.getCollection();
-    const existing = await coll.findOne({ _id: payload.userId });
+    const existing = await Admin.findById(adminId);
     if (!existing) return notFoundResponse("Admin");
 
-    await coll.updateOne({ _id: payload.userId }, { $set: update });
-    const updated = await coll.findOne({ _id: payload.userId });
+    const coll = await Admin.getCollection();
+    await coll.updateOne({ _id: adminId }, { $set: update });
+    const updated = await Admin.findById(adminId);
     return successResponse(Admin.sanitizeAdmin(updated));
   } catch (error) {
     return handleAuthError(error);

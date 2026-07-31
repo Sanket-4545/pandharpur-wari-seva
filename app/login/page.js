@@ -3,7 +3,8 @@
 import React, { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
-import { Flame, Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
+import Image from 'next/image';
 
 function LoginForm() {
   const { t } = useLanguage();
@@ -54,8 +55,8 @@ function LoginForm() {
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow mx-auto mb-4">
-            <Flame className="w-8 h-8 fill-current" />
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow mx-auto mb-4 relative overflow-hidden">
+            <Image src="/images/logo.jpg" alt="NSS Seva Portal logo" fill sizes="64px" className="object-cover" priority />
           </div>
           <h1 className="font-heading text-2xl font-extrabold text-secondary dark:text-white">
             {t('login.title')}
