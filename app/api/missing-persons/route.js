@@ -10,17 +10,20 @@ import {
   sanitizeDocIds,
   requireRole,
   handleAuthError,
+  isAdminUser,
 } from "@/lib/api-helpers";
 
 export async function GET(request) {
   try {
+    const isAdmin = await isAdminUser(request);
+    const projection = isAdmin ? {} : { contactPhone: 0 };
     const { page, limit, skip, status, search, category } = parseQueryParams(request);
     const filter = {};
     if (status) filter.status = status;
     if (category) filter.category = category;
     if (search) filter.$text = { $search: search };
     const [items, total] = await Promise.all([
-      MissingPersons.getCollection().then(c => c.find(filter).sort({ dateReported: -1 }).skip(skip).limit(limit).toArray()),
+      MissingPersons.getCollection().then(c => c.find(filter, { projection }).sort({ dateReported: -1 }).skip(skip).limit(limit).toArray()),
       MissingPersons.getCollection().then(c => c.countDocuments(filter)),
     ]);
     return paginatedResponse(sanitizeDocIds(items), total, page, limit);

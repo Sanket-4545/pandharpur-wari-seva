@@ -10,15 +10,22 @@ import {
   sanitizeDocIds,
   requireRole,
   handleAuthError,
+  isAdminUser,
 } from "@/lib/api-helpers";
 
 export async function GET(request) {
   try {
+    const isAdmin = await isAdminUser(request);
     const { page, limit, skip, status, category } = parseQueryParams(request);
     const filter = {};
-    if (status) filter.status = status;
     if (category) filter.category = category;
-    const sort = status === "published"
+    if (isAdmin) {
+      if (status) filter.status = status;
+    } else {
+      filter.status = "published";
+    }
+    const isPublishedView = isAdmin ? status === "published" : true;
+    const sort = isPublishedView
       ? { publishDate: -1 }
       : { createdAt: -1 };
     const [items, total] = await Promise.all([

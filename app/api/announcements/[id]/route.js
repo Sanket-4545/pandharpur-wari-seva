@@ -6,12 +6,17 @@ import {
   sanitizeDocId,
   requireRole,
   handleAuthError,
+  isAdminUser,
 } from "@/lib/api-helpers";
 
 export async function GET(request, { params }) {
   try {
+    const isAdmin = await isAdminUser(request);
     const item = await Announcements.findByAnnouncementId(params.id);
     if (!item) return notFoundResponse("Announcement");
+    if (!isAdmin && item.status !== "published") {
+      return notFoundResponse("Announcement");
+    }
     return successResponse(sanitizeDocId(item));
   } catch (error) {
     return handleApiError(error);

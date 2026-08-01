@@ -62,7 +62,7 @@ export default function GalleryPage() {
           titleKey: item.titleKey,
         }));
         setImages(mappedItems);
-        setTotalPages(json.data.totalPages || 1);
+        setTotalPages(json.data?.pagination?.totalPages || 1);
       } else {
         setImages([]);
         setTotalPages(1);

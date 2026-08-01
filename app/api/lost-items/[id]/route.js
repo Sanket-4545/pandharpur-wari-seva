@@ -8,13 +8,17 @@ import {
   sanitizeDocId,
   requireRole,
   handleAuthError,
+  isAdminUser,
 } from "@/lib/api-helpers";
 
 export async function GET(request, { params }) {
   try {
+    const isAdmin = await isAdminUser(request);
     const item = await LostItems.findByItemId(params.id);
     if (!item) return notFoundResponse("Lost item");
-    return successResponse(sanitizeDocId(item));
+    if (isAdmin) return successResponse(sanitizeDocId(item));
+    const { contactInfo, ...publicItem } = item;
+    return successResponse(sanitizeDocId(publicItem));
   } catch (error) {
     return handleApiError(error);
   }

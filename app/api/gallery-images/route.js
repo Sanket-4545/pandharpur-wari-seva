@@ -19,9 +19,20 @@ export async function GET(request) {
     const category = searchParams.get("category");
     const filter = {};
     if (category && category !== "all") filter.category = category;
+
+    let isAdmin = false;
+    try {
+      await requireRole(request, ["super_admin", "admin", "coordinator"]);
+      isAdmin = true;
+    } catch {
+      // Anonymous visitors only see active images
+    }
+    if (!isAdmin) filter.isActive = true;
+
+    const coll = await GalleryImages.getCollection();
     const [items, total] = await Promise.all([
-      GalleryImages.getCollection().then(c => c.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray()),
-      GalleryImages.getCollection().then(c => c.countDocuments(filter)),
+      coll.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
+      coll.countDocuments(filter),
     ]);
     return paginatedResponse(sanitizeDocIds(items), total, page, limit);
   } catch (error) {

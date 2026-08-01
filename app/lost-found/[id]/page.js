@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import Container from '@/components/Container';
 import StatusBadge from '@/components/StatusBadge';
-import { ArrowLeft, MapPin, Calendar, Phone, AlertCircle, Tag, FileText, ShieldCheck, Share2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, AlertCircle, Tag, FileText, ShieldCheck, Share2 } from 'lucide-react';
 import Link from 'next/link';
 
 const CATEGORY_GRADIENTS = {
@@ -214,41 +214,6 @@ export default function LostItemDetailPage({ params }) {
                     </div>
                   </div>
                 )}
-              </div>
-
-              <div className="border-t border-slate-100 dark:border-gray-800 p-6 sm:p-8 bg-slate-50/50 dark:bg-gray-900/50">
-                <h3 className="font-heading text-lg font-extrabold text-charcoal dark:text-white mb-4">
-                  {t('lost_details_page.contact_title')}
-                </h3>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Phone className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-400 dark:text-gray-500 font-bold uppercase tracking-wider">
-                        {t('lost_details_page.contact_title')}
-                      </p>
-                      <p className="font-bold text-charcoal dark:text-white text-sm">
-                        {item.contactInfo || item.contact || 'N/A'}
-                      </p>
-                    </div>
-                  </div>
-                  {(item.contactInfo || item.contact) && (
-                    <div className="sm:ml-auto">
-                      <a
-                        href={`tel:${item.contactInfo || item.contact}`}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all"
-                      >
-                        <Phone className="w-4 h-4" />
-                        {t('missing_persons_page.btn_view_details') || 'Contact'}
-                      </a>
-                    </div>
-                  )}
-                </div>
-                <p className="text-xs text-slate-400 dark:text-gray-500 mt-4 leading-relaxed">
-                  {t('lost_details_page.contact_desc')}
-                </p>
               </div>
             </div>
 
