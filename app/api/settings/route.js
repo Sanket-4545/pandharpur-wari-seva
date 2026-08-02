@@ -10,7 +10,11 @@ import {
   sanitizeDocIds,
   requireRole,
   handleAuthError,
+  ValidationError,
 } from "@/lib/api-helpers";
+import { validateEnum } from "@/lib/models/helpers";
+
+const VALID_TYPES = ["string", "number", "boolean", "json"];
 
 export async function GET(request) {
   try {
@@ -45,6 +49,9 @@ export async function PATCH(request) {
     const body = await request.json();
     if (!body.key) {
       return errorResponse("key is required");
+    }
+    if (body.type !== undefined) {
+      validateEnum(body, "type", VALID_TYPES);
     }
     await Settings.upsert(body.key, body.value, body.type || "string", body.updatedBy || null);
     const updated = await Settings.findByKey(body.key);

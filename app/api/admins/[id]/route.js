@@ -33,7 +33,18 @@ export async function PUT(request, { params }) {
       return errorResponse("Password updates must use a dedicated password change endpoint", 400);
     }
 
-    const update = Admin.prepareForUpdate(body);
+    const allowedFields = {};
+    if (body.name !== undefined) allowedFields.name = body.name;
+    if (body.phone !== undefined) allowedFields.phone = body.phone;
+    if (body.about !== undefined) allowedFields.about = body.about;
+    if (body.role !== undefined) allowedFields.role = body.role;
+    if (body.isActive !== undefined) allowedFields.isActive = body.isActive;
+
+    if (Object.keys(allowedFields).length === 0) {
+      return errorResponse("No updatable fields provided", 400);
+    }
+
+    const update = Admin.prepareForUpdate(allowedFields);
     await coll.updateOne({ _id: adminId }, { $set: update });
     const updated = await Admin.findById(adminId);
     return successResponse(Admin.sanitizeAdmin(updated));

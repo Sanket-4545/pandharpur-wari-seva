@@ -44,7 +44,8 @@ function LoginForm() {
         return;
       }
       const redirect = searchParams.get('redirect') || '/admin';
-      router.push(redirect);
+      const safeRedirect = redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/admin';
+      router.push(safeRedirect);
     } catch {
       setError(t('login.error_network'));
       setLoading(false);

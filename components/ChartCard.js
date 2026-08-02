@@ -19,8 +19,9 @@ export default function ChartCard({ titleKey, type = "line", data }) {
     const padding = 20;
 
     // Map data points to SVG coordinates
+    const xStep = Math.max(labels.length - 1, 1);
     const points = values.map((val, idx) => {
-      const x = padding + (idx * (width - padding * 2)) / (labels.length - 1);
+      const x = padding + (idx * (width - padding * 2)) / xStep;
       const y = height - padding - (val * (height - padding * 2)) / maxVal;
       return { x, y, val, label: labels[idx] };
     });

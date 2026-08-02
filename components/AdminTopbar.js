@@ -23,9 +23,13 @@ export default function AdminTopbar({ toggleMobileOpen, isDarkMode, toggleDarkMo
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    alert("Simulating Logout action. Redirecting to home page...");
-    window.location.href = "/";
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // proceed with redirect even if logout call fails
+    }
+    window.location.href = "/login";
   };
 
   return (

@@ -10,12 +10,17 @@ import {
   sanitizeDocIds,
   requireRole,
   handleAuthError,
-  isAdminUser,
 } from "@/lib/api-helpers";
 
 export async function GET(request) {
   try {
-    const isAdmin = await isAdminUser(request);
+    let isAdmin = false;
+    try {
+      await requireRole(request, ["super_admin", "admin", "coordinator"]);
+      isAdmin = true;
+    } catch {
+      // Anonymous visitors only see published announcements
+    }
     const { page, limit, skip, status, category } = parseQueryParams(request);
     const filter = {};
     if (category) filter.category = category;

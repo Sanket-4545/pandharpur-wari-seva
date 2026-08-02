@@ -436,7 +436,10 @@ export default function AnnouncementsAdmin() {
                       {ann.category}
                     </span>
                     <span>
-                      {new Date(ann.publishDate).toLocaleDateString()}
+                      {(() => {
+                        const d = new Date(ann.publishDate);
+                        return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString();
+                      })()}
                     </span>
                   </div>
                 </div>

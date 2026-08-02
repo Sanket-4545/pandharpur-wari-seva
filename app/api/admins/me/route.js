@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { Admin } from "@/lib/models";
-import { toObjectId } from "@/lib/models/helpers";
+import { toObjectId, requiredField, sanitizeString, isValidPhoneWithCode } from "@/lib/models/helpers";
 import {
   successResponse,
   notFoundResponse,
@@ -28,9 +28,20 @@ export async function PUT(request) {
     const body = await request.json();
 
     const allowedFields = {};
-    if (body.name !== undefined) allowedFields.name = body.name;
-    if (body.phone !== undefined) allowedFields.phone = body.phone;
-    if (body.about !== undefined) allowedFields.about = body.about;
+    if (body.name !== undefined) {
+      const trimmedName = sanitizeString(body.name, 100);
+      requiredField(trimmedName, "name");
+      allowedFields.name = trimmedName;
+    }
+    if (body.phone !== undefined) {
+      if (body.phone !== "" && body.phone !== null && !isValidPhoneWithCode(String(body.phone))) {
+        return errorResponse("Phone must be a valid 10-15 digit number", 400);
+      }
+      allowedFields.phone = body.phone || null;
+    }
+    if (body.about !== undefined) {
+      allowedFields.about = body.about ? sanitizeString(body.about, 500) : null;
+    }
 
     if (Object.keys(allowedFields).length === 0) {
       return errorResponse("No updatable fields provided", 400);

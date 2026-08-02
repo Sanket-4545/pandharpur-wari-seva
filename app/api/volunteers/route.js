@@ -26,6 +26,12 @@ export async function POST(request) {
     }
 
     const body = await request.json();
+    if (body.email) {
+      const existing = await Volunteers.findByEmail(body.email);
+      if (existing) {
+        return errorResponse("A volunteer with this email already exists", 409);
+      }
+    }
     const result = await Volunteers.insertOne(body);
     const coll = await Volunteers.getCollection();
     const inserted = await coll.findOne({ _id: result.insertedId });

@@ -27,6 +27,13 @@ export async function PATCH(request, { params }) {
     const existing = await Volunteers.findById(params.id);
     if (!existing) return notFoundResponse("Volunteer");
 
+    if (body.email && body.email.toLowerCase() !== existing.email?.toLowerCase()) {
+      const dup = await Volunteers.findByEmail(body.email);
+      if (dup) {
+        return errorResponse("A volunteer with this email already exists", 409);
+      }
+    }
+
     const updateData = Volunteers.prepareForUpdate(body);
     const coll = await Volunteers.getCollection();
     await coll.updateOne(

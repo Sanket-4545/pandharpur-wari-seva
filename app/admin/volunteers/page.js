@@ -191,7 +191,7 @@ export default function VolunteersAdmin() {
     try {
       const payload = {
         ...form,
-        age: Number(form.age),
+        age: form.age === '' || form.age == null ? undefined : Number(form.age),
       };
 
       if (editingVolunteer) {

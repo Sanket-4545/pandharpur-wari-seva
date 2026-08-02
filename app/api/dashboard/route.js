@@ -1,7 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { getDb } from "@/lib/db";
-import { requireRole, handleAuthError, successResponse } from "@/lib/api-helpers";
+import { requireRole, handleAuthError, successResponse, errorResponse } from "@/lib/api-helpers";
+
+const VALID_RANGES = ["today", "week", "month", "year"];
+const PRIORITY_RANK = { high: 3, medium: 2, low: 1 };
 
 const STAT_CONFIGS = [
   { id: "volunteers", labelKey: "admin.dashboard.total_volunteers", iconName: "Users", colorClass: "bg-orange-50 text-primary border-orange-100 dark:bg-orange-950/20 dark:text-primary-light dark:border-primary-dark/20", positiveIsUp: true },
@@ -196,6 +199,9 @@ export async function GET(request) {
     await requireRole(request, ["super_admin", "admin", "coordinator"]);
     const { searchParams } = new URL(request.url);
     const range = searchParams.get("range") || "week";
+    if (!VALID_RANGES.includes(range)) {
+      return errorResponse("Invalid range. Allowed: today, week, month, year", 400);
+    }
     const db = await getDb();
     const { start, previousStart } = getDateRange(range);
 
@@ -354,10 +360,11 @@ export async function GET(request) {
     const alertsColl = db.collection("announcements");
     const alerts = await alertsColl
       .find({ status: "published" })
-      .sort({ priority: -1, createdAt: -1 })
+      .sort({ createdAt: -1 })
       .limit(5)
       .project({ title: 1, description: 1, priority: 1, createdAt: 1, category: 1 })
       .toArray();
+    alerts.sort((a, b) => (PRIORITY_RANK[b.priority] || 0) - (PRIORITY_RANK[a.priority] || 0));
 
     const formattedAlerts = alerts.map((a) => ({
       id: a._id.toString(),

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { Plus, Trash2, Tag, Upload, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, Tag, Upload, Image as ImageIcon, Pencil, Eye, EyeOff } from 'lucide-react';
 import Toast from '@/components/Toast';
 import ConfirmationDialog from '@/components/ConfirmationDialog';
 import LoadingButton from '@/components/LoadingButton';
@@ -23,6 +23,7 @@ export default function GalleryAdmin() {
   const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
 
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [editingImage, setEditingImage] = useState(null);
   const [form, setForm] = useState({ ...FORM_DEFAULTS });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,8 +66,44 @@ export default function GalleryAdmin() {
   };
 
   const openUploadModal = () => {
+    setEditingImage(null);
     setForm({ ...FORM_DEFAULTS });
     setUploadOpen(true);
+  };
+
+  const openEditModal = (img) => {
+    setEditingImage(img);
+    setForm({
+      imageUrl: img.imageUrl || '',
+      titleKey: img.titleKey || '',
+      category: img.category || 'wari',
+    });
+    setUploadOpen(true);
+  };
+
+  const handleToggleActive = async (img) => {
+    const nextActive = img.isActive !== false ? false : true;
+    try {
+      const res = await fetch(`/api/gallery-images/${img._id || img.imageId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl: img.imageUrl,
+          titleKey: img.titleKey,
+          category: img.category,
+          isActive: nextActive,
+        }),
+      });
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.error || 'Failed to update image');
+      }
+      const json = await res.json();
+      setImages(prev => prev.map(i => (i._id === json.data._id ? { ...i, isActive: nextActive } : i)));
+      showToast(nextActive ? 'Image activated' : 'Image deactivated');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
   };
 
   const handleUploadSubmit = async (e) => {
@@ -77,34 +114,54 @@ export default function GalleryAdmin() {
     }
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/gallery-images', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          imageUrl: form.imageUrl,
-          titleKey: form.titleKey,
-          category: form.category,
-          isActive: true,
-        }),
-      });
-      if (!res.ok) {
-        const json = await res.json();
-        throw new Error(json.error || 'Failed to upload gallery image');
-      }
-      const fetchRes = await fetch('/api/gallery-images?limit=100');
-      if (fetchRes.ok) {
-        const fetchJson = await fetchRes.json();
-        if (fetchJson.success && fetchJson.data?.items) {
-          const mapped = fetchJson.data.items.map(item => ({
-            ...item,
-            id: item.imageId,
-            src: item.imageUrl,
-          }));
-          setImages(mapped);
+      if (editingImage) {
+        const res = await fetch(`/api/gallery-images/${editingImage._id || editingImage.imageId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageUrl: form.imageUrl,
+            titleKey: form.titleKey,
+            category: form.category,
+            isActive: editingImage.isActive !== false,
+          }),
+        });
+        if (!res.ok) {
+          const json = await res.json();
+          throw new Error(json.error || 'Failed to update gallery image');
         }
+        const json = await res.json();
+        setImages(prev => prev.map(i => (i._id === json.data._id ? { ...i, ...json.data, id: json.data.imageId, src: json.data.imageUrl } : i)));
+        showToast('Gallery image updated successfully');
+      } else {
+        const res = await fetch('/api/gallery-images', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageUrl: form.imageUrl,
+            titleKey: form.titleKey,
+            category: form.category,
+            isActive: true,
+          }),
+        });
+        if (!res.ok) {
+          const json = await res.json();
+          throw new Error(json.error || 'Failed to upload gallery image');
+        }
+        const fetchRes = await fetch('/api/gallery-images?limit=100');
+        if (fetchRes.ok) {
+          const fetchJson = await fetchRes.json();
+          if (fetchJson.success && fetchJson.data?.items) {
+            const mapped = fetchJson.data.items.map(item => ({
+              ...item,
+              id: item.imageId,
+              src: item.imageUrl,
+            }));
+            setImages(mapped);
+          }
+        }
+        showToast(t("admin.gallery.create_success"));
       }
       setUploadOpen(false);
-      showToast(t("admin.gallery.create_success"));
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -224,7 +281,7 @@ export default function GalleryAdmin() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {images.map((img) => (
-            <div key={img._id || img.imageId} className="group bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 rounded-3xl overflow-hidden shadow-premium hover:shadow-premium-hover transition-all duration-300">
+            <div key={img._id || img.imageId} className={`group bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 rounded-3xl overflow-hidden shadow-premium hover:shadow-premium-hover transition-all duration-300 ${img.isActive === false ? 'opacity-60' : ''}`}>
               {/* Image */}
               <div className="w-full h-44 bg-slate-100 dark:bg-gray-850 flex items-center justify-center relative overflow-hidden">
                 {img.imageUrl ? (
@@ -245,27 +302,50 @@ export default function GalleryAdmin() {
                   <Tag className="w-3 h-3 text-primary" />
                   {img.category?.toUpperCase()}
                 </div>
+                {img.isActive === false && (
+                  <div className="absolute top-3 right-3 bg-red-500/90 text-white text-[9px] font-bold px-2 py-0.5 rounded-lg uppercase tracking-wider">
+                    Inactive
+                  </div>
+                )}
               </div>
 
               <div className="p-4 flex items-center justify-between gap-4 bg-slate-50/50 dark:bg-gray-900 border-t border-slate-100 dark:border-gray-850">
                 <span className="text-xs font-extrabold text-charcoal dark:text-white truncate">
                   {img.titleKey ? t(img.titleKey) : img.titleText || ''}
                 </span>
-                <button
-                  onClick={() => handleDeleteTrigger(img._id || img.imageId)}
-                  className="p-2 border border-slate-200 dark:border-gray-800 text-charcoal-light hover:text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20 hover:border-red-200/35 rounded-xl transition-all focus:outline-none shrink-0"
-                  aria-label="Delete image"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => openEditModal(img)}
+                    className="p-2 border border-slate-200 dark:border-gray-800 text-charcoal-light hover:text-primary hover:bg-slate-50 dark:hover:bg-gray-800 rounded-xl transition-all focus:outline-none"
+                    aria-label="Edit image"
+                    title="Edit"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleToggleActive(img)}
+                    className="p-2 border border-slate-200 dark:border-gray-800 text-charcoal-light hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20 rounded-xl transition-all focus:outline-none"
+                    aria-label={img.isActive === false ? 'Activate image' : 'Deactivate image'}
+                    title={img.isActive === false ? 'Activate' : 'Deactivate'}
+                  >
+                    {img.isActive === false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTrigger(img._id || img.imageId)}
+                    className="p-2 border border-slate-200 dark:border-gray-800 text-charcoal-light hover:text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20 hover:border-red-200/35 rounded-xl transition-all focus:outline-none"
+                    aria-label="Delete image"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Upload Modal Dialog */}
-      <Modal isOpen={uploadOpen} onClose={() => setUploadOpen(false)} title={t("admin.gallery.upload_title")}>
+      {/* Upload/Edit Modal Dialog */}
+      <Modal isOpen={uploadOpen} onClose={() => setUploadOpen(false)} title={editingImage ? 'Edit Gallery Image' : t("admin.gallery.upload_title")}>
         <form onSubmit={handleUploadSubmit} className="space-y-4 text-xs font-semibold">
           <div>
             <label className="block text-slate-400 dark:text-gray-500 mb-1.5 uppercase">
@@ -327,7 +407,7 @@ export default function GalleryAdmin() {
               className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-saffron-glow text-xs font-bold"
             >
               <Upload className="w-4 h-4 mr-1.5" />
-              {t("admin.gallery.upload_btn")}
+              {editingImage ? 'Save Changes' : t("admin.gallery.upload_btn")}
             </LoadingButton>
           </div>
         </form>

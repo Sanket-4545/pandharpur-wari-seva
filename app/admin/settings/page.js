@@ -174,7 +174,7 @@ export default function SettingsAdmin() {
                 <label className="block text-slate-400 dark:text-gray-500 mb-1.5 uppercase">
                   {t("admin.settings.logo")}
                 </label>
-                <div className="border-2 border-dashed border-slate-200 dark:border-gray-800 rounded-2xl p-6.5 flex flex-col items-center justify-center text-slate-450 hover:bg-slate-50/50 dark:hover:bg-gray-850/10 cursor-pointer transition-colors">
+                <div className="border-2 border-dashed border-slate-200 dark:border-gray-800 rounded-2xl p-6.5 flex flex-col items-center justify-center text-slate-450">
                   <Upload className="w-8 h-8 text-slate-350 dark:text-gray-600 mb-2" />
                   <span className="text-[10px] font-bold text-charcoal dark:text-gray-300">Choose custom logo image file</span>
                   <span className="text-[9px] text-slate-400 dark:text-gray-505 mt-1">{t("admin.settings.logo_desc")}</span>

@@ -74,7 +74,7 @@ export async function middleware(request) {
   // Mixed public/admin API routes
   if (matchesAnyPrefix(pathname, MIXED_API_PREFIXES)) {
     // Volunteers: only POST (registration) is public, everything requires auth
-    if (pathname === "/api/volunteers" || pathname.startsWith("/api/volunteers/")) {
+    if (pathname === "/api/volunteers") {
       if (method === "POST") {
         return NextResponse.next();
       }
