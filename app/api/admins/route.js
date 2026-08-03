@@ -1,4 +1,5 @@
 import { Admin } from "@/lib/models";
+import { validatePassword } from "@/lib/models/helpers";
 import {
   successResponse,
   createdResponse,
@@ -28,6 +29,9 @@ export async function POST(request) {
   try {
     await requireRole(request, ["super_admin"]);
     const body = await request.json();
+    if (body.passwordHash) {
+      validatePassword(body.passwordHash);
+    }
     const existing = await Admin.findByEmail(body.email);
     if (existing) {
       return errorResponse("An admin with this email already exists", 409);

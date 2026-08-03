@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { Admin } from "@/lib/models";
-import { toObjectId, requiredField, sanitizeString, isValidPhoneWithCode } from "@/lib/models/helpers";
+import { requireObjectId, requiredField, sanitizeString, isValidPhoneWithCode } from "@/lib/models/helpers";
 import {
   successResponse,
   notFoundResponse,
@@ -13,7 +13,7 @@ import {
 export async function GET(request) {
   try {
     const payload = await requireAuth(request);
-    const admin = await Admin.findById(toObjectId(payload.userId));
+    const admin = await Admin.findById(requireObjectId(payload.userId));
     if (!admin) return notFoundResponse("Admin");
     return successResponse(Admin.sanitizeAdmin(admin));
   } catch (error) {
@@ -24,7 +24,7 @@ export async function GET(request) {
 export async function PUT(request) {
   try {
     const payload = await requireAuth(request);
-    const adminId = toObjectId(payload.userId);
+    const adminId = requireObjectId(payload.userId);
     const body = await request.json();
 
     const allowedFields = {};

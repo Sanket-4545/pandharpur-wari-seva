@@ -1,5 +1,5 @@
 import { Admin } from "@/lib/models";
-import { toObjectId } from "@/lib/models/helpers";
+import { requireObjectId, validatePassword } from "@/lib/models/helpers";
 import { hashPassword, comparePassword } from "@/lib/password";
 import {
   successResponse,
@@ -12,16 +12,14 @@ import {
 export async function POST(request) {
   try {
     const payload = await requireAuth(request);
-    const adminId = toObjectId(payload.userId);
+    const adminId = requireObjectId(payload.userId);
     const { currentPassword, newPassword } = await request.json();
 
     if (!currentPassword || !newPassword) {
       return errorResponse("currentPassword and newPassword are required", 400);
     }
 
-    if (newPassword.length < 8) {
-      return errorResponse("New password must be at least 8 characters", 400);
-    }
+    validatePassword(newPassword);
 
     const admin = await Admin.findById(adminId);
     if (!admin) return notFoundResponse("Admin");

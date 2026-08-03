@@ -1,5 +1,5 @@
 import { Admin } from "@/lib/models";
-import { toObjectId } from "@/lib/models/helpers";
+import { requireObjectId } from "@/lib/models/helpers";
 import {
   successResponse,
   notFoundResponse,
@@ -12,7 +12,7 @@ import {
 export async function GET(request, { params }) {
   try {
     await requireRole(request, ["super_admin", "admin"]);
-    const item = await Admin.findById(toObjectId(params.id));
+    const item = await Admin.findById(requireObjectId(params.id));
     if (!item) return notFoundResponse("Admin");
     return successResponse(Admin.sanitizeAdmin(item));
   } catch (error) {
@@ -23,7 +23,7 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await requireRole(request, ["super_admin"]);
-    const adminId = toObjectId(params.id);
+    const adminId = requireObjectId(params.id);
     const body = await request.json();
     const coll = await Admin.getCollection();
     const existing = await Admin.findById(adminId);
@@ -57,7 +57,7 @@ export async function DELETE(request, { params }) {
   try {
     await requireRole(request, ["super_admin"]);
     const coll = await Admin.getCollection();
-    const result = await coll.deleteOne({ _id: toObjectId(params.id) });
+    const result = await coll.deleteOne({ _id: requireObjectId(params.id) });
     if (result.deletedCount === 0) return notFoundResponse("Admin");
     return successResponse({ deleted: true });
   } catch (error) {

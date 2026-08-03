@@ -1,5 +1,5 @@
 import { GalleryImages } from "@/lib/models";
-import { toObjectId } from "@/lib/models/helpers";
+import { requireObjectId } from "@/lib/models/helpers";
 import {
   successResponse,
   notFoundResponse,
@@ -13,7 +13,7 @@ export async function GET(request, { params }) {
   try {
     await requireRole(request, ["super_admin", "admin", "coordinator"]);
     const coll = await GalleryImages.getCollection();
-    const item = await coll.findOne({ _id: toObjectId(params.id) });
+    const item = await coll.findOne({ _id: requireObjectId(params.id) });
     if (!item) return notFoundResponse("Gallery image");
     return successResponse(sanitizeDocId(item));
   } catch (error) {
@@ -26,11 +26,11 @@ export async function PUT(request, { params }) {
     await requireRole(request, ["super_admin", "admin"]);
     const body = await request.json();
     const coll = await GalleryImages.getCollection();
-    const existing = await coll.findOne({ _id: toObjectId(params.id) });
+    const existing = await coll.findOne({ _id: requireObjectId(params.id) });
     if (!existing) return notFoundResponse("Gallery image");
     const update = GalleryImages.prepareForUpdate(body);
-    await coll.updateOne({ _id: toObjectId(params.id) }, { $set: update });
-    const updated = await coll.findOne({ _id: toObjectId(params.id) });
+    await coll.updateOne({ _id: requireObjectId(params.id) }, { $set: update });
+    const updated = await coll.findOne({ _id: requireObjectId(params.id) });
     return successResponse(sanitizeDocId(updated));
   } catch (error) {
     return handleAuthError(error);
@@ -41,7 +41,7 @@ export async function DELETE(request, { params }) {
   try {
     await requireRole(request, ["super_admin", "admin"]);
     const coll = await GalleryImages.getCollection();
-    const result = await coll.deleteOne({ _id: toObjectId(params.id) });
+    const result = await coll.deleteOne({ _id: requireObjectId(params.id) });
     if (result.deletedCount === 0) return notFoundResponse("Gallery image");
     return successResponse({ deleted: true });
   } catch (error) {

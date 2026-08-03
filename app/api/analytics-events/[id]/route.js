@@ -1,5 +1,5 @@
 import { AnalyticsEvents } from "@/lib/models";
-import { toObjectId } from "@/lib/models/helpers";
+import { requireObjectId } from "@/lib/models/helpers";
 import {
   successResponse,
   notFoundResponse,
@@ -13,7 +13,7 @@ export async function GET(request, { params }) {
   try {
     await requireRole(request, ["super_admin", "admin", "coordinator"]);
     const coll = await AnalyticsEvents.getCollection();
-    const item = await coll.findOne({ _id: toObjectId(params.id) });
+    const item = await coll.findOne({ _id: requireObjectId(params.id) });
     if (!item) return notFoundResponse("Analytics event");
     return successResponse(sanitizeDocId(item));
   } catch (error) {

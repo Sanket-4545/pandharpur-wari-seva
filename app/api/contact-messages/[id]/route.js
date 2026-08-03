@@ -1,5 +1,5 @@
 import { ContactMessages } from "@/lib/models";
-import { toObjectId } from "@/lib/models/helpers";
+import { requireObjectId } from "@/lib/models/helpers";
 import {
   successResponse,
   notFoundResponse,
@@ -13,7 +13,7 @@ export async function GET(request, { params }) {
   try {
     await requireRole(request, ["super_admin", "admin", "coordinator"]);
     const coll = await ContactMessages.getCollection();
-    const item = await coll.findOne({ _id: toObjectId(params.id) });
+    const item = await coll.findOne({ _id: requireObjectId(params.id) });
     if (!item) return notFoundResponse("Contact message");
     return successResponse(sanitizeDocId(item));
   } catch (error) {
@@ -26,7 +26,7 @@ export async function PATCH(request, { params }) {
     await requireRole(request, ["super_admin", "admin"]);
     const body = await request.json();
     const coll = await ContactMessages.getCollection();
-    const existing = await coll.findOne({ _id: toObjectId(params.id) });
+    const existing = await coll.findOne({ _id: requireObjectId(params.id) });
     if (!existing) return notFoundResponse("Contact message");
 
     const update = { updatedAt: new Date() };
@@ -34,8 +34,8 @@ export async function PATCH(request, { params }) {
       update.isRead = body.isRead;
       if (body.isRead) update.readAt = new Date();
     }
-    await coll.updateOne({ _id: toObjectId(params.id) }, { $set: update });
-    const updated = await coll.findOne({ _id: toObjectId(params.id) });
+    await coll.updateOne({ _id: requireObjectId(params.id) }, { $set: update });
+    const updated = await coll.findOne({ _id: requireObjectId(params.id) });
     return successResponse(sanitizeDocId(updated));
   } catch (error) {
     return handleAuthError(error);
@@ -46,7 +46,7 @@ export async function DELETE(request, { params }) {
   try {
     await requireRole(request, ["super_admin", "admin"]);
     const coll = await ContactMessages.getCollection();
-    const result = await coll.deleteOne({ _id: toObjectId(params.id) });
+    const result = await coll.deleteOne({ _id: requireObjectId(params.id) });
     if (result.deletedCount === 0) return notFoundResponse("Contact message");
     return successResponse({ deleted: true });
   } catch (error) {
