@@ -3,6 +3,7 @@
 import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import Container from './Container';
+import Link from 'next/link';
 
 export default function HeroBanner({ titleKey, subtitleKey, bgImage }) {
   const { t } = useLanguage();
@@ -27,7 +28,7 @@ export default function HeroBanner({ titleKey, subtitleKey, bgImage }) {
       <Container className="relative z-10 text-center flex flex-col items-center">
         {/* Breadcrumb / Category indicator */}
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-slate-800 bg-slate-900/50 backdrop-blur-md text-slate-400 text-xs font-semibold mb-6">
-          <a href="/" className="hover:text-primary transition-colors">{t('nav.home')}</a>
+          <Link href="/" className="hover:text-primary transition-colors">{t('nav.home')}</Link>
           <span>/</span>
           <span className="text-primary font-bold">{t(titleKey)}</span>
         </div>

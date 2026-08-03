@@ -52,7 +52,7 @@ export default function PersonCard({ person }) {
           </div>
 
           <div className="w-16 h-16 rounded-full bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-xl font-heading font-extrabold select-none">
-            {person.name.split(' ').map(n => n[0]).join('')}
+            {person.name ? person.name.split(' ').map(n => n[0]).join('') : '?'}
           </div>
 
           <div className="absolute bottom-4 left-4 text-white">
@@ -64,13 +64,13 @@ export default function PersonCard({ person }) {
 
         <div className="p-5.5 text-left">
           <h3 className="font-heading text-lg font-extrabold text-charcoal dark:text-white tracking-tight group-hover:text-primary transition-colors duration-250">
-            {person.name}
+            {person.name || 'Unknown'}
           </h3>
 
           <div className="flex gap-4.5 mt-2.5 text-xs font-bold text-slate-400 dark:text-gray-500">
-            <span>{person.age} {t('missing_persons_page.age_years')}</span>
-            <span>&bull;</span>
-            <span>{t(`missing_persons_page.filter_${person.gender.toLowerCase()}`)}</span>
+            {person.age != null && <span>{person.age} {t('missing_persons_page.age_years')}</span>}
+            {person.age != null && person.gender && <span>&bull;</span>}
+            <span>{person.gender ? t(`missing_persons_page.filter_${person.gender.toLowerCase()}`) : ''}</span>
           </div>
 
           <div className="mt-5 space-y-2.5 border-t border-slate-50 dark:border-gray-800 pt-4 text-xs font-semibold text-charcoal-light dark:text-gray-400">

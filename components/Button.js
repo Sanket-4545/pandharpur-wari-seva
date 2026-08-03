@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 export default function Button({ 
   children, 
@@ -30,6 +31,13 @@ export default function Button({
   const combinedStyles = `${baseStyles} ${currentVariant} ${currentSize} ${className}`;
 
   if (href) {
+    if (href.startsWith('/')) {
+      return (
+        <Link href={href} className={combinedStyles} {...props}>
+          {children}
+        </Link>
+      );
+    }
     return (
       <a href={href} className={combinedStyles} {...props}>
         {children}

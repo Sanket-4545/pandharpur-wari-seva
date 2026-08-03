@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
 import AdminTopbar from '@/components/AdminTopbar';
+import { AdminAuthProvider } from '@/context/AdminAuthContext';
 
 export default function AdminLayout({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -24,34 +25,36 @@ export default function AdminLayout({ children }) {
   };
 
   return (
-    <div className={darkMode ? "dark" : ""}>
-      <div className="flex min-h-screen bg-slate-50 dark:bg-gray-950 font-sans text-charcoal dark:text-gray-100 transition-colors duration-300">
-        
-        {/* Responsive Sidebar */}
-        <AdminSidebar 
-          isCollapsed={sidebarCollapsed} 
-          toggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-          isMobileOpen={mobileSidebarOpen}
-          closeMobileDrawer={() => setMobileSidebarOpen(false)}
-        />
-
-        {/* Outer content container */}
-        <div className="flex flex-col flex-grow min-h-screen min-w-0">
+    <AdminAuthProvider>
+      <div className={darkMode ? "dark" : ""}>
+        <div className="flex min-h-screen bg-slate-50 dark:bg-gray-950 font-sans text-charcoal dark:text-gray-100 transition-colors duration-300">
           
-          {/* Topbar navigation */}
-          <AdminTopbar 
-            toggleMobileOpen={() => setMobileSidebarOpen(!mobileSidebarOpen)} 
-            isDarkMode={darkMode}
-            toggleDarkMode={toggleDarkMode}
+          {/* Responsive Sidebar */}
+          <AdminSidebar 
+            isCollapsed={sidebarCollapsed} 
+            toggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+            isMobileOpen={mobileSidebarOpen}
+            closeMobileDrawer={() => setMobileSidebarOpen(false)}
           />
 
-          {/* Core Content Area */}
-          <main className="flex-grow p-4 sm:p-6.5 max-w-7xl w-full mx-auto animate-in fade-in duration-300">
-            {children}
-          </main>
+          {/* Outer content container */}
+          <div className="flex flex-col flex-grow min-h-screen min-w-0">
+            
+            {/* Topbar navigation */}
+            <AdminTopbar 
+              toggleMobileOpen={() => setMobileSidebarOpen(!mobileSidebarOpen)} 
+              isDarkMode={darkMode}
+              toggleDarkMode={toggleDarkMode}
+            />
 
+            {/* Core Content Area */}
+            <main className="flex-grow p-4 sm:p-6.5 max-w-7xl w-full mx-auto animate-in fade-in duration-300">
+              {children}
+            </main>
+
+          </div>
         </div>
       </div>
-    </div>
+    </AdminAuthProvider>
   );
 }

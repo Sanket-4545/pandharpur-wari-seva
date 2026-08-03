@@ -235,14 +235,14 @@ export default function LostItemDetailPage({ params }) {
                     }).catch(() => {});
                   } else {
                     navigator.clipboard.writeText(window.location.href)
-                      .then(() => alert(t('missing_details_page.copied_link') || 'Link copied to clipboard!'))
+                      .then(() => alert(t('lost_details_page.copied_link') || 'Link copied to clipboard!'))
                       .catch(() => {});
                   }
                 }}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs font-bold transition-all"
               >
                 <Share2 className="w-4 h-4" />
-                {t('missing_details_page.btn_share')}
+                {t('lost_details_page.btn_share')}
               </button>
             </div>
           </div>

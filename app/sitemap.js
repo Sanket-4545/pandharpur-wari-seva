@@ -1,5 +1,5 @@
 export default function sitemap() {
-  const baseUrl = 'https://wari-nss-seva-portal.vercel.app';
+  const baseUrl = 'https://wariseva.vercel.app';
   const routes = [
     '', '/about', '/services', '/emergency-contacts', '/gallery', '/faq', '/contact',
     '/register', '/missing-persons', '/lost-found',

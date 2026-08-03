@@ -6,6 +6,7 @@ import Container from './Container';
 import Button from './Button';
 import StatisticCard from './StatisticCard';
 import { ChevronDown, Users, HeartPulse, UserCheck, ShieldAlert } from 'lucide-react';
+import Link from 'next/link';
 
 const FALLBACK_STATS = [
   { icon: Users, count: "500+", labelKey: "stats.volunteers", color: "text-primary" },
@@ -122,9 +123,9 @@ export default function Hero() {
       </div>
 
       <div className="hidden md:flex justify-center items-center mt-4 animate-bounce text-slate-500 hover:text-primary transition-colors duration-200">
-        <a href="/about" aria-label="Scroll down to details">
+        <Link href="/about" aria-label="Scroll down to details">
           <ChevronDown className="w-6 h-6" />
-        </a>
+        </Link>
       </div>
     </section>
   );

@@ -3,6 +3,7 @@ import { LanguageProvider } from '@/context/LanguageContext';
 import ClientLayout from '@/components/ClientLayout';
 
 export const metadata = {
+ metadataBase: new URL("https://wariseva.vercel.app"),
   title: {
     default: 'Pandharpur Wari NSS Seva Portal',
     template: '%s | Pandharpur Wari NSS Seva Portal',
@@ -16,6 +17,7 @@ export const metadata = {
     type: 'website',
     locale: 'en_IN',
     siteName: 'Pandharpur Wari NSS Seva Portal',
+    url: '/',
   },
   robots: {
     index: true,

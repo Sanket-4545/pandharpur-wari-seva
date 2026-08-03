@@ -1,6 +1,7 @@
 "use client";
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Error({ error, reset }) {
   return (
@@ -21,12 +22,12 @@ export default function Error({ error, reset }) {
         >
           Try Again
         </button>
-        <a
+        <Link
           href="/"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl border border-slate-200 dark:border-gray-700 text-charcoal-light dark:text-gray-300 font-bold text-sm hover:bg-slate-50 dark:hover:bg-gray-800 transition-all focus:outline-none"
         >
           Back to Home
-        </a>
+        </Link>
       </div>
     </div>
   );

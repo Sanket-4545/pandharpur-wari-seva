@@ -136,10 +136,10 @@ export default function MissingPersonDetailPage({ params }) {
 
         <Container className="relative z-10 text-center">
           <div className="w-20 h-20 mx-auto rounded-full bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-3xl font-heading font-extrabold select-none mb-4">
-            {person.name.split(' ').map(n => n[0]).join('')}
+            {person.name ? person.name.split(' ').map(n => n[0]).join('') : '?'}
           </div>
           <h1 className="font-heading text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            {person.name}
+            {person.name || 'Unknown'}
           </h1>
           <div className="flex items-center justify-center gap-3 mt-3">
             <span className="px-3 py-1 rounded-lg bg-white/15 backdrop-blur-sm text-white text-xs font-bold">

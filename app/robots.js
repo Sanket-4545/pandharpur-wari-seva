@@ -4,6 +4,6 @@ export default function robots() {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: 'https://wari-nss-seva-portal.vercel.app/sitemap.xml',
+    sitemap: 'https://wariseva.vercel.app/sitemap.xml',
   };
 }

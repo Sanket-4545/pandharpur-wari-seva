@@ -312,7 +312,9 @@
     "btn_claim_now": "File Claim Request",
     "claim_dialog_title": "Submit Claim Request",
     "claim_success": "Claim request submitted! Please present ID card #",
-    "btn_back": "Back to Directory"
+    "btn_back": "Back to Directory",
+    "btn_share": "Share Item",
+    "copied_link": "Link copied to clipboard!"
   },
   "register_page": {
     "title": "Volunteer Registration Desk",
@@ -656,6 +658,14 @@
       "toast_profile": "Profile data updated successfully!",
       "toast_pwd": "Password updated successfully!"
     }
+  },
+  "not_found": {
+    "title": "Page Not Found",
+    "desc": "The page you are looking for does not exist or has been moved."
+  },
+  "common": {
+    "try_refresh": "Please try refreshing the page.",
+    "retry": "Retry"
   },
   "login": {
     "title": "Admin Login",
