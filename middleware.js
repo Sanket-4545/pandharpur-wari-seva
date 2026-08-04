@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyToken, COOKIE_NAME } from "./lib/auth";
+import { verifyVolunteerToken, VOLUNTEER_COOKIE_NAME } from "./lib/volunteer-auth";
 
 const ADMIN_ONLY_API_PREFIXES = [
   "/api/admins",
@@ -45,8 +46,24 @@ export async function middleware(request) {
 
   const isAuthenticated = !!payload;
 
+  const volSessionCookie = request.cookies.get(VOLUNTEER_COOKIE_NAME);
+  const volToken = volSessionCookie?.value;
+  const volPayload = volToken ? await verifyVolunteerToken(volToken) : null;
+
+  const isVolunteerAuthenticated = !!volPayload;
+
   // Public auth endpoints — always allow
   if (pathname.startsWith("/api/auth/")) {
+    return NextResponse.next();
+  }
+
+  // Volunteer page routes — require volunteer auth, redirect to volunteer login
+  if (pathname.startsWith("/volunteer")) {
+    if (!isVolunteerAuthenticated) {
+      const loginUrl = new URL("/volunteer/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
     return NextResponse.next();
   }
 
@@ -56,6 +73,17 @@ export async function middleware(request) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
+    }
+    return NextResponse.next();
+  }
+
+  // Volunteer self-service API — require volunteer auth
+  if (pathname === "/api/volunteer/me") {
+    if (!isVolunteerAuthenticated) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
     }
     return NextResponse.next();
   }
@@ -114,6 +142,7 @@ export async function middleware(request) {
 export const config = {
   matcher: [
     "/admin/:path*",
+    "/volunteer/:path*",
     "/api/:path*",
   ],
 };
