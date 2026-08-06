@@ -95,6 +95,17 @@ export async function middleware(request) {
     return NextResponse.next();
   }
 
+  // Volunteer API routes — require volunteer auth
+  if (pathname.startsWith("/api/volunteer/lost-items") || pathname.startsWith("/api/volunteer/missing-persons")) {
+    if (!isVolunteerAuthenticated) {
+      return NextResponse.json(
+        { success: false, error: "Volunteer authentication required" },
+        { status: 401 }
+      );
+    }
+    return NextResponse.next();
+  }
+
   // Admin-only API routes — require auth
   if (matchesAnyPrefix(pathname, ADMIN_ONLY_API_PREFIXES)) {
     if (!isAuthenticated) {

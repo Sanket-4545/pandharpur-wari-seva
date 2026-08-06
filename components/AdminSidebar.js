@@ -29,7 +29,7 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isMobileOpen
   const menuItems = [
     { href: "/admin", labelKey: "admin.sidebar.dashboard", icon: LayoutDashboard },
     { href: "/admin/missing-persons", labelKey: "admin.sidebar.missing_persons", icon: UserX },
-    { href: "/admin/lost-found", labelKey: "admin.sidebar.lost_found", icon: Package },
+    { href: "/admin/lost-items", labelKey: "admin.sidebar.lost_items", icon: Package },
     { href: "/admin/volunteers", labelKey: "admin.sidebar.volunteers", icon: Users },
     { href: "/admin/emergency-contacts", labelKey: "admin.sidebar.emergency_contacts", icon: Phone },
     { href: "/admin/gallery", labelKey: "admin.sidebar.gallery", icon: ImageIcon },

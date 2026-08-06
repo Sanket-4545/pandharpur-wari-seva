@@ -9,14 +9,18 @@ export default function StatusBadge({ status }) {
   const statusStyles = {
     // Missing Persons
     missing: "bg-red-50 text-red-650 border-red-200/60 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/30",
-    // Lost & Found
+    // Lost & Found (legacy)
     lost: "bg-amber-50 text-amber-650 border-amber-200/60 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30",
     found: "bg-emerald-50 text-emerald-650 border-emerald-250/60 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30",
     claimed: "bg-blue-50 text-blue-650 border-blue-200/60 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/30",
+    // Volunteer Lost Items (new workflow)
+    waiting: "bg-amber-50 text-amber-650 border-amber-200/60 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30",
+    verified: "bg-blue-50 text-blue-650 border-blue-200/60 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/30",
+    returned: "bg-emerald-50 text-emerald-650 border-emerald-250/60 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30",
     // Volunteers
-    approved: "bg-emerald-50 text-emerald-650 border-emerald-200/60 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30",
-    pending: "bg-amber-50 text-amber-650 border-amber-200/60 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30",
-    rejected: "bg-red-50 text-red-650 border-red-200/60 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/30",
+    approved: "bg-emerald-50 text-emerald-650 border-emerald-200/60 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/20",
+    pending: "bg-amber-50 text-amber-650 border-amber-200/60 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/20",
+    rejected: "bg-red-50 text-red-650 border-red-200/60 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/20",
     inactive: "bg-slate-50 text-slate-600 border-slate-200/60 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700",
   };
 
@@ -25,6 +29,9 @@ export default function StatusBadge({ status }) {
     lost:     "lost_found_page.status_lost",
     found:    "missing_persons_page.status_found",
     claimed:  "lost_found_page.status_claimed",
+    waiting:  "volunteer_lost_items.status_waiting",
+    verified: "admin.lost_items.status_verified",
+    returned: "volunteer_lost_items.status_returned",
     approved: "admin.volunteers.status_approved",
     pending:  "admin.volunteers.status_pending",
     rejected: "admin.volunteers.status_rejected",

@@ -51,8 +51,8 @@ function VolunteerLoginForm() {
         setLoading(false);
         return;
       }
-      const redirect = searchParams.get('redirect') || '/';
-      const safeRedirect = redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/';
+      const redirect = searchParams.get('redirect') || '/volunteer/dashboard';
+      const safeRedirect = redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/volunteer/dashboard';
       router.push(safeRedirect);
     } catch {
       setError(t('volunteer_login.error_network'));
