@@ -17,6 +17,7 @@ export default function StatusBadge({ status }) {
     approved: "bg-emerald-50 text-emerald-650 border-emerald-200/60 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30",
     pending: "bg-amber-50 text-amber-650 border-amber-200/60 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30",
     rejected: "bg-red-50 text-red-650 border-red-200/60 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/30",
+    inactive: "bg-slate-50 text-slate-600 border-slate-200/60 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700",
   };
 
   const statusKeyMap = {
@@ -27,6 +28,7 @@ export default function StatusBadge({ status }) {
     approved: "admin.volunteers.status_approved",
     pending:  "admin.volunteers.status_pending",
     rejected: "admin.volunteers.status_rejected",
+    inactive: "admin.volunteers.status_inactive",
   };
 
   const normStatus = (status || "").toLowerCase();
@@ -35,7 +37,7 @@ export default function StatusBadge({ status }) {
   const label = labelKey ? t(labelKey) : (status || "Unknown");
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-lg border shadow-sm ${styles}`}>
+    <span className={`inline-flex items-center px-2.5 py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-full border shadow-sm ${styles}`}>
       {label}
     </span>
   );

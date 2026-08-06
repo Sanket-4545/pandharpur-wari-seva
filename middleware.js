@@ -59,6 +59,13 @@ export async function middleware(request) {
 
   // Volunteer page routes — require volunteer auth, redirect to volunteer login
   if (pathname.startsWith("/volunteer")) {
+    // Allow /volunteer/login without auth to prevent redirect loop
+    if (pathname === "/volunteer/login" || pathname === "/volunteer/login/") {
+      if (isVolunteerAuthenticated) {
+        return NextResponse.next();
+      }
+      return NextResponse.next();
+    }
     if (!isVolunteerAuthenticated) {
       const loginUrl = new URL("/volunteer/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
