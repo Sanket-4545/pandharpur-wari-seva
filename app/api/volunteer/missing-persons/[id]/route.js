@@ -11,9 +11,10 @@ import {
 
 export async function GET(request, { params }) {
   try {
-    await requireVolunteerAuth(request);
+    const volunteer = await requireVolunteerAuth(request);
     const person = await MissingPersons.findByCaseId(params.id);
     if (!person) return notFoundResponse("Missing person");
+    if (person.volunteerId !== volunteer.volunteerId) return notFoundResponse("Missing person");
     return successResponse(sanitizeDocId(person));
   } catch (error) {
     return handleAuthError(error);
@@ -25,6 +26,7 @@ export async function PATCH(request, { params }) {
     const volunteer = await requireVolunteerAuth(request);
     const existing = await MissingPersons.findByCaseId(params.id);
     if (!existing) return notFoundResponse("Missing person");
+    if (existing.volunteerId !== volunteer.volunteerId) return notFoundResponse("Missing person");
     const body = await request.json();
     const coll = await MissingPersons.getCollection();
     const update = { ...body, updatedAt: new Date() };

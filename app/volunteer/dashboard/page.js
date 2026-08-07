@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import Container from '@/components/Container';
+import LoadingButton from '@/components/LoadingButton';
 import { Package, Plus, ArrowRight, LogOut, User, UserX } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -27,6 +28,8 @@ export default function VolunteerDashboardPage() {
   const [recentMissingPersons, setRecentMissingPersons] = useState([]);
   const [missingPersonStats, setMissingPersonStats] = useState({ total: 0, missing: 0, found: 0 });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     async function fetchDashboard() {
@@ -95,6 +98,7 @@ export default function VolunteerDashboardPage() {
         }
       } catch (err) {
         console.error('Dashboard fetch error:', err);
+        setError(err.message || 'Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
@@ -103,6 +107,7 @@ export default function VolunteerDashboardPage() {
   }, []);
 
   const handleLogout = async () => {
+    setLoggingOut(true);
     try {
       await fetch('/api/auth/volunteer/logout', { method: 'POST' });
       router.push('/volunteer/login');
@@ -194,7 +199,7 @@ export default function VolunteerDashboardPage() {
                   {t('volunteer_dashboard.add_lost_item')}
                 </h3>
                 <p className="text-sm text-charcoal-light dark:text-gray-400 mt-2 leading-relaxed">
-                  Report a new lost item found during the pilgrimage.
+                  {t('volunteer_dashboard.add_lost_item_desc')}
                 </p>
                 <div className="flex items-center gap-2 mt-4 text-xs font-bold text-primary group-hover:text-primary-dark transition-colors">
                   <span>{t('volunteer_lost_items.btn_add_new')}</span>
@@ -202,21 +207,38 @@ export default function VolunteerDashboardPage() {
                 </div>
               </Link>
 
-              <button
+              <LoadingButton
                 onClick={handleLogout}
+                loading={loggingOut}
+                variant="danger"
                 className="group bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 p-6 shadow-premium hover:shadow-premium-hover transition-all duration-300 hover:-translate-y-1 text-left"
               >
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
                   <LogOut className="w-6 h-6" />
                 </div>
                 <h3 className="font-heading text-lg font-extrabold text-charcoal dark:text-white">
-                  Logout
+                  {t('volunteer_dashboard.logout')}
                 </h3>
                 <p className="text-sm text-charcoal-light dark:text-gray-400 mt-2 leading-relaxed">
-                  Sign out from your volunteer account.
+                  {t('volunteer_dashboard.logout_desc')}
                 </p>
-              </button>
+              </LoadingButton>
             </div>
+
+            {error && (
+              <div className="text-center py-12 bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 mb-8">
+                <p className="text-red-500 dark:text-red-400 font-semibold">{error}</p>
+                <p className="text-sm text-charcoal-light dark:text-gray-400 mt-2">
+                  {t('common.try_refresh')}
+                </p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-4 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all"
+                >
+                  {t('common.retry')}
+                </button>
+              </div>
+            )}
 
             <h2 className="font-heading text-xl font-extrabold text-charcoal dark:text-white mb-6">
               {t('volunteer_dashboard.recent_items')}
@@ -240,7 +262,7 @@ export default function VolunteerDashboardPage() {
               <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 p-8 text-center">
                 <Package className="w-10 h-10 text-slate-300 dark:text-gray-600 mx-auto mb-3" />
                 <p className="text-sm text-charcoal-light dark:text-gray-400">
-                  No lost items reported yet. Start by adding your first item.
+                  {t('volunteer_dashboard.no_lost_items')}
                 </p>
               </div>
             ) : (
@@ -297,7 +319,7 @@ export default function VolunteerDashboardPage() {
               <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 p-8 text-center">
                 <UserX className="w-10 h-10 text-slate-300 dark:text-gray-600 mx-auto mb-3" />
                 <p className="text-sm text-charcoal-light dark:text-gray-400">
-                  No missing person reports yet.
+                  {t('volunteer_dashboard.no_missing_persons')}
                 </p>
               </div>
             ) : (

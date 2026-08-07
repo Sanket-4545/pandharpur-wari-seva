@@ -12,9 +12,10 @@ import {
 
 export async function GET(request, { params }) {
   try {
-    await requireVolunteerAuth(request);
+    const volunteer = await requireVolunteerAuth(request);
     const item = await LostItems.findByItemId(params.id);
     if (!item) return notFoundResponse("Lost item");
+    if (item.volunteerId !== volunteer.volunteerId) return notFoundResponse("Lost item");
     return successResponse(sanitizeDocId(item));
   } catch (error) {
     return handleAuthError(error);
@@ -26,6 +27,7 @@ export async function PATCH(request, { params }) {
     const volunteer = await requireVolunteerAuth(request);
     const existing = await LostItems.findByItemId(params.id);
     if (!existing) return notFoundResponse("Lost item");
+    if (existing.volunteerId !== volunteer.volunteerId) return notFoundResponse("Lost item");
     const body = await request.json();
     if (body.status) {
       await LostItems.updateStatus(params.id, body.status);
@@ -35,6 +37,7 @@ export async function PATCH(request, { params }) {
     delete update._id;
     delete update.itemId;
     delete update.createdAt;
+    delete update.volunteerId;
     const updated = await coll.findOneAndUpdate(
       { itemId: params.id },
       { $set: update },

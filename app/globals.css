@@ -33,3 +33,20 @@
 .text-charcoal-light {
   color: #4B5563;
 }
+
+/* Navigation Progress Bar */
+.nav-progress-bar {
+  animation: nav-progress-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes nav-progress-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-progress-bar {
+    animation: none;
+    transition: width 0.2s ease-out !important;
+  }
+}

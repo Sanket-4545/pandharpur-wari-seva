@@ -45,7 +45,7 @@ export default function AddLostItemPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      setToast({ message: 'Photo must be less than 5MB', type: 'error', visible: true });
+      setToast({ message: t('volunteer_lost_items.err_photo_size'), type: 'error', visible: true });
       return;
     }
     setPhotoFile(file);
@@ -63,8 +63,8 @@ export default function AddLostItemPage() {
 
   const validate = () => {
     const newErrors = {};
-    if (!form.itemType) newErrors.itemType = 'Item type is required';
-    if (!form.foundLocation.trim()) newErrors.foundLocation = 'Found location is required';
+    if (!form.itemType) newErrors.itemType = t('volunteer_lost_items.err_item_type');
+    if (!form.foundLocation.trim()) newErrors.foundLocation = t('volunteer_lost_items.err_found_location');
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import Modal from './Modal';
 import { useLanguage } from '@/context/LanguageContext';
@@ -16,6 +16,7 @@ export default function ConfirmationDialog({
   variant = 'danger',
 }) {
   const { t } = useLanguage();
+  const [confirming, setConfirming] = useState(false);
 
   const variantStyles = {
     danger: 'bg-red-600 hover:bg-red-700 text-white',
@@ -29,8 +30,20 @@ export default function ConfirmationDialog({
     success: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400',
   };
 
+  const handleConfirm = async () => {
+    setConfirming(true);
+    try {
+      await onConfirm();
+      onClose();
+    } catch {
+      // Error is handled by the caller (onConfirm typically shows a toast)
+    } finally {
+      setConfirming(false);
+    }
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title || t('admin.common.confirm')}>
+    <Modal isOpen={isOpen} onClose={confirming ? undefined : onClose} title={title || t('admin.common.confirm')}>
       <div className="flex gap-4">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconBgStyles[variant]}`}>
           <AlertTriangle className="w-5.5 h-5.5" />
@@ -40,24 +53,23 @@ export default function ConfirmationDialog({
             {message || t('admin.common.confirm')}
           </p>
           <p className="mt-1.5 text-xs text-charcoal-light dark:text-gray-400">
-            This action cannot be undone.
+            {t('admin.common.cannot_undo')}
           </p>
 
           <div className="flex justify-end gap-3 mt-6">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 dark:border-gray-800 text-charcoal-light dark:text-gray-400 bg-white hover:bg-slate-50 dark:bg-transparent dark:hover:bg-gray-800 transition-colors focus:outline-none"
+              disabled={confirming}
+              className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 dark:border-gray-800 text-charcoal-light dark:text-gray-400 bg-white hover:bg-slate-50 dark:bg-transparent dark:hover:bg-gray-800 transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {cancelLabel || t('admin.common.cancel')}
             </button>
             <button
-              onClick={async () => {
-                await onConfirm();
-                onClose();
-              }}
-              className={`px-4.5 py-2 rounded-xl text-xs font-bold transition-colors focus:outline-none ${variantStyles[variant]}`}
+              onClick={handleConfirm}
+              disabled={confirming}
+              className={`px-4.5 py-2 rounded-xl text-xs font-bold transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${variantStyles[variant]}`}
             >
-              {confirmLabel || t('admin.common.confirm')}
+              {confirming ? t('admin.common.processing') : (confirmLabel || t('admin.common.confirm'))}
             </button>
           </div>
         </div>

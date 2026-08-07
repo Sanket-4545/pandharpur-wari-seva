@@ -169,7 +169,7 @@ export default function VolunteerLostItemDetailPage({ params }) {
             {t('not_found.title') || 'Item Not Found'}
           </h2>
           <p className="text-sm text-charcoal-light dark:text-gray-400 mt-2">
-            The lost item you are looking for does not exist or has been removed.
+            {t('volunteer_lost_items.not_found_desc')}
           </p>
           <Link
             href="/volunteer/lost-items"
@@ -309,7 +309,7 @@ export default function VolunteerLostItemDetailPage({ params }) {
                 {item.notes && (
                   <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-xl">
                     <span className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
-                      Notes
+                      {t('volunteer_lost_items.notes_label')}
                     </span>
                     <p className="text-sm font-semibold text-amber-700 dark:text-amber-300 mt-1 leading-relaxed">
                       {item.notes}

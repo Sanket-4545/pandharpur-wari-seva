@@ -44,16 +44,9 @@ export async function POST(request) {
       );
     }
 
-    if (!volunteer.isActive) {
+    if (!volunteer.isActive || volunteer.status !== "approved") {
       return NextResponse.json(
-        { success: false, error: "Account is not active. Please contact administrator." },
-        { status: 403 }
-      );
-    }
-
-    if (volunteer.status !== "approved") {
-      return NextResponse.json(
-        { success: false, error: "Your registration is pending approval." },
+        { success: false, error: "Your account has been deactivated. Please contact the administrator." },
         { status: 403 }
       );
     }

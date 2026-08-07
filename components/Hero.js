@@ -91,7 +91,7 @@ export default function Hero() {
           })}
         </h1>
 
-        <p className={`mt-6 text-base sm:text-lg lg:text-xl text-slate-300 max-w-2xl leading-relaxed px-4 transition-all duration-700 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        <p className={`mt-6 text-sm sm:text-base md:text-lg lg:text-xl text-slate-300 max-w-2xl leading-relaxed px-4 transition-all duration-700 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           {t('hero.subtitle')}
         </p>
 

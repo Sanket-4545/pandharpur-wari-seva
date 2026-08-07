@@ -150,7 +150,7 @@ export default function VolunteerMissingPersonDetailPage({ params }) {
             {t('not_found.title') || 'Person Not Found'}
           </h2>
           <p className="text-sm text-charcoal-light dark:text-gray-400 mt-2">
-            The missing person you are looking for does not exist or has been removed.
+            {t('volunteer_missing_persons.not_found_desc')}
           </p>
           <Link
             href="/volunteer/missing-persons"

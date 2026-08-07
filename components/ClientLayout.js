@@ -3,6 +3,7 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import NavigationProgress from '@/components/NavigationProgress';
 import { usePathname } from 'next/navigation';
 
 export default function ClientLayout({ children }) {
@@ -11,6 +12,7 @@ export default function ClientLayout({ children }) {
 
   return (
     <>
+      <NavigationProgress />
       {!isAdmin && <Navbar />}
       <main className="flex-grow">
         {children}

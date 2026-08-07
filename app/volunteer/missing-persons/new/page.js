@@ -47,7 +47,7 @@ export default function AddMissingPersonPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      setToast({ message: 'Photo must be less than 5MB', type: 'error', visible: true });
+      setToast({ message: t('volunteer_missing_persons.err_photo_size'), type: 'error', visible: true });
       return;
     }
     setPhotoFile(file);
@@ -65,12 +65,12 @@ export default function AddMissingPersonPage() {
 
   const validate = () => {
     const newErrors = {};
-    if (!form.name.trim()) newErrors.name = 'Name is required';
-    if (!form.age || isNaN(form.age) || Number(form.age) < 0) newErrors.age = 'Valid age is required';
-    if (!form.gender) newErrors.gender = 'Gender is required';
-    if (!form.category) newErrors.category = 'Category is required';
-    if (!form.lastSeenLocation.trim()) newErrors.lastSeenLocation = 'Last seen location is required';
-    if (!form.contactPhone.trim()) newErrors.contactPhone = 'Contact phone is required';
+    if (!form.name.trim()) newErrors.name = t('volunteer_missing_persons.err_name');
+    if (!form.age || isNaN(form.age) || Number(form.age) < 0) newErrors.age = t('volunteer_missing_persons.err_age');
+    if (!form.gender) newErrors.gender = t('volunteer_missing_persons.err_gender');
+    if (!form.category) newErrors.category = t('volunteer_missing_persons.err_category');
+    if (!form.lastSeenLocation.trim()) newErrors.lastSeenLocation = t('volunteer_missing_persons.err_last_seen_location');
+    if (!form.contactPhone.trim()) newErrors.contactPhone = t('volunteer_missing_persons.err_contact_phone');
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -225,7 +225,7 @@ export default function AddMissingPersonPage() {
                       >
                         <option value="">{t('volunteer_missing_persons.category_placeholder')}</option>
                         {CATEGORIES.map(c => (
-                          <option key={c} value={c}>{c}</option>
+                          <option key={c} value={c}>{t(`volunteer_missing_persons.categories.${c.toLowerCase().replace(/\s+/g, '_')}`)}</option>
                         ))}
                       </select>
                       {errors.category && <p className="mt-1 text-xs text-red-500">{errors.category}</p>}

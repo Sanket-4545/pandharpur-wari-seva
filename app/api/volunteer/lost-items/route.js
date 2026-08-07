@@ -14,9 +14,9 @@ import {
 
 export async function GET(request) {
   try {
-    await requireVolunteerAuth(request);
+    const volunteer = await requireVolunteerAuth(request);
     const { page, limit, skip, status, search } = parseQueryParams(request);
-    const filter = { volunteerId: { $exists: true, $ne: null } };
+    const filter = { volunteerId: volunteer.volunteerId };
     if (status) filter.status = status;
     if (search) filter.$text = { $search: search };
     const [items, total] = await Promise.all([

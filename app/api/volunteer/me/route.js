@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { cookies as getCookies } from "next/headers";
 import { Volunteers } from "@/lib/models";
 import { verifyVolunteerToken, VOLUNTEER_COOKIE_NAME } from "@/lib/volunteer-auth";
-import { sanitizeString, isValidPhoneWithCode, validateArray } from "@/lib/models/helpers";
+import { isValidPhoneWithCode } from "@/lib/models/helpers";
 import {
   successResponse,
   notFoundResponse,
@@ -56,6 +56,13 @@ async function requireVolunteerAuth(request) {
   if (!payload) {
     throw new AuthError("Invalid or expired session", 401);
   }
+  const volunteer = await Volunteers.findById(payload.volunteerId);
+  if (!volunteer) {
+    throw new AuthError("Volunteer account not found", 401);
+  }
+  if (!volunteer.isActive || volunteer.status !== "approved") {
+    throw new AuthError("Your account has been deactivated. Please contact the administrator.", 403, "VOLUNTEER_DEACTIVATED");
+  }
   return payload;
 }
 
@@ -66,9 +73,6 @@ export async function GET(request) {
     if (!volunteer) return notFoundResponse("Volunteer");
     return successResponse(Volunteers.sanitizeVolunteer(volunteer));
   } catch (error) {
-    if (error instanceof AuthError) {
-      return handleApiError(error);
-    }
     return handleApiError(error);
   }
 }
@@ -126,9 +130,6 @@ export async function PUT(request) {
     const updated = await Volunteers.findById(payload.volunteerId);
     return successResponse(Volunteers.sanitizeVolunteer(updated));
   } catch (error) {
-    if (error instanceof AuthError) {
-      return handleApiError(error);
-    }
     return handleApiError(error);
   }
 }
