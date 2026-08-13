@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyToken, COOKIE_NAME } from "./lib/auth";
-import { verifyVolunteerToken, VOLUNTEER_COOKIE_NAME } from "./lib/volunteer-auth";
+import { VOLUNTEER_COOKIE_NAME } from "./lib/volunteer-auth";
 
 const ADMIN_ONLY_API_PREFIXES = [
   "/api/admins",
@@ -47,10 +47,7 @@ export async function middleware(request) {
   const isAuthenticated = !!payload;
 
   const volSessionCookie = request.cookies.get(VOLUNTEER_COOKIE_NAME);
-  const volToken = volSessionCookie?.value;
-  const volPayload = volToken ? await verifyVolunteerToken(volToken) : null;
-
-  const isVolunteerAuthenticated = !!volPayload;
+  const hasVolunteerSession = !!volSessionCookie?.value;
 
   // Public auth endpoints — always allow
   if (pathname.startsWith("/api/auth/")) {
@@ -61,12 +58,9 @@ export async function middleware(request) {
   if (pathname.startsWith("/volunteer")) {
     // Allow /volunteer/login without auth to prevent redirect loop
     if (pathname === "/volunteer/login" || pathname === "/volunteer/login/") {
-      if (isVolunteerAuthenticated) {
-        return NextResponse.next();
-      }
       return NextResponse.next();
     }
-    if (!isVolunteerAuthenticated) {
+    if (!hasVolunteerSession) {
       const loginUrl = new URL("/volunteer/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
@@ -84,25 +78,11 @@ export async function middleware(request) {
     return NextResponse.next();
   }
 
-  // Volunteer self-service API — require volunteer auth
-  if (pathname === "/api/volunteer/me") {
-    if (!isVolunteerAuthenticated) {
-      return NextResponse.json(
-        { success: false, error: "Authentication required" },
-        { status: 401 }
-      );
-    }
-    return NextResponse.next();
-  }
-
-  // Volunteer API routes — require volunteer auth
-  if (pathname.startsWith("/api/volunteer/lost-items") || pathname.startsWith("/api/volunteer/missing-persons")) {
-    if (!isVolunteerAuthenticated) {
-      return NextResponse.json(
-        { success: false, error: "Volunteer authentication required" },
-        { status: 401 }
-      );
-    }
+  // Volunteer API routes — authentication is enforced authoritatively by
+  // requireVolunteerAuth() inside each API route (Node runtime), which also
+  // enforces active/approved status and VOLUNTEER_DEACTIVATED handling.
+  // Middleware must not reject these requests, so the API route can run.
+  if (pathname.startsWith("/api/volunteer/")) {
     return NextResponse.next();
   }
 

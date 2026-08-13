@@ -35,7 +35,9 @@ export default function VolunteerAuthProvider({ children }) {
     originalFetchRef.current = originalFetch;
 
     window.fetch = async function patchedFetch(...args) {
-      const response = await originalFetch.apply(this, args);
+      const [url, init] = args;
+      const patchedInit = { ...init, credentials: init?.credentials ?? "include" };
+      const response = await originalFetch(url, patchedInit);
 
       if (response.status === 403 && !handledRef.current) {
         const url = typeof args[0] === "string" ? args[0] : args[0]?.url;
