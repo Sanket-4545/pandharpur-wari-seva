@@ -17,6 +17,7 @@ export async function GET(request, { params }) {
     const item = await MissingPersons.findByCaseId(params.id);
     if (!item) return notFoundResponse("Missing person case");
     if (isAdmin) return successResponse(sanitizeDocId(item));
+    if (!["Missing", "Found"].includes(item.status)) return notFoundResponse("Missing person case");
     const { contactPhone, ...publicItem } = item;
     return successResponse(sanitizeDocId(publicItem));
   } catch (error) {

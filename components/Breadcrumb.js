@@ -17,7 +17,6 @@ export default function Breadcrumb() {
   const routeLabelMap = {
     admin: "admin.sidebar.dashboard",
     "missing-persons": "admin.sidebar.missing_persons",
-    "lost-found": "admin.sidebar.lost_found",
     volunteers: "admin.sidebar.volunteers",
     "emergency-contacts": "admin.sidebar.emergency_contacts",
     gallery: "admin.sidebar.gallery",

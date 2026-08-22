@@ -38,6 +38,7 @@ export async function PATCH(request, { params }) {
     delete update.itemId;
     delete update.createdAt;
     delete update.volunteerId;
+    delete update.status;
     const updated = await coll.findOneAndUpdate(
       { itemId: params.id },
       { $set: update },

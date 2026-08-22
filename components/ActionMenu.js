@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreHorizontal, Eye, Edit3, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Eye, Edit3, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
-export default function ActionMenu({ onView, onEdit, onDelete }) {
+export default function ActionMenu({ onView, onEdit, onDelete, onApprove, onReject }) {
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
@@ -23,7 +23,7 @@ export default function ActionMenu({ onView, onEdit, onDelete }) {
     <div className="relative inline-block text-left" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-1.5 rounded-lg text-slate-450 hover:bg-slate-55 hover:text-charcoal hover:dark:bg-gray-800 dark:text-gray-400 dark:hover:text-white transition-all focus:outline-none focus:ring-1 focus:ring-primary/40"
+        className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-55 hover:text-charcoal hover:dark:bg-gray-800 dark:text-gray-400 dark:hover:text-white transition-all focus:outline-none focus:ring-1 focus:ring-primary/40"
         aria-label="Actions menu"
       >
         <MoreHorizontal className="w-4 h-4" />
@@ -41,6 +41,32 @@ export default function ActionMenu({ onView, onEdit, onDelete }) {
             >
               <Eye className="w-3.5 h-3.5" />
               {t("admin.common.view")}
+            </button>
+          )}
+
+          {onApprove && (
+            <button
+              onClick={() => {
+                onApprove();
+                setIsOpen(false);
+              }}
+              className="flex items-center gap-2.5 w-full text-left px-3 py-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-all"
+            >
+              <CheckCircle className="w-3.5 h-3.5" />
+              Approve
+            </button>
+          )}
+
+          {onReject && (
+            <button
+              onClick={() => {
+                onReject();
+                setIsOpen(false);
+              }}
+              className="flex items-center gap-2.5 w-full text-left px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all"
+            >
+              <XCircle className="w-3.5 h-3.5" />
+              Reject
             </button>
           )}
 

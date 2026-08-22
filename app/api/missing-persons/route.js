@@ -19,7 +19,8 @@ export async function GET(request) {
     const projection = isAdmin ? {} : { contactPhone: 0 };
     const { page, limit, skip, status, search, category } = parseQueryParams(request);
     const filter = {};
-    if (status) filter.status = status;
+    if (isAdmin && status) filter.status = status;
+    if (!isAdmin) filter.status = { $in: ["Missing", "Found"] };
     if (category) filter.category = category;
     if (search) filter.$text = { $search: search };
     const [items, total] = await Promise.all([

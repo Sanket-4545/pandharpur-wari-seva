@@ -28,6 +28,7 @@ export async function PATCH(request, { params }) {
     if (!existing) return notFoundResponse("Missing person");
     if (existing.volunteerId !== volunteer.volunteerId) return notFoundResponse("Missing person");
     const body = await request.json();
+    delete body.status;
     const coll = await MissingPersons.getCollection();
     const update = { ...body, updatedAt: new Date() };
     delete update._id;

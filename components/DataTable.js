@@ -10,7 +10,9 @@ import {
   Filter, 
   Download, 
   Trash2, 
-  Eye
+  Eye,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import StatusBadge from '@/components/StatusBadge';
@@ -23,6 +25,8 @@ export default function DataTable({
   searchPlaceholderKey = "admin.common.search",
   onViewRow, 
   onDeleteRow,
+  onApproveRow,
+  onRejectRow,
   exportFilename = "export.csv"
 }) {
   const { t } = useLanguage();
@@ -300,10 +304,51 @@ export default function DataTable({
                           );
                         })}
                         <td className="px-6 py-3.5 whitespace-nowrap text-right text-xs">
-                          <ActionMenu
-                            onView={onViewRow ? () => onViewRow(row) : null}
-                            onDelete={onDeleteRow ? () => onDeleteRow(row.id) : null}
-                          />
+                          {row.status === 'Pending' && onApproveRow ? (
+                            <div className="inline-flex items-center gap-1.5">
+                              <button
+                                onClick={() => onApproveRow(row)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold transition-all dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                              >
+                                <CheckCircle className="w-3.5 h-3.5" />
+                                Approve
+                              </button>
+                              {onRejectRow && (
+                                <button
+                                  onClick={() => onRejectRow(row)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-lg text-[11px] font-bold transition-all dark:border-rose-900/30 dark:text-rose-400 dark:hover:bg-rose-950/20"
+                                >
+                                  <XCircle className="w-3.5 h-3.5" />
+                                  Reject
+                                </button>
+                              )}
+                              {onViewRow && (
+                                <button
+                                  onClick={() => onViewRow(row)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 border border-slate-200 text-charcoal-light hover:bg-slate-50 rounded-lg text-[11px] font-bold transition-all dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                  View
+                                </button>
+                              )}
+                              {onDeleteRow && (
+                                <button
+                                  onClick={() => onDeleteRow(row.id)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 rounded-lg text-[11px] font-bold transition-all dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950/20"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  Delete
+                                </button>
+                              )}
+                            </div>
+                          ) : (
+                            <ActionMenu
+                              onView={onViewRow ? () => onViewRow(row) : null}
+                              onDelete={onDeleteRow ? () => onDeleteRow(row.id) : null}
+                              onApprove={onApproveRow ? () => onApproveRow(row) : null}
+                              onReject={onRejectRow ? () => onRejectRow(row) : null}
+                            />
+                          )}
                         </td>
                       </tr>
                     );

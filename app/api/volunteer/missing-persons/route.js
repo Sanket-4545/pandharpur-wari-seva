@@ -35,7 +35,7 @@ export async function POST(request) {
     const volunteer = await requireVolunteerAuth(request);
     const body = await request.json();
     body.volunteerId = volunteer.volunteerId;
-    body.status = body.status || "Missing";
+    body.status = "Pending";
     const result = await MissingPersons.insertOne(body);
     const coll = await MissingPersons.getCollection();
     const inserted = await coll.findOne({ _id: result.insertedId });

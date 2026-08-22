@@ -319,7 +319,7 @@ export default function VolunteerLostItemDetailPage({ params }) {
               </div>
             </div>
 
-            {item.status === 'Waiting' && (
+            {item.status === 'Verified' && (
               <div className="flex items-center justify-center gap-4 mt-8">
                 <Link
                   href="/volunteer/lost-items"

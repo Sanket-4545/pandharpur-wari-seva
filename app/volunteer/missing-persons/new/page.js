@@ -97,7 +97,7 @@ export default function AddMissingPersonPage() {
         category: form.category,
         lastSeenLocation: form.lastSeenLocation.trim(),
         contactPhone: form.contactPhone.trim(),
-        status: 'Missing',
+        status: 'Pending',
       };
       if (form.height) payload.height = form.height.trim();
       if (form.clothing) payload.clothing = form.clothing.trim();

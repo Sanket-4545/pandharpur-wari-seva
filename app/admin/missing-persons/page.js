@@ -1,15 +1,27 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import DataTable from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import ConfirmationDialog from '@/components/ConfirmationDialog';
 import Toast from '@/components/Toast';
 import LoadingButton from '@/components/LoadingButton';
-import { AlertCircle, Plus, MapPin, Phone, Save, X } from 'lucide-react';
+import StatusBadge from '@/components/StatusBadge';
+import { AlertCircle, Plus, MapPin, Phone, Save, X, CheckCircle, XCircle } from 'lucide-react';
 
 const CATEGORIES = ["Child", "Senior Citizen", "Male", "Female"];
+
+const STATUS_FILTERS = ['all', 'Pending', 'Missing', 'Found', 'Rejected'];
+
+function getStatusBadgeClasses(status) {
+  const s = (status || '').toLowerCase();
+  if (s === 'found') return 'bg-emerald-50 text-emerald-650 border-emerald-250';
+  if (s === 'missing') return 'bg-red-50 text-red-650 border-red-200';
+  if (s === 'pending') return 'bg-amber-50 text-amber-650 border-amber-200';
+  if (s === 'rejected') return 'bg-rose-50 text-rose-600 border-rose-200';
+  return 'bg-blue-50 text-blue-650 border-blue-200';
+}
 
 const FORM_DEFAULTS = {
   name: '', age: '', gender: 'Male', category: 'Male',
@@ -47,6 +59,7 @@ export default function MissingPersonsAdmin() {
   const [editingPerson, setEditingPerson] = useState(null);
   const [form, setForm] = useState(FORM_DEFAULTS);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const showToast = useCallback((message, type = 'success') => {
     setToast({ message, type, visible: true });
@@ -79,6 +92,19 @@ export default function MissingPersonsAdmin() {
     fetchPersons();
   }, [fetchPersons]);
 
+  const filteredPersons = useMemo(() => {
+    if (statusFilter === 'all') return persons;
+    return persons.filter(p => p.status === statusFilter);
+  }, [persons, statusFilter]);
+
+  const counts = useMemo(() => ({
+    total: persons.length,
+    pending: persons.filter(p => p.status === 'Pending').length,
+    missing: persons.filter(p => p.status === 'Missing').length,
+    found: persons.filter(p => p.status === 'Found').length,
+    rejected: persons.filter(p => p.status === 'Rejected').length,
+  }), [persons]);
+
   const columns = [
     { key: "caseId", label: "Case ID" },
     { key: "name", label: "Name", sortable: true },
@@ -98,7 +124,16 @@ export default function MissingPersonsAdmin() {
       sortable: true,
       render: (row) => formatDate(row.dateReported),
     },
-    { key: "status", label: "Status" }
+    {
+      key: "volunteerId",
+      label: "Submitted By",
+      render: (row) => row.volunteerId || '—',
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (row) => <StatusBadge status={row.status} />,
+    }
   ];
 
   const handleView = (row) => {
@@ -107,6 +142,14 @@ export default function MissingPersonsAdmin() {
 
   const handleDeleteTrigger = (id) => {
     setDeletingId(id);
+  };
+
+  const handleApproveRow = (row) => {
+    handleUpdateStatus(row.caseId, "Missing");
+  };
+
+  const handleRejectRow = (row) => {
+    handleUpdateStatus(row.caseId, "Rejected");
   };
 
   const handleDeleteConfirm = async () => {
@@ -302,22 +345,42 @@ export default function MissingPersonsAdmin() {
       </div>
 
       <div className="flex items-center gap-4 text-xs text-charcoal-light dark:text-gray-400">
-        <span><strong className="text-charcoal dark:text-white">{persons.length}</strong> total</span>
-        <span><strong className="text-red-650 dark:text-red-400">{persons.filter(p => p.status === 'Missing').length}</strong> missing</span>
-        <span><strong className="text-emerald-650 dark:text-emerald-400">{persons.filter(p => p.status === 'Found').length}</strong> found</span>
+        <span><strong className="text-charcoal dark:text-white">{counts.total}</strong> total</span>
+        <span><strong className="text-amber-650 dark:text-amber-400">{counts.pending}</strong> pending</span>
+        <span><strong className="text-red-650 dark:text-red-400">{counts.missing}</strong> missing</span>
+        <span><strong className="text-emerald-650 dark:text-emerald-400">{counts.found}</strong> found</span>
+        <span><strong className="text-rose-650 dark:text-rose-400">{counts.rejected}</strong> rejected</span>
       </div>
 
-      {persons.length === 0 ? (
+      <div className="flex flex-wrap gap-2">
+        {STATUS_FILTERS.map(status => (
+          <button
+            key={status}
+            onClick={() => setStatusFilter(status)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              statusFilter === status
+                ? 'bg-primary text-white shadow-saffron-glow'
+                : 'bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-700 text-charcoal-light dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
+            }`}
+          >
+            {status === 'all' ? 'All' : status}
+          </button>
+        ))}
+      </div>
+
+      {filteredPersons.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-charcoal-light dark:text-gray-400">No missing persons found.</p>
         </div>
       ) : (
         <DataTable
           columns={columns}
-          data={persons}
+          data={filteredPersons}
           searchPlaceholderKey="admin.common.search"
           onViewRow={handleView}
           onDeleteRow={handleDeleteTrigger}
+          onApproveRow={handleApproveRow}
+          onRejectRow={handleRejectRow}
           exportFilename="missing-persons-report.csv"
         />
       )}
@@ -352,11 +415,7 @@ export default function MissingPersonsAdmin() {
               <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl">
                 <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase tracking-wide">Status</span>
                 <span className="mt-1 block">
-                  <span className={`inline-flex px-2 py-0.5 rounded-md font-bold text-[10px] border shadow-sm ${
-                    viewingRow.status.toLowerCase() === 'missing'
-                      ? 'bg-red-50 text-red-650 border-red-200'
-                      : 'bg-emerald-50 text-emerald-650 border-emerald-250'
-                  }`}>
+                  <span className={`inline-flex px-2 py-0.5 rounded-md font-bold text-[10px] border shadow-sm ${getStatusBadgeClasses(viewingRow.status)}`}>
                     {viewingRow.status}
                   </span>
                 </span>
@@ -395,6 +454,13 @@ export default function MissingPersonsAdmin() {
                 </div>
               </div>
 
+              <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl col-span-2">
+                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase tracking-wide">Submitted By</span>
+                <span className="font-bold text-charcoal dark:text-white mt-0.5 block">
+                  {viewingRow.volunteerId || 'Admin (direct entry)'}
+                </span>
+              </div>
+
               <div className="col-span-2 border-t border-slate-100 dark:border-gray-800 pt-4 mt-2 flex justify-end gap-3">
                 <button
                   onClick={() => {
@@ -411,6 +477,24 @@ export default function MissingPersonsAdmin() {
                 </button>
               </div>
 
+              {viewingRow.status === 'Pending' && (
+                <div className="col-span-2 flex justify-end gap-3 mt-1">
+                  <button
+                    onClick={() => handleUpdateStatus(viewingRow.caseId, "Rejected")}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 border border-rose-200 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl transition-all text-xs font-bold"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    Reject
+                  </button>
+                  <button
+                    onClick={() => handleUpdateStatus(viewingRow.caseId, "Missing")}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-650 hover:bg-emerald-700 text-white rounded-xl transition-all text-xs font-bold"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Approve
+                  </button>
+                </div>
+              )}
               {viewingRow.status === 'Missing' && (
                 <div className="col-span-2 flex justify-end gap-3 mt-1">
                   <button
@@ -569,8 +653,10 @@ export default function MissingPersonsAdmin() {
                     onChange={e => handleFormChange('status', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
                   >
+                    <option value="Pending">Pending</option>
                     <option value="Missing">Missing</option>
                     <option value="Found">Found</option>
+                    <option value="Rejected">Rejected</option>
                   </select>
                 </div>
               )}

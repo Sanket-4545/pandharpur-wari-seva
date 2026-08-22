@@ -1,14 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 import Container from '@/components/Container';
 import StatusBadge from '@/components/StatusBadge';
-import ConfirmationDialog from '@/components/ConfirmationDialog';
-import Toast from '@/components/Toast';
-import LoadingButton from '@/components/LoadingButton';
-import { ArrowLeft, MapPin, Calendar, UserX, User, Clock, CheckCircle, Phone, Ruler, Shirt } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, UserX, User, Clock, Phone, Ruler, Shirt } from 'lucide-react';
 import Link from 'next/link';
 
 const CATEGORY_GRADIENTS = {
@@ -82,13 +78,9 @@ function LoadingState() {
 
 export default function VolunteerMissingPersonDetailPage({ params }) {
   const { t } = useLanguage();
-  const router = useRouter();
   const [person, setPerson] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showFoundDialog, setShowFoundDialog] = useState(false);
-  const [markingFound, setMarkingFound] = useState(false);
-  const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
 
   const caseId = params.id;
 
@@ -117,25 +109,6 @@ export default function VolunteerMissingPersonDetailPage({ params }) {
     }
     fetchPerson();
   }, [caseId]);
-
-  const handleMarkFound = async () => {
-    setMarkingFound(true);
-    try {
-      const res = await fetch(`/api/volunteer/missing-persons/${encodeURIComponent(caseId)}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Found' }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Failed to update status');
-      setPerson(prev => ({ ...prev, status: 'Found' }));
-      setToast({ message: t('volunteer_missing_persons.mark_found_success'), type: 'success', visible: true });
-    } catch (err) {
-      setToast({ message: err.message || t('volunteer_missing_persons.mark_found_error'), type: 'error', visible: true });
-    } finally {
-      setMarkingFound(false);
-    }
-  };
 
   if (loading) return <LoadingState />;
 
@@ -303,58 +276,18 @@ export default function VolunteerMissingPersonDetailPage({ params }) {
               </div>
             </div>
 
-            {person.status === 'Missing' && (
-              <div className="flex items-center justify-center gap-4 mt-8">
-                <Link
-                  href="/volunteer/missing-persons"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-700 text-xs font-bold text-charcoal dark:text-white hover:bg-slate-100 dark:hover:bg-gray-800 transition-all"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  {t('volunteer_missing_persons.btn_back')}
-                </Link>
-                <LoadingButton
-                  onClick={() => setShowFoundDialog(true)}
-                  loading={markingFound}
-                  variant="primary"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  {t('volunteer_missing_persons.btn_mark_found')}
-                </LoadingButton>
-              </div>
-            )}
-
-            {person.status === 'Found' && (
-              <div className="flex items-center justify-center mt-8">
-                <Link
-                  href="/volunteer/missing-persons"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-700 text-xs font-bold text-charcoal dark:text-white hover:bg-slate-100 dark:hover:bg-gray-800 transition-all"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  {t('volunteer_missing_persons.btn_back')}
-                </Link>
-              </div>
-            )}
+            <div className="flex items-center justify-center mt-8">
+              <Link
+                href="/volunteer/missing-persons"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-700 text-xs font-bold text-charcoal dark:text-white hover:bg-slate-100 dark:hover:bg-gray-800 transition-all"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                {t('volunteer_missing_persons.btn_back')}
+              </Link>
+            </div>
           </div>
         </Container>
       </section>
-
-      <ConfirmationDialog
-        isOpen={showFoundDialog}
-        onClose={() => setShowFoundDialog(false)}
-        onConfirm={handleMarkFound}
-        title={t('volunteer_missing_persons.mark_found_title')}
-        message={t('volunteer_missing_persons.mark_found_confirm')}
-        confirmLabel={t('volunteer_missing_persons.btn_mark_found')}
-        cancelLabel={t('volunteer_missing_persons.btn_cancel')}
-        variant="success"
-      />
-
-      <Toast
-        message={toast.message}
-        type={toast.type}
-        isVisible={toast.visible}
-        onClose={() => setToast(prev => ({ ...prev, visible: false }))}
-      />
     </div>
   );
 }
