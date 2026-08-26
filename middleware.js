@@ -4,6 +4,7 @@ import { VOLUNTEER_COOKIE_NAME } from "./lib/volunteer-auth";
 
 const ADMIN_ONLY_API_PREFIXES = [
   "/api/admins",
+  "/api/help-requests",
   "/api/settings",
   "/api/reports",
   "/api/analytics-events",

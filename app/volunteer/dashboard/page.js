@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import Container from '@/components/Container';
 import LoadingButton from '@/components/LoadingButton';
-import { Package, Plus, ArrowRight, LogOut, User, UserX } from 'lucide-react';
+import { Package, Plus, ArrowRight, LogOut, User, UserX, HeartHandshake } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -203,6 +203,25 @@ export default function VolunteerDashboardPage() {
                 </p>
                 <div className="flex items-center gap-2 mt-4 text-xs font-bold text-primary group-hover:text-primary-dark transition-colors">
                   <span>{t('volunteer_lost_items.btn_add_new')}</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+
+              <Link
+                href="/volunteer/help-requests"
+                className="group bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 p-6 shadow-premium hover:shadow-premium-hover transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
+                  <HeartHandshake className="w-6 h-6" />
+                </div>
+                <h3 className="font-heading text-lg font-extrabold text-charcoal dark:text-white">
+                  {t('volunteer_dashboard.help_requests')}
+                </h3>
+                <p className="text-sm text-charcoal-light dark:text-gray-400 mt-2 leading-relaxed">
+                  {t('volunteer_dashboard.help_requests_desc')}
+                </p>
+                <div className="flex items-center gap-2 mt-4 text-xs font-bold text-primary group-hover:text-primary-dark transition-colors">
+                  <span>{t('volunteer_dashboard.view_help_requests')}</span>
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </div>
               </Link>
