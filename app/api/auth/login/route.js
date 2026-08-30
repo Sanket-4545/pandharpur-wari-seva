@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { Admin } from "@/lib/models";
 import { createToken, getSessionCookieOptions } from "@/lib/auth";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { setCsrfCookie } from "@/lib/csrf";
 import { NextResponse } from "next/server";
 
 const loginLimiter = rateLimit({ interval: 60000, max: 10 });
@@ -74,6 +75,8 @@ export async function POST(request) {
       path: cookieOpts.path,
       maxAge: cookieOpts.maxAge,
     });
+
+    setCsrfCookie(response);
 
     return response;
   } catch (error) {

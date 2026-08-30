@@ -32,13 +32,21 @@ export async function PATCH(request, { params }) {
     if (body.status) {
       await LostItems.updateStatus(params.id, body.status);
     }
+    const allowedFields = {};
+    if (body.itemType !== undefined) allowedFields.itemType = body.itemType;
+    if (body.foundLocation !== undefined) allowedFields.foundLocation = body.foundLocation;
+    if (body.brand !== undefined) allowedFields.brand = body.brand;
+    if (body.color !== undefined) allowedFields.color = body.color;
+    if (body.storageLocation !== undefined) allowedFields.storageLocation = body.storageLocation;
+    if (body.contactNumber !== undefined) allowedFields.contactNumber = body.contactNumber;
+    if (body.notes !== undefined) allowedFields.notes = body.notes;
+    if (body.description !== undefined) allowedFields.description = body.description;
+    if (body.photoUrl !== undefined) allowedFields.photoUrl = body.photoUrl;
+    if (Object.keys(allowedFields).length === 0) {
+      return successResponse(sanitizeDocId(existing));
+    }
     const coll = await LostItems.getCollection();
-    const update = { ...body, updatedAt: new Date() };
-    delete update._id;
-    delete update.itemId;
-    delete update.createdAt;
-    delete update.volunteerId;
-    delete update.status;
+    const update = { ...allowedFields, updatedAt: new Date() };
     const updated = await coll.findOneAndUpdate(
       { itemId: params.id },
       { $set: update },

@@ -13,13 +13,16 @@ import {
   isAdminUser,
 } from "@/lib/api-helpers";
 
+const PUBLIC_STATUSES = ["Lost", "Found", "Claimed"];
+
 export async function GET(request) {
   try {
     const isAdmin = await isAdminUser(request);
-    const projection = isAdmin ? {} : { contactInfo: 0 };
+    const projection = isAdmin ? {} : { contactInfo: 0, contactNumber: 0, volunteerId: 0 };
     const { page, limit, skip, status, search, category } = parseQueryParams(request);
     const filter = {};
-    if (status) filter.status = status;
+    if (isAdmin && status) filter.status = status;
+    if (!isAdmin) filter.status = { $in: PUBLIC_STATUSES };
     if (category) filter.category = category;
     if (search) filter.$text = { $search: search };
     const [items, total] = await Promise.all([

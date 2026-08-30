@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { getSessionCookieOptions } from "@/lib/auth";
+import { clearCsrfCookie } from "@/lib/csrf";
 import { NextResponse } from "next/server";
 
 export async function POST() {
@@ -19,6 +20,8 @@ export async function POST() {
       path: cookieOpts.path,
       maxAge: 0,
     });
+
+    clearCsrfCookie(response);
 
     return response;
   } catch (error) {

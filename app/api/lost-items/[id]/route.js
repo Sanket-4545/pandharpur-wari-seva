@@ -11,13 +11,16 @@ import {
   isAdminUser,
 } from "@/lib/api-helpers";
 
+const PUBLIC_STATUSES = ["Lost", "Found", "Claimed"];
+
 export async function GET(request, { params }) {
   try {
     const isAdmin = await isAdminUser(request);
     const item = await LostItems.findByItemId(params.id);
     if (!item) return notFoundResponse("Lost item");
     if (isAdmin) return successResponse(sanitizeDocId(item));
-    const { contactInfo, ...publicItem } = item;
+    if (!PUBLIC_STATUSES.includes(item.status)) return notFoundResponse("Lost item");
+    const { contactInfo, contactNumber, volunteerId, ...publicItem } = item;
     return successResponse(sanitizeDocId(publicItem));
   } catch (error) {
     return handleApiError(error);

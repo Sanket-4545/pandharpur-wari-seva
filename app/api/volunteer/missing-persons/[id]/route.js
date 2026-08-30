@@ -28,13 +28,21 @@ export async function PATCH(request, { params }) {
     if (!existing) return notFoundResponse("Missing person");
     if (existing.volunteerId !== volunteer.volunteerId) return notFoundResponse("Missing person");
     const body = await request.json();
-    delete body.status;
+    const allowedFields = {};
+    if (body.name !== undefined) allowedFields.name = body.name;
+    if (body.gender !== undefined) allowedFields.gender = body.gender;
+    if (body.category !== undefined) allowedFields.category = body.category;
+    if (body.age !== undefined) allowedFields.age = body.age;
+    if (body.lastSeenLocation !== undefined) allowedFields.lastSeenLocation = body.lastSeenLocation;
+    if (body.contactPhone !== undefined) allowedFields.contactPhone = body.contactPhone;
+    if (body.clothing !== undefined) allowedFields.clothing = body.clothing;
+    if (body.description !== undefined) allowedFields.description = body.description;
+    if (body.photoUrl !== undefined) allowedFields.photoUrl = body.photoUrl;
+    if (Object.keys(allowedFields).length === 0) {
+      return successResponse(sanitizeDocId(existing));
+    }
     const coll = await MissingPersons.getCollection();
-    const update = { ...body, updatedAt: new Date() };
-    delete update._id;
-    delete update.caseId;
-    delete update.createdAt;
-    delete update.volunteerId;
+    const update = { ...allowedFields, updatedAt: new Date() };
     const updated = await coll.findOneAndUpdate(
       { caseId: params.id },
       { $set: update },

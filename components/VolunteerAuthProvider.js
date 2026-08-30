@@ -7,6 +7,12 @@ import Toast from "@/components/Toast";
 const DEACTIVATION_MESSAGE =
   "Your account has been deactivated. Please contact the administrator.";
 
+function getCsrfToken() {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/csrf_token=([^;]+)/);
+  return match ? match[1] : null;
+}
+
 export default function VolunteerAuthProvider({ children }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -36,7 +42,20 @@ export default function VolunteerAuthProvider({ children }) {
 
     window.fetch = async function patchedFetch(...args) {
       const [url, init] = args;
+      const method = (init?.method || "GET").toUpperCase();
       const patchedInit = { ...init, credentials: init?.credentials ?? "include" };
+
+      if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+        const csrfToken = getCsrfToken();
+        if (csrfToken) {
+          const headers = new Headers(patchedInit.headers);
+          if (!headers.has("X-CSRF-Token")) {
+            headers.set("X-CSRF-Token", csrfToken);
+          }
+          patchedInit.headers = headers;
+        }
+      }
+
       const response = await originalFetch(url, patchedInit);
 
       if (response.status === 403 && !handledRef.current) {

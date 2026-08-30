@@ -5,10 +5,43 @@ import { useRouter } from "next/navigation";
 
 const SESSION_CHECK_INTERVAL = 5 * 60 * 1000;
 
+function getCsrfToken() {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/csrf_token=([^;]+)/);
+  return match ? match[1] : null;
+}
+
 export function useAdminAuth() {
   const router = useRouter();
   const intervalRef = useRef(null);
   const redirectedRef = useRef(false);
+
+  useEffect(() => {
+    const originalFetch = window.fetch;
+
+    window.fetch = async function patchedFetch(...args) {
+      const [url, init] = args;
+      const method = (init?.method || "GET").toUpperCase();
+      const patchedInit = { ...init };
+
+      if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+        const csrfToken = getCsrfToken();
+        if (csrfToken) {
+          const headers = new Headers(patchedInit.headers);
+          if (!headers.has("X-CSRF-Token")) {
+            headers.set("X-CSRF-Token", csrfToken);
+          }
+          patchedInit.headers = headers;
+        }
+      }
+
+      return originalFetch(url, patchedInit);
+    };
+
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, []);
 
   const handleAuthError = useCallback(() => {
     if (redirectedRef.current) return;

@@ -4,6 +4,7 @@ import { cookies as getCookies } from "next/headers";
 import { Volunteers } from "@/lib/models";
 import { verifyVolunteerToken, VOLUNTEER_COOKIE_NAME } from "@/lib/volunteer-auth";
 import { isValidPhoneWithCode } from "@/lib/models/helpers";
+import { validateCsrfRequest } from "@/lib/csrf";
 import {
   successResponse,
   notFoundResponse,
@@ -14,6 +15,11 @@ import {
 
 async function requireVolunteerAuth(request) {
   if (request) {
+    if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) {
+      if (!validateCsrfRequest(request)) {
+        throw new AuthError("CSRF validation failed", 403);
+      }
+    }
     const origin = request.headers.get("origin");
     const referer = request.headers.get("referer");
     const host = request.headers.get("host");

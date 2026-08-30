@@ -5,12 +5,22 @@ import {
   successResponse,
   errorResponse,
   notFoundResponse,
+  rateLimitedResponse,
   requireAuth,
   handleAuthError,
 } from "@/lib/api-helpers";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+
+const passwordChangeLimiter = rateLimit({ interval: 300000, max: 5 });
 
 export async function POST(request) {
   try {
+    const ip = getClientIp(request);
+    const limit = passwordChangeLimiter(ip);
+    if (!limit.allowed) {
+      return rateLimitedResponse();
+    }
+
     const payload = await requireAuth(request);
     const adminId = requireObjectId(payload.userId);
     const { currentPassword, newPassword } = await request.json();

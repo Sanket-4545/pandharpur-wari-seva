@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyToken, COOKIE_NAME } from "./lib/auth";
-import { VOLUNTEER_COOKIE_NAME } from "./lib/volunteer-auth";
+import { verifyVolunteerToken, VOLUNTEER_COOKIE_NAME } from "./lib/volunteer-auth";
 
 const ADMIN_ONLY_API_PREFIXES = [
   "/api/admins",
@@ -48,7 +48,10 @@ export async function middleware(request) {
   const isAuthenticated = !!payload;
 
   const volSessionCookie = request.cookies.get(VOLUNTEER_COOKIE_NAME);
-  const hasVolunteerSession = !!volSessionCookie?.value;
+  const volToken = volSessionCookie?.value;
+  const volPayload = volToken ? await verifyVolunteerToken(volToken) : null;
+
+  const isVolunteerAuthenticated = !!volPayload;
 
   // Public auth endpoints — always allow
   if (pathname.startsWith("/api/auth/")) {
@@ -61,7 +64,7 @@ export async function middleware(request) {
     if (pathname === "/volunteer/login" || pathname === "/volunteer/login/") {
       return NextResponse.next();
     }
-    if (!hasVolunteerSession) {
+    if (!isVolunteerAuthenticated) {
       const loginUrl = new URL("/volunteer/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
