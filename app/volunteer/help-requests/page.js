@@ -75,7 +75,7 @@ export default function VolunteerHelpRequestsPage(){
   const[refreshing,setRefreshing]=useState(false);
   const[error,setError]=useState(null);
   const[acceptingId,setAcceptingId]=useState(null);
-  const[actionBusy,setActionBusy]=useState(false);
+  const[busyActionId,setBusyActionId]=useState(null);
   const[toast,setToast]=useState({message:"",type:"success",visible:false});
   const showToast=useCallback((m,tp="success")=>setToast({message:m,type:tp,visible:true}),[]);
 
@@ -117,7 +117,7 @@ export default function VolunteerHelpRequestsPage(){
   };
 
   const handleStatus=async(id,status)=>{
-    setActionBusy(true);
+    setBusyActionId(id);
     try{
       const res=await fetch("/api/volunteer/help-requests/"+id+"/status",{
         method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status}),
@@ -128,7 +128,7 @@ export default function VolunteerHelpRequestsPage(){
         else if(res.status===400)showToast(t("volunteer_help_requests.error_invalid_transition"),"error");
         else showToast(j.error||t("volunteer_help_requests.toast_error"),"error");}
     }catch{showToast(t("volunteer_help_requests.error_network"),"error");}
-    finally{setActionBusy(false);}
+    finally{setBusyActionId(null);}
   };
 
   return(
@@ -164,7 +164,7 @@ export default function VolunteerHelpRequestsPage(){
               <button onClick={()=>fetchAll(true)} className="mt-4 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all">{t("common.retry")}</button>
             </div>)}
 
-            {!error&&active.length>0&&(<div className="mb-10">{active.map(r=>(<ActiveCard key={r.requestId||r._id} r={r} onStart={id=>handleStatus(id,"In Progress")} onComplete={id=>handleStatus(id,"Completed")} busy={actionBusy} />))}</div>)}
+            {!error&&active.length>0&&(<div className="mb-10">{active.map(r=>(<ActiveCard key={r.requestId||r._id} r={r} onStart={id=>handleStatus(id,"In Progress")} onComplete={id=>handleStatus(id,"Completed")} busy={busyActionId===r.requestId} />))}</div>)}
 
             {!error&&!loading&&active.length===0&&(<div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 p-8 text-center mb-8"><HeartHandshake className="w-10 h-10 text-slate-300 dark:text-gray-600 mx-auto mb-3" /><p className="text-sm text-charcoal-light dark:text-gray-400 font-semibold">{t("volunteer_help_requests.empty_active")}</p></div>)}
 

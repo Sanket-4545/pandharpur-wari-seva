@@ -25,6 +25,7 @@ export default function DataTable({
   searchPlaceholderKey = "admin.common.search",
   onViewRow, 
   onDeleteRow,
+  onBulkDelete,
   onApproveRow,
   onRejectRow,
   exportFilename = "export.csv"
@@ -143,9 +144,15 @@ export default function DataTable({
     setTimeout(() => setToastMessage(""), 3000);
   };
 
-  // Bulk Delete Simulator
+  // Bulk Delete
+  const clearSelection = () => {
+    setSelectedRows(new Set());
+  };
+
   const handleBulkDelete = () => {
-    if (onDeleteRow) {
+    if (onBulkDelete) {
+      onBulkDelete(Array.from(selectedRows), clearSelection);
+    } else if (onDeleteRow) {
       selectedRows.forEach(id => onDeleteRow(id));
       setSelectedRows(new Set());
       setToastMessage("bulk_deleted");

@@ -37,6 +37,7 @@ export default function AdminHelpRequestsPage() {
 
   const [viewingRow, setViewingRow] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [bulkDeletingIds, setBulkDeletingIds] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
 
   const showToast = useCallback((message, type = 'success') => {
@@ -194,6 +195,33 @@ export default function AdminHelpRequestsPage() {
     }
   };
 
+  const handleBulkDeleteTrigger = (ids, clearSelection) => {
+    setBulkDeletingIds({ ids, clearSelection });
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    if (!bulkDeletingIds) return;
+    const { ids, clearSelection } = bulkDeletingIds;
+    try {
+      const res = await fetch('/api/help-requests/bulk', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+      });
+      if (!res.ok) throw new Error(t('admin.help_requests.error_delete'));
+      const result = await res.json();
+      const deletedCount = result.data?.deleted || 0;
+      setItems(prev => prev.filter(i => !ids.includes(i.requestId)));
+      if (viewingRow && ids.includes(viewingRow.requestId)) setViewingRow(null);
+      if (clearSelection) clearSelection();
+      showToast(t('admin.help_requests.toast_deleted') + ` (${deletedCount})`);
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setBulkDeletingIds(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -321,6 +349,7 @@ export default function AdminHelpRequestsPage() {
           searchPlaceholderKey="admin.help_requests.search_placeholder"
           onViewRow={handleView}
           onDeleteRow={handleDeleteTrigger}
+          onBulkDelete={handleBulkDeleteTrigger}
           exportFilename="help-requests.csv"
         />
       )}
@@ -467,6 +496,14 @@ export default function AdminHelpRequestsPage() {
         onConfirm={handleDeleteConfirm}
         title={t('admin.help_requests.delete_title')}
         message={t('admin.help_requests.delete_confirm')}
+      />
+
+      <ConfirmationDialog
+        isOpen={!!bulkDeletingIds}
+        onClose={() => setBulkDeletingIds(null)}
+        onConfirm={handleBulkDeleteConfirm}
+        title={t('admin.help_requests.delete_title')}
+        message={bulkDeletingIds ? `Delete ${bulkDeletingIds.ids.length} selected request(s)?` : ''}
       />
     </div>
   );
