@@ -989,7 +989,17 @@
     "logout": "Logout",
     "logout_desc": "Sign out from your volunteer account.",
     "no_lost_items": "No lost items reported yet. Start by adding your first item.",
-    "no_missing_persons": "No missing person reports yet."
+    "no_missing_persons": "No missing person reports yet.",
+    "new_help_request": "New Help Request",
+    "new_help_requests": "New Help Requests",
+    "help_request_notification": "A Varkari needs assistance. {count} request{plural} waiting.",
+    "view_help_requests_btn": "View Requests",
+    "dismiss": "Dismiss",
+    "pending_count": "{count} pending",
+    "enable_notifications": "Enable Notifications",
+    "notifications_enabled": "Notifications enabled",
+    "notifications_denied": "Notifications blocked",
+    "notifications_unavailable": "Notifications not supported"
   },
   "volunteer_lost_items": {
     "title": "Lost Baggage Management",

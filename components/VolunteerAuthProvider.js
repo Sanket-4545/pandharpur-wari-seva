@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Toast from "@/components/Toast";
+import { VolunteerNotificationProvider } from "@/hooks/useVolunteerHelpRequestNotifications";
 
 const DEACTIVATION_MESSAGE =
   "Your account has been deactivated. Please contact the administrator.";
@@ -86,7 +87,7 @@ export default function VolunteerAuthProvider({ children }) {
   }, [pathname]);
 
   return (
-    <>
+    <VolunteerNotificationProvider>
       {children}
       <Toast
         message={toast.message}
@@ -95,6 +96,6 @@ export default function VolunteerAuthProvider({ children }) {
         onClose={() => setToast((prev) => ({ ...prev, visible: false }))}
         duration={5000}
       />
-    </>
+    </VolunteerNotificationProvider>
   );
 }

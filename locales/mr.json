@@ -989,7 +989,17 @@
     "logout": "लॉगआउट",
     "logout_desc": "तुमच्या स्वयंसेवक खात्यातून साइन आउट करा.",
     "no_lost_items": "अद्याप कोणतीही हरवलेली वस्तू नोंदवली नाही. तुमची पहिली वस्तू जोडून सुरू करा.",
-    "no_missing_persons": "अद्याप कोणतीही गमावलेल्या व्यक्तींचा अहवाल नोंदवला नाही."
+    "no_missing_persons": "अद्याप कोणतीही गमावलेल्या व्यक्तींचा अहवाल नोंदवला नाही.",
+    "new_help_request": "नवीन मदत विनंती",
+    "new_help_requests": "नवीन मदत विनंत्या",
+    "help_request_notification": "एका वारकऱ्याला मदत हवी आहे. {count} विनंती प्रतीक्षेत.",
+    "view_help_requests_btn": "विनंत्या पहा",
+    "dismiss": "बंद करा",
+    "pending_count": "{count} प्रलंबित",
+    "enable_notifications": "सूचना सक्षम करा",
+    "notifications_enabled": "सूचना सक्रिय",
+    "notifications_denied": "सूचना नाकारल्या",
+    "notifications_unavailable": "सूचना उपलब्ध नाहीत"
   },
   "volunteer_lost_items": {
     "title": "गहाळ सामान व्यवस्थापन",

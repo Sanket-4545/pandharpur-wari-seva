@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import Container from '@/components/Container';
 import LoadingButton from '@/components/LoadingButton';
-import { Package, Plus, ArrowRight, LogOut, User, UserX, HeartHandshake } from 'lucide-react';
+import { Package, Plus, ArrowRight, LogOut, User, UserX, HeartHandshake, Bell, BellOff, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useVolunteerHelpRequestNotifications } from '@/hooks/useVolunteerHelpRequestNotifications';
 
 function formatDate(dateInput) {
   if (!dateInput) return '';
@@ -30,6 +31,14 @@ export default function VolunteerDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [notifPermission, setNotifPermission] = useState('default');
+
+  const {
+    pendingCount,
+    hasNewRequests,
+    dismissAlert,
+    requestBrowserPermission,
+  } = useVolunteerHelpRequestNotifications();
 
   useEffect(() => {
     async function fetchDashboard() {
@@ -106,6 +115,12 @@ export default function VolunteerDashboardPage() {
     fetchDashboard();
   }, []);
 
+  useEffect(() => {
+    if (typeof Notification !== 'undefined') {
+      setNotifPermission(Notification.permission);
+    }
+  }, []);
+
   const handleLogout = async () => {
     setLoggingOut(true);
     try {
@@ -115,6 +130,11 @@ export default function VolunteerDashboardPage() {
       router.push('/volunteer/login');
     }
   };
+
+  const handleEnableNotifications = useCallback(async () => {
+    const result = await requestBrowserPermission();
+    setNotifPermission(result === 'granted' ? 'granted' : result === 'denied' ? 'denied' : 'default');
+  }, [requestBrowserPermission]);
 
   return (
     <div className="bg-slate-50 dark:bg-gray-950 min-h-screen pb-20">
@@ -141,6 +161,50 @@ export default function VolunteerDashboardPage() {
           )}
         </Container>
       </section>
+
+      {hasNewRequests && pendingCount > 0 && (
+        <section className="bg-gradient-to-r from-red-500 to-rose-600 py-4">
+          <Container>
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                    <Bell className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-heading text-base font-extrabold text-white">
+                      {pendingCount === 1
+                        ? t('volunteer_dashboard.new_help_request')
+                        : t('volunteer_dashboard.new_help_requests')}
+                    </h3>
+                    <p className="text-xs text-white/80 mt-0.5">
+                      {t('volunteer_dashboard.help_request_notification')
+                        .replace('{count}', pendingCount)
+                        .replace('{plural}', pendingCount > 1 ? 's' : '')}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <Link
+                    href="/volunteer/help-requests"
+                    onClick={dismissAlert}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-red-600 rounded-xl text-xs font-bold hover:bg-white/90 transition-all"
+                  >
+                    {t('volunteer_dashboard.view_help_requests_btn')}
+                  </Link>
+                  <button
+                    onClick={dismissAlert}
+                    className="p-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors"
+                    aria-label={t('volunteer_dashboard.dismiss')}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Container>
+        </section>
+      )}
 
       <section className="py-12 md:py-16">
         <Container>
@@ -209,11 +273,16 @@ export default function VolunteerDashboardPage() {
 
               <Link
                 href="/volunteer/help-requests"
-                className="group bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 p-6 shadow-premium hover:shadow-premium-hover transition-all duration-300 hover:-translate-y-1"
+                className="group bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 p-6 shadow-premium hover:shadow-premium-hover transition-all duration-300 hover:-translate-y-1 relative"
               >
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
                   <HeartHandshake className="w-6 h-6" />
                 </div>
+                {pendingCount > 0 && (
+                  <div className="absolute top-3 right-3 min-w-[24px] h-6 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-lg animate-pulse">
+                    {pendingCount}
+                  </div>
+                )}
                 <h3 className="font-heading text-lg font-extrabold text-charcoal dark:text-white">
                   {t('volunteer_dashboard.help_requests')}
                 </h3>
@@ -243,6 +312,18 @@ export default function VolunteerDashboardPage() {
                 </p>
               </LoadingButton>
             </div>
+
+            {typeof Notification !== 'undefined' && notifPermission === 'default' && (
+              <div className="mb-8">
+                <button
+                  onClick={handleEnableNotifications}
+                  className="w-full sm:w-auto inline-flex items-center gap-2.5 px-5 py-3 bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 shadow-premium hover:shadow-premium-hover transition-all duration-300 text-xs font-bold text-charcoal dark:text-white"
+                >
+                  <Bell className="w-4 h-4 text-primary" />
+                  {t('volunteer_dashboard.enable_notifications')}
+                </button>
+              </div>
+            )}
 
             {error && (
               <div className="text-center py-12 bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 mb-8">
