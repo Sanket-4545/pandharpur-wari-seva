@@ -98,6 +98,12 @@ export function VolunteerNotificationProvider({ children }) {
     };
   }, [fetchPending]);
 
+  useEffect(() => {
+    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+      browserNotificationGrantedRef.current = true;
+    }
+  }, []);
+
   const requestBrowserPermission = useCallback(async () => {
     if (typeof Notification === "undefined") return "unavailable";
     if (Notification.permission === "granted") {
