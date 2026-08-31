@@ -20,6 +20,186 @@ export function useVolunteerHelpRequestNotifications() {
   return ctx;
 }
 
+function getCsrfToken() {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/csrf_token=([^;]+)/);
+  return match ? match[1] : null;
+}
+
+async function registerPushSubscription() {
+  try {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      return;
+    }
+
+    const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+    await navigator.serviceWorker.ready;
+
+    const existingSubscription = await registration.pushManager.getSubscription();
+    if (existingSubscription) {
+      return;
+    }
+
+    const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    if (!publicKey) return;
+
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: publicKey,
+    });
+
+    const csrfToken = getCsrfToken();
+    const headers = { "Content-Type": "application/json" };
+    if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
+
+    await fetch("/api/volunteer/push-subscription", {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify({
+        endpoint: subscription.endpoint,
+        keys: {
+          p256dh: subscription.toJSON().keys.p256dh,
+          auth: subscription.toJSON().keys.auth,
+        },
+      }),
+    });
+  } catch (err) {
+    // Gracefully handle browsers without push support or permission issues
+    console.warn("[push] Registration failed:", err?.message);
+  }
+}
+
+export async function unregisterPushSubscription() {
+  try {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      return;
+    }
+
+    const registration = await navigator.serviceWorker.ready;
+    const existingSubscription = await registration.pushManager.getSubscription();
+
+    if (existingSubscription) {
+      const endpoint = existingSubscription.endpoint;
+      await existingSubscription.unsubscribe();
+
+      const csrfToken = getCsrfToken();
+      const headers = { "Content-Type": "application/json" };
+      if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
+
+      await fetch("/api/volunteer/push-subscription", {
+        method: "DELETE",
+        headers,
+        credentials: "include",
+        body: JSON.stringify({ endpoint }),
+      });
+    } else {
+      const csrfToken = getCsrfToken();
+      const headers = { "Content-Type": "application/json" };
+      if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
+
+      await fetch("/api/volunteer/push-subscription", {
+        method: "DELETE",
+        headers,
+        credentials: "include",
+      });
+    }
+  } catch (err) {
+    console.warn("[push] Unsubscribe failed:", err?.message);
+  }
+}
+
+async function verifyAndRenewSubscription() {
+  try {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      return;
+    }
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") {
+      return;
+    }
+
+    const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+    await navigator.serviceWorker.ready;
+
+    const existingSubscription = await registration.pushManager.getSubscription();
+
+    if (!existingSubscription) {
+      const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!publicKey) return;
+
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: publicKey,
+      });
+
+      const csrfToken = getCsrfToken();
+      const headers = { "Content-Type": "application/json" };
+      if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
+
+      await fetch("/api/volunteer/push-subscription", {
+        method: "POST",
+        headers,
+        credentials: "include",
+        body: JSON.stringify({
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: subscription.toJSON().keys.p256dh,
+            auth: subscription.toJSON().keys.auth,
+          },
+        }),
+      });
+      return;
+    }
+
+    try {
+      await existingSubscription.update();
+    } catch (err) {
+      if (err.name === "AbortError" || err.message?.includes("not found") || err.message?.includes("expired")) {
+        const endpoint = existingSubscription.endpoint;
+        await existingSubscription.unsubscribe().catch(() => {});
+
+        const csrfToken = getCsrfToken();
+        const headers = { "Content-Type": "application/json" };
+        if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
+
+        await fetch("/api/volunteer/push-subscription", {
+          method: "DELETE",
+          headers,
+          credentials: "include",
+          body: JSON.stringify({ endpoint }),
+        }).catch(() => {});
+
+        const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+        if (!publicKey) return;
+
+        const newSubscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: publicKey,
+        });
+
+        const headers2 = { "Content-Type": "application/json" };
+        const csrfToken2 = getCsrfToken();
+        if (csrfToken2) headers2["X-CSRF-Token"] = csrfToken2;
+
+        await fetch("/api/volunteer/push-subscription", {
+          method: "POST",
+          headers: headers2,
+          credentials: "include",
+          body: JSON.stringify({
+            endpoint: newSubscription.endpoint,
+            keys: {
+              p256dh: newSubscription.toJSON().keys.p256dh,
+              auth: newSubscription.toJSON().keys.auth,
+            },
+          }),
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("[push] Subscription verification failed:", err?.message);
+  }
+}
+
 export function VolunteerNotificationProvider({ children }) {
   const [pendingCount, setPendingCount] = useState(0);
   const [newRequestIds, setNewRequestIds] = useState([]);
@@ -29,6 +209,7 @@ export function VolunteerNotificationProvider({ children }) {
   const intervalRef = useRef(null);
   const mountedRef = useRef(true);
   const browserNotificationGrantedRef = useRef(false);
+  const pushRegisteredRef = useRef(false);
 
   const fetchPending = useCallback(async () => {
     try {
@@ -104,10 +285,39 @@ export function VolunteerNotificationProvider({ children }) {
     }
   }, []);
 
+  // Register push subscription once notification permission is granted
+  useEffect(() => {
+    if (pushRegisteredRef.current) return;
+    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+      pushRegisteredRef.current = true;
+      registerPushSubscription();
+    }
+  }, []);
+
+  // Periodically verify subscription health on tab focus / visibility change
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && typeof Notification !== "undefined" && Notification.permission === "granted") {
+        verifyAndRenewSubscription();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
   const requestBrowserPermission = useCallback(async () => {
     if (typeof Notification === "undefined") return "unavailable";
     if (Notification.permission === "granted") {
       browserNotificationGrantedRef.current = true;
+      if (!pushRegisteredRef.current) {
+        pushRegisteredRef.current = true;
+        registerPushSubscription();
+      }
       return "granted";
     }
     if (Notification.permission === "denied") return "denied";
@@ -115,6 +325,10 @@ export function VolunteerNotificationProvider({ children }) {
       const result = await Notification.requestPermission();
       if (result === "granted") {
         browserNotificationGrantedRef.current = true;
+        if (!pushRegisteredRef.current) {
+          pushRegisteredRef.current = true;
+          registerPushSubscription();
+        }
       }
       return result;
     } catch {

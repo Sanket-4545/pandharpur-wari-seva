@@ -33,8 +33,21 @@ export async function POST(request) {
     const result = await HelpRequests.insertOne(cleanBody);
     const coll = await HelpRequests.getCollection();
     const inserted = await coll.findOne({ _id: result.insertedId });
+
+    // Trigger push notifications to subscribed volunteers (fire-and-forget)
+    sendPushNotifications().catch(() => {});
+
     return createdResponse(inserted);
   } catch (error) {
     return handleApiError(error, "Failed to submit help request");
+  }
+}
+
+async function sendPushNotifications() {
+  try {
+    const { sendPushToAllVolunteers } = await import("@/lib/push-notifications");
+    await sendPushToAllVolunteers();
+  } catch (err) {
+    console.error("[push-notifications] Failed to send push:", err?.message);
   }
 }

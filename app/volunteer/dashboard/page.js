@@ -8,6 +8,7 @@ import { Package, Plus, ArrowRight, LogOut, User, UserX, HeartHandshake, Bell, B
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useVolunteerHelpRequestNotifications } from '@/hooks/useVolunteerHelpRequestNotifications';
+import { unregisterPushSubscription } from '@/hooks/useVolunteerHelpRequestNotifications';
 
 function formatDate(dateInput) {
   if (!dateInput) return '';
@@ -124,6 +125,7 @@ export default function VolunteerDashboardPage() {
   const handleLogout = async () => {
     setLoggingOut(true);
     try {
+      await unregisterPushSubscription();
       await fetch('/api/auth/volunteer/logout', { method: 'POST' });
       router.push('/volunteer/login');
     } catch {

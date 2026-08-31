@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Toast from "@/components/Toast";
-import { VolunteerNotificationProvider } from "@/hooks/useVolunteerHelpRequestNotifications";
+import { VolunteerNotificationProvider, unregisterPushSubscription } from "@/hooks/useVolunteerHelpRequestNotifications";
 
 const DEACTIVATION_MESSAGE =
   "Your account has been deactivated. Please contact the administrator.";
@@ -28,6 +28,9 @@ export default function VolunteerAuthProvider({ children }) {
   const handleDeactivation = useCallback(async () => {
     if (handledRef.current) return;
     handledRef.current = true;
+    try {
+      await unregisterPushSubscription();
+    } catch {}
     try {
       await fetch("/api/auth/volunteer/logout", { method: "POST" });
     } catch {}

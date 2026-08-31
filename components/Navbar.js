@@ -9,6 +9,7 @@ import Container from './Container';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useLanguage } from '@/context/LanguageContext';
 import { navLinks } from '@/data/dummyData';
+import { unregisterPushSubscription } from '@/hooks/useVolunteerHelpRequestNotifications';
 
 export default function Navbar() {
   const { t } = useLanguage();
@@ -69,6 +70,9 @@ export default function Navbar() {
   }, []);
 
   const handleVolunteerLogout = async () => {
+    try {
+      await unregisterPushSubscription();
+    } catch {}
     try {
       await fetch('/api/auth/volunteer/logout', { method: 'POST' });
     } catch {}
