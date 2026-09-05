@@ -139,7 +139,7 @@ export default function GalleryPage() {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="p-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-slate-50 dark:hover:bg-gray-800 text-charcoal dark:text-gray-300 hover:text-primary transition-all disabled:opacity-50 disabled:pointer-events-none"
+                className="p-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-slate-50 dark:hover:bg-gray-800 text-charcoal dark:text-gray-300 hover:text-primary transition-all disabled:opacity-50 disabled:pointer-events-none min-w-[44px] min-h-[44px] flex items-center justify-center"
                 aria-label={t('gallery_page.prev')}
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -152,7 +152,7 @@ export default function GalleryPage() {
                   <button
                     key={page}
                     onClick={() => handlePageChange(page)}
-                    className={`w-10 h-10 rounded-xl font-heading font-bold text-sm transition-all duration-300 ${
+                    className={`w-11 h-11 rounded-xl font-heading font-bold text-sm transition-all duration-300 min-w-[44px] min-h-[44px] ${
                       isActive 
                         ? 'bg-primary text-white shadow-saffron-glow' 
                         : 'bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-700 text-charcoal-light dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
@@ -167,7 +167,7 @@ export default function GalleryPage() {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="p-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-slate-50 dark:hover:bg-gray-800 text-charcoal dark:text-gray-300 hover:text-primary transition-all disabled:opacity-50 disabled:pointer-events-none"
+                className="p-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-slate-50 dark:hover:bg-gray-800 text-charcoal dark:text-gray-300 hover:text-primary transition-all disabled:opacity-50 disabled:pointer-events-none min-w-[44px] min-h-[44px] flex items-center justify-center"
                 aria-label={t('gallery_page.next')}
               >
                 <ChevronRight className="w-5 h-5" />
@@ -188,7 +188,7 @@ export default function GalleryPage() {
             {/* Close Button */}
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute top-6 right-6 p-2 rounded-xl bg-slate-950/60 hover:bg-slate-950 text-white hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="absolute top-6 right-6 p-3 rounded-xl bg-slate-950/60 hover:bg-slate-950 text-white hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label={t('gallery_page.close')}
             >
               <X className="w-5 h-5" />

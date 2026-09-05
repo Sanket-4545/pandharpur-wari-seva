@@ -330,7 +330,7 @@ export default function RegisterPage() {
                             name="gender"
                             value={formData.gender}
                             onChange={handleChange}
-                            className={`w-full px-4 py-3.5 rounded-xl border bg-white dark:bg-gray-900 text-charcoal dark:text-gray-100 transition-all duration-250 focus:outline-none focus:ring-2 ${
+                            className={`w-full px-4 py-3.5 rounded-xl border bg-white dark:bg-gray-900 text-charcoal dark:text-gray-100 transition-all duration-250 focus:outline-none focus:ring-2 min-h-[44px] ${
                               errors.gender
                                 ? 'border-red-500 focus:ring-red-500/20'
                                 : 'border-slate-200 dark:border-gray-700 hover:border-slate-300 dark:hover:border-gray-600 focus:border-primary focus:ring-primary/20'
@@ -412,7 +412,7 @@ export default function RegisterPage() {
                             name="bloodGroup"
                             value={formData.bloodGroup}
                             onChange={handleChange}
-                            className={`w-full px-4 py-3.5 rounded-xl border bg-white dark:bg-gray-900 text-charcoal dark:text-gray-100 transition-all duration-250 focus:outline-none focus:ring-2 ${
+                            className={`w-full px-4 py-3.5 rounded-xl border bg-white dark:bg-gray-900 text-charcoal dark:text-gray-100 transition-all duration-250 focus:outline-none focus:ring-2 min-h-[44px] ${
                               errors.bloodGroup
                                 ? 'border-red-500 focus:ring-red-500/20'
                                 : 'border-slate-200 dark:border-gray-700 hover:border-slate-300 dark:hover:border-gray-600 focus:border-primary focus:ring-primary/20'
@@ -455,7 +455,7 @@ export default function RegisterPage() {
                           {SKILL_OPTIONS.map((skill) => (
                             <label
                               key={skill.value}
-                              className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
+                              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border cursor-pointer transition-all min-h-[44px] ${
                                 formData.skills.includes(skill.value)
                                   ? 'bg-primary/5 border-primary/30 text-charcoal'
                                   : 'bg-white border-slate-200 hover:border-slate-300 text-slate-600'
@@ -480,7 +480,7 @@ export default function RegisterPage() {
                           {LANG_OPTIONS.map((lang) => (
                             <label
                               key={lang.value}
-                              className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
+                              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border cursor-pointer transition-all min-h-[44px] ${
                                 formData.languages.includes(lang.value)
                                   ? 'bg-primary/5 border-primary/30 text-charcoal'
                                   : 'bg-white border-slate-200 hover:border-slate-300 text-slate-600'
@@ -505,28 +505,28 @@ export default function RegisterPage() {
                     <legend className="font-heading text-xl font-extrabold text-charcoal tracking-tight mb-6 pb-2 border-b border-slate-100 w-full">
                       {t('register_page.availability')}
                     </legend>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {SHIFT_OPTIONS.map((shift) => (
-                        <label
-                          key={shift.value}
-                          className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
-                            formData.shift === shift.value
-                              ? 'bg-secondary/5 border-secondary/30 text-charcoal'
-                              : 'bg-white border-slate-200 hover:border-slate-300 text-slate-600'
-                          } ${errors.shift ? 'border-red-500' : ''}`}
-                        >
-                          <input
-                            type="radio"
-                            name="shift"
-                            value={shift.value}
-                            checked={formData.shift === shift.value}
-                            onChange={handleChange}
-                            className="w-4 h-4 border-slate-300 text-secondary focus:ring-secondary/30"
-                          />
-                          <span className="text-sm font-semibold">{t(shift.key)}</span>
-                        </label>
-                      ))}
-                    </div>
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {SHIFT_OPTIONS.map((shift) => (
+                          <label
+                            key={shift.value}
+                            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border cursor-pointer transition-all min-h-[44px] ${
+                              formData.shift === shift.value
+                                ? 'bg-secondary/5 border-secondary/30 text-charcoal'
+                                : 'bg-white border-slate-200 hover:border-slate-300 text-slate-600'
+                            } ${errors.shift ? 'border-red-500' : ''}`}
+                          >
+                            <input
+                              type="radio"
+                              name="shift"
+                              value={shift.value}
+                              checked={formData.shift === shift.value}
+                              onChange={handleChange}
+                              className="w-4 h-4 border-slate-300 text-secondary focus:ring-secondary/30"
+                            />
+                            <span className="text-sm font-semibold">{t(shift.key)}</span>
+                          </label>
+                        ))}
+                      </div>
                     {errors.shift && (
                       <span role="alert" className="text-xs font-semibold text-red-500 mt-2 block">{errors.shift}</span>
                     )}
@@ -534,7 +534,7 @@ export default function RegisterPage() {
 
                   {/* Terms */}
                   <div>
-                    <label className="flex items-start gap-3 cursor-pointer">
+                    <label className="flex items-start gap-3 cursor-pointer min-h-[44px]">
                       <input
                         type="checkbox"
                         name="terms"

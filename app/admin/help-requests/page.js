@@ -351,6 +351,7 @@ export default function AdminHelpRequestsPage() {
           onDeleteRow={handleDeleteTrigger}
           onBulkDelete={handleBulkDeleteTrigger}
           exportFilename="help-requests.csv"
+          mobileHiddenColumns={["contactNumber", "message", "location", "volunteerId"]}
         />
       )}
 

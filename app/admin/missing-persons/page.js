@@ -382,6 +382,7 @@ export default function MissingPersonsAdmin() {
           onApproveRow={handleApproveRow}
           onRejectRow={handleRejectRow}
           exportFilename="missing-persons-report.csv"
+          mobileHiddenColumns={["category", "lastSeenLocation", "volunteerId"]}
         />
       )}
 

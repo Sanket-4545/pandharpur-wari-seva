@@ -29,7 +29,7 @@ export default function FormInput({
         disabled={disabled}
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : undefined}
-        className={`w-full px-4 py-3.5 rounded-xl border bg-white dark:bg-gray-900 text-charcoal dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-500 transition-all duration-250 focus:outline-none focus:ring-2 ${
+        className={`w-full px-4 py-4 rounded-xl border bg-white dark:bg-gray-900 text-charcoal dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-500 transition-all duration-250 focus:outline-none focus:ring-2 min-h-[44px] ${
           disabled
             ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-gray-800'
             : error

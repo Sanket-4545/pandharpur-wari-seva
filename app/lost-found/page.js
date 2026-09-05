@@ -97,7 +97,7 @@ export default function LostFoundPage() {
                 <button
                   key={f.key}
                   onClick={() => { setActiveFilter(f.key); setSearch(''); }}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
+                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all duration-200 min-h-[44px] ${
                     activeFilter === f.key
                       ? 'bg-primary text-white shadow-saffron-glow'
                       : 'bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-700 text-charcoal-light dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
@@ -115,12 +115,12 @@ export default function LostFoundPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('lost_found_page.search_placeholder')}
-                className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-semibold text-charcoal dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                className="w-full pl-10 pr-9 py-3.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-semibold text-charcoal dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all min-h-[44px]"
               />
               {search && (
                 <button
                   onClick={() => setSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-charcoal dark:hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-charcoal dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-800 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
                   <X className="w-4 h-4" />
                 </button>

@@ -290,7 +290,7 @@ export default function HelpPage() {
                       <button
                         type="button"
                         onClick={handleGetLocation}
-                        className="flex items-center justify-center gap-2 w-full px-4 py-4 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-600 font-semibold text-sm hover:border-primary hover:bg-primary/5 hover:text-primary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        className="flex items-center justify-center gap-2 w-full px-4 py-4 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-600 font-semibold text-sm hover:border-primary hover:bg-primary/5 hover:text-primary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 min-h-[44px]"
                       >
                         <MapPin className="w-5 h-5" />
                         {t("help_page.location_get")}
@@ -321,7 +321,7 @@ export default function HelpPage() {
                         <button
                           type="button"
                           onClick={handleGetLocation}
-                          className="text-xs font-bold text-emerald-700 underline hover:text-emerald-900 shrink-0"
+                          className="px-3 py-2 text-xs font-bold text-emerald-700 hover:text-emerald-900 hover:bg-emerald-100 rounded-lg shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
                         >
                           Refresh
                         </button>

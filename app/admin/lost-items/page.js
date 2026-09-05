@@ -458,6 +458,7 @@ export default function LostBaggageManagement() {
           onViewRow={handleView}
           onDeleteRow={handleDeleteTrigger}
           exportFilename="lost-baggage-registry.csv"
+          mobileHiddenColumns={["brand", "foundLocation", "volunteerId"]}
         />
       )}
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   ChevronDown, 
   ChevronUp, 
@@ -28,9 +28,19 @@ export default function DataTable({
   onBulkDelete,
   onApproveRow,
   onRejectRow,
+  mobileHiddenColumns = [],
   exportFilename = "export.csv"
 }) {
   const { t } = useLanguage();
+  
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Search & Filter State
   const [searchTerm, setSearchTerm] = useState("");
@@ -252,66 +262,74 @@ export default function DataTable({
                       className="rounded border-slate-300 dark:border-gray-700 text-primary focus:ring-primary w-4 h-4 cursor-pointer"
                     />
                   </th>
-                  {columns.map((col) => (
-                    <th
-                      key={col.key}
-                      scope="col"
-                      onClick={() => col.sortable !== false && handleSort(col.key)}
-                      className={`px-4 sm:px-6 py-3.5 text-left text-xs font-extrabold text-charcoal-light dark:text-gray-400 tracking-wider uppercase ${
-                        col.sortable !== false ? 'cursor-pointer select-none hover:text-charcoal dark:hover:text-white' : ''
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        {col.label}
-                        {sortColumn === col.key && (
-                          sortDirection === 'asc' ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />
-                        )}
-                      </div>
-                    </th>
-                  ))}
+                  {columns.map((col) => {
+                      const isHidden = isMobile && mobileHiddenColumns.includes(col.key);
+                      return (
+                        <th
+                          key={col.key}
+                          scope="col"
+                          onClick={() => col.sortable !== false && handleSort(col.key)}
+                          className={`px-4 sm:px-6 py-3.5 text-left text-xs font-extrabold text-charcoal-light dark:text-gray-400 tracking-wider uppercase ${
+                            col.sortable !== false ? 'cursor-pointer select-none hover:text-charcoal dark:hover:text-white' : ''
+                          } ${isHidden ? 'hidden sm:table-cell' : ''}`}>
+                          <div className="flex items-center gap-1.5">
+                            {col.label}
+                            {sortColumn === col.key && (
+                              sortDirection === 'asc' ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />
+                            )}
+                          </div>
+                        </th>
+                      );
+                    })}
                   <th scope="col" className="relative px-6 py-3.5 text-right w-16">
                     <span className="sr-only">Actions</span>
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-gray-850 bg-white dark:bg-gray-900">
+<tbody className="divide-y divide-slate-100 dark:divide-gray-850 bg-white dark:bg-gray-900">
                 {paginatedData.length > 0 ? (
                   paginatedData.map((row) => {
                     const isSelected = selectedRows.has(row.id);
-                    return (
-                      <tr
-                        key={row.id}
-                        className={`hover:bg-slate-50/45 dark:hover:bg-gray-850/40 transition-colors ${
-                          isSelected ? 'bg-primary/5 dark:bg-primary-dark/5' : ''
-                        }`}
-                      >
-                        <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => handleSelectRow(row.id)}
-                            className="rounded border-slate-300 dark:border-gray-700 text-primary focus:ring-primary w-4 h-4 cursor-pointer"
-                          />
-                        </td>
-                        {columns.map((col) => {
-                          const val = row[col.key];
-                          return (
-                            <td 
-                              key={col.key} 
-                              className="px-4 sm:px-6 py-3.5 whitespace-nowrap text-xs font-semibold text-slate-700 dark:text-gray-300"
-                            >
-                              {col.key === 'status' ? (
-                                <StatusBadge status={val} />
-                              ) : col.render ? (
-                                col.render(row)
-                              ) : (
-                                val || '-'
-                              )}
-                            </td>
-                          );
-                        })}
-                        <td className="px-6 py-3.5 whitespace-nowrap text-right text-xs">
-                          {row.status === 'Pending' && onApproveRow ? (
+                    const actionCellClass = isMobile ? "px-6 py-3 whitespace-nowrap text-right" : "px-6 py-3.5 whitespace-nowrap text-right text-xs";
+                    const actionCell = (
+                      <td key="actions" className={actionCellClass}>
+                        {isMobile ? (
+                          <div className="space-y-1.5">
+                            {row.status === 'Pending' && onApproveRow ? (
+                              <button
+                                onClick={() => onApproveRow(row)}
+                                className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                                aria-label="Approve row">
+                                <CheckCircle className="w-4 h-4 mr-2" /> {t("admin.common.approve")}
+                              </button>
+                            ) : null}
+                            {onRejectRow && (
+                              <button
+                                onClick={() => onRejectRow(row)}
+                                className="flex items-center justify-center w-full py-3 px-4 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-rose-400 dark:border-rose-900/30 dark:text-red-400 dark:hover:bg-rose-950/20"
+                                aria-label="Reject row">
+                                <XCircle className="w-4 h-4 mr-2" /> {t("admin.common.reject")}
+                              </button>
+                            )}
+                            {onViewRow && (
+                              <button
+                                onClick={() => onViewRow(row)}
+                                className="flex items-center justify-center w-full py-3 px-4 rounded-lg border border-slate-200 text-charcoal-light hover:bg-slate-50 text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+                                aria-label="View row">
+                                <Eye className="w-4 h-4 mr-2" /> {t("admin.common.view")}
+                              </button>
+                            )}
+                            {onDeleteRow && (
+                              <button
+                                onClick={() => onDeleteRow(row.id)}
+                                className="flex items-center justify-center w-full py-3 px-4 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-red-400 dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950/20"
+                                aria-label="Delete row">
+                                <Trash2 className="w-4 h-4 mr-2" /> {t("admin.common.delete")}
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          row.status === 'Pending' && onApproveRow ? (
                             <div className="inline-flex items-center gap-1.5">
                               <button
                                 onClick={() => onApproveRow(row)}
@@ -329,24 +347,6 @@ export default function DataTable({
                                   Reject
                                 </button>
                               )}
-                              {onViewRow && (
-                                <button
-                                  onClick={() => onViewRow(row)}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 border border-slate-200 text-charcoal-light hover:bg-slate-50 rounded-lg text-[11px] font-bold transition-all dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
-                                >
-                                  <Eye className="w-3.5 h-3.5" />
-                                  View
-                                </button>
-                              )}
-                              {onDeleteRow && (
-                                <button
-                                  onClick={() => onDeleteRow(row.id)}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 rounded-lg text-[11px] font-bold transition-all dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950/20"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                  Delete
-                                </button>
-                              )}
                             </div>
                           ) : (
                             <ActionMenu
@@ -355,8 +355,45 @@ export default function DataTable({
                               onApprove={onApproveRow ? () => onApproveRow(row) : null}
                               onReject={onRejectRow ? () => onRejectRow(row) : null}
                             />
-                          )}
+                          )
+                        )}
+                      </td>
+                    );
+                    return (
+                      <tr
+                        key={row.id}
+                        className={`hover:bg-slate-50/45 dark:hover:bg-gray-850/40 transition-colors ${
+                          isSelected ? 'bg-primary/5 dark:bg-primary-dark/5' : ''
+                        }`}
+                      >
+                        <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelectRow(row.id)}
+                            className="rounded border-slate-300 dark:border-gray-700 text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                          />
                         </td>
+                        {columns.map((col) => {
+                          const val = row[col.key];
+                          const isHidden = isMobile && mobileHiddenColumns.includes(col.key);
+                          const cellClass = isHidden ? 'hidden sm:table-cell block' : '';
+                          return (
+                            <td 
+                              key={col.key} 
+                              className={`px-4 sm:px-6 py-3.5 whitespace-nowrap text-xs font-semibold text-slate-700 dark:text-gray-300 ${cellClass}`}
+                            >
+                              {col.key === 'status' ? (
+                                <StatusBadge status={val} />
+                              ) : col.render ? (
+                                col.render(row)
+                              ) : (
+                                val || '-'
+                              )}
+                            </td>
+                          );
+                        })}
+                        {actionCell}
                       </tr>
                     );
                   })
@@ -375,7 +412,8 @@ export default function DataTable({
 
       {/* Pagination controls */}
       {filteredSortedData.length > 0 && (
-        <div className="flex items-center justify-between border-t border-slate-100 dark:border-gray-850 mt-6 pt-4.5 text-xs font-semibold text-slate-500 dark:text-gray-400">
+<div className="flex items-center justify-between border-t border-slate-100 dark:border-gray-850 mt-6 pt-4.5">
+
           <div className="hidden sm:block">
             Showing <span className="font-extrabold text-charcoal dark:text-white">{(currentPage - 1) * rowsPerPage + 1}</span> to{' '}
             <span className="font-extrabold text-charcoal dark:text-white">
@@ -394,7 +432,7 @@ export default function DataTable({
                   setRowsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="bg-slate-55 dark:bg-gray-850 border border-slate-200 dark:border-gray-800 rounded-lg px-2.5 py-1 font-bold text-charcoal dark:text-white"
+                className="bg-slate-55 dark:bg-gray-850 border border-slate-200 dark:border-gray-800 rounded-lg px-4 py-3 font-bold text-charcoal dark:text-white min-w-[120px]"
               >
                 {[5, 10, 25, 50].map(sz => (
                   <option key={sz} value={sz}>{sz}</option>
@@ -403,28 +441,28 @@ export default function DataTable({
             </div>
 
             {/* Navigation buttons */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2.5">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="p-2 border border-slate-200 dark:border-gray-800 rounded-xl bg-white hover:bg-slate-50 dark:bg-transparent dark:hover:bg-gray-850 text-charcoal dark:text-white disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                className="flex items-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-gray-800 bg-white hover:bg-slate-50 dark:bg-transparent dark:hover:bg-gray-850 text-charcoal dark:text-white disabled:opacity-40 disabled:pointer-events-none transition-colors"
                 aria-label="Previous page"
               >
-                <ChevronLeft className="w-3.5 h-3.5" />
+                <ChevronLeft className="w-4 h-4" />
               </button>
 
-              <div className="flex items-center gap-1 font-bold">
+              <div className="flex items-center gap-2 font-bold">
                 {Array.from({ length: totalPages }).map((_, idx) => {
                   const pg = idx + 1;
                   return (
                     <button
                       key={pg}
                       onClick={() => setCurrentPage(pg)}
-                      className={`px-3 py-1.5 rounded-xl transition-all ${
+                      className={`px-4 py-3 rounded-xl transition-all ${
                         currentPage === pg
                           ? 'bg-primary text-white'
                           : 'hover:bg-slate-100 dark:hover:bg-gray-800 text-charcoal dark:text-white'
-                      }`}
+                        }`}
                     >
                       {pg}
                     </button>
@@ -435,10 +473,10 @@ export default function DataTable({
               <button
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="p-2 border border-slate-200 dark:border-gray-800 rounded-xl bg-white hover:bg-slate-50 dark:bg-transparent dark:hover:bg-gray-850 text-charcoal dark:text-white disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                className="flex items-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-gray-800 bg-white hover:bg-slate-50 dark:bg-transparent dark:hover:bg-gray-850 text-charcoal dark:text-white disabled:opacity-40 disabled:pointer-events-none transition-colors"
                 aria-label="Next page"
               >
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>

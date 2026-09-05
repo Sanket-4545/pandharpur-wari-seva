@@ -89,7 +89,7 @@ export default function PersonCard({ person }) {
       <div className="px-5.5 pb-5.5">
         <Link
           href={`/missing-persons/${encodeURIComponent(displayId)}`}
-          className="w-full inline-flex items-center justify-center gap-2 px-4.5 py-3 rounded-xl border border-slate-200 dark:border-gray-700 text-xs font-bold text-charcoal dark:text-white hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 transform active:scale-95 group/btn focus:outline-none focus:ring-2 focus:ring-primary/50"
+          className="w-full inline-flex items-center justify-center gap-2 px-4.5 py-3.5 rounded-xl border border-slate-200 dark:border-gray-700 text-xs font-bold text-charcoal dark:text-white hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 transform active:scale-95 group/btn focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
         >
           <span>{t('missing_persons_page.btn_view_details')}</span>
           <ArrowRight className="w-4 h-4 transition-transform duration-250 group-hover/btn:translate-x-1" />

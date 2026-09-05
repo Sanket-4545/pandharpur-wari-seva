@@ -10,7 +10,7 @@ export default function Button({
   size = 'md',
   ...props 
 }) {
-  const baseStyles = "inline-flex items-center justify-center font-heading font-semibold rounded-xl transition-all duration-300 transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2";
+  const baseStyles = "inline-flex items-center justify-center font-heading font-semibold rounded-xl transition-all duration-300 transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 min-h-[44px]";
   
   const variants = {
     primary: "bg-primary text-white hover:bg-primary-dark shadow-saffron-glow focus:ring-primary/50",
@@ -21,8 +21,8 @@ export default function Button({
   };
 
   const sizes = {
-    sm: "px-4 py-2 text-sm",
-    md: "px-6 py-3 text-base",
+    sm: "px-4 py-3 text-sm",
+    md: "px-6 py-3.5 text-base",
     lg: "px-8 py-4 text-lg"
   };
 

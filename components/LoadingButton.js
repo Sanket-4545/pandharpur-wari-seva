@@ -11,7 +11,7 @@ export default function LoadingButton({
   variant = 'primary',
   className = '',
 }) {
-  const base = 'inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/20';
+  const base = 'inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl font-bold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[44px]';
   const variants = {
     primary: 'bg-primary text-white hover:bg-primary-dark shadow-saffron-glow',
     secondary: 'bg-secondary text-white hover:bg-secondary-dark',
