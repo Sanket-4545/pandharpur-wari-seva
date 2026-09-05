@@ -91,6 +91,22 @@ export default function GalleryPage() {
     }
   };
 
+  const getPageNumbers = () => {
+    if (totalPages <= 6) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    const candidates = [1, currentPage - 1, currentPage, currentPage + 1, totalPages]
+      .filter((p) => p >= 1 && p <= totalPages)
+      .filter((p, i, arr) => arr.indexOf(p) === i)
+      .sort((a, b) => a - b);
+    const result = [];
+    candidates.forEach((p, i) => {
+      if (i > 0 && p - candidates[i - 1] > 1) result.push('...');
+      result.push(p);
+    });
+    return result;
+  };
+
   return (
     <div className="bg-slate-50 dark:bg-gray-950 min-h-screen pb-20">
       <HeroBanner 
@@ -134,7 +150,7 @@ export default function GalleryPage() {
 
           {/* Pagination UI */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-16 select-none">
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-16 select-none">
               {/* Prev Button */}
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
@@ -146,19 +162,30 @@ export default function GalleryPage() {
               </button>
 
               {/* Number Pages */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                const isActive = currentPage === page;
+              {getPageNumbers().map((entry, idx) => {
+                if (entry === '...') {
+                  return (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="w-11 h-11 flex items-center justify-center text-sm font-bold text-slate-400 dark:text-gray-500 select-none"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+                const isActive = currentPage === entry;
                 return (
                   <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
+                    key={entry}
+                    onClick={() => handlePageChange(entry)}
+                    aria-current={isActive ? 'page' : undefined}
                     className={`w-11 h-11 rounded-xl font-heading font-bold text-sm transition-all duration-300 min-w-[44px] min-h-[44px] ${
                       isActive 
                         ? 'bg-primary text-white shadow-saffron-glow' 
                         : 'bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-700 text-charcoal-light dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
                     }`}
                   >
-                    {page}
+                    {entry}
                   </button>
                 );
               })}

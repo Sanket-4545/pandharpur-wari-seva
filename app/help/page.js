@@ -253,21 +253,21 @@ export default function HelpPage() {
                     <label className="text-sm font-bold text-charcoal dark:text-gray-200">
                       {t("help_page.help_type")} <span className="text-primary">*</span>
                     </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {HELP_TYPES.map(({ value, icon: Icon, colorClass }) => (
                         <button
                           key={value}
                           type="button"
                           onClick={() => handleHelpTypeSelect(value)}
-                          className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30 ${
+                          className={`flex items-center justify-start gap-3 p-4 rounded-2xl border-2 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30 sm:flex-col sm:justify-center sm:gap-2 ${
                             formData.helpType === value
                               ? "bg-primary/5 border-primary shadow-saffron-glow scale-[1.02]"
                               : `${colorClass} hover:shadow-premium`
                           }`}
                           aria-pressed={formData.helpType === value}
                         >
-                          <Icon className="w-6 h-6" />
-                          <span className="text-xs font-bold leading-tight text-center">
+                          <Icon className="w-6 h-6 shrink-0" />
+                          <span className="text-sm font-bold leading-tight break-words sm:text-center sm:text-xs">
                             {t(HELP_TYPE_KEYS[value])}
                           </span>
                         </button>
