@@ -36,11 +36,11 @@ export default function AboutPreview() {
               ].map((value, idx) => {
                 const Icon = value.icon;
                 return (
-                  <div key={idx} className="flex flex-col items-start p-4.5 rounded-2xl bg-white border border-slate-200/50 shadow-sm hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-300">
+                  <div key={idx} className="flex flex-col items-start p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/50 shadow-sm hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-300">
                     <div className="p-2.5 rounded-xl bg-primary/10 text-primary mb-3">
                       <Icon className="w-5 h-5" />
                     </div>
-                    <span className="text-[13px] font-bold text-charcoal">{t(value.labelKey)}</span>
+                    <span className="text-[13px] font-bold text-charcoal leading-snug">{t(value.labelKey)}</span>
                   </div>
                 );
               })}
@@ -61,7 +61,7 @@ export default function AboutPreview() {
               />
               {/* Hover Overlay Card */}
               <div className="absolute bottom-6 left-6 right-6 backdrop-blur-md bg-slate-900/75 border border-white/10 p-5 rounded-2xl text-white shadow-xl">
-                <span className="text-[10px] uppercase tracking-widest font-extrabold text-primary">NSS Volunteer Motto</span>
+                <span className="text-[10px] uppercase font-extrabold text-primary">NSS Volunteer Motto</span>
                 <h4 className="text-sm font-bold mt-1 text-white leading-snug">"Not Me But You" (मला नव्हे, तुला)</h4>
                 <p className="text-xs text-slate-300 mt-1.5 font-medium leading-relaxed">Assisting devotees along the route, rendering medical aid, and maintaining cleanliness with complete devotion.</p>
               </div>

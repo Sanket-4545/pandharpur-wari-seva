@@ -19,9 +19,18 @@ export function LanguageProvider({ children }) {
     const savedLocale = localStorage.getItem('wari_nss_locale');
     if (savedLocale && (savedLocale === 'en' || savedLocale === 'mr')) {
       setLocale(savedLocale);
+      document.documentElement.lang = savedLocale;
+    } else {
+      document.documentElement.lang = 'en';
     }
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      document.documentElement.lang = locale;
+    }
+  }, [locale, mounted]);
 
   const changeLanguage = (newLocale) => {
     if (newLocale === 'en' || newLocale === 'mr') {

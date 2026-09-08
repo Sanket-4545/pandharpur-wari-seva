@@ -107,7 +107,7 @@ export default function Hero() {
 
       <div className="relative z-10 w-full mt-16 md:mt-24 mb-6">
         <Container>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto">
             {stats.map((stat, index) => (
               <div key={index} className={`transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ transitionDelay: `${(index + 1) * 150}ms` }}>
                 <StatisticCard

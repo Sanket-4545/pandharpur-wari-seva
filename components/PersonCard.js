@@ -62,37 +62,37 @@ export default function PersonCard({ person }) {
           </div>
         </div>
 
-        <div className="p-5.5 text-left">
-          <h3 className="font-heading text-lg font-extrabold text-charcoal dark:text-white tracking-tight group-hover:text-primary transition-colors duration-250">
+        <div className="p-4 sm:p-5 text-left">
+          <h3 className="font-heading text-base sm:text-lg font-extrabold text-charcoal dark:text-white tracking-tight group-hover:text-primary transition-colors duration-250">
             {person.name || 'Unknown'}
           </h3>
 
-          <div className="flex gap-4.5 mt-2.5 text-xs font-bold text-slate-400 dark:text-gray-500">
+          <div className="flex gap-4 mt-2 text-[11px] sm:text-xs font-bold text-slate-400 dark:text-gray-500">
             {person.age != null && <span>{person.age} {t('missing_persons_page.age_years')}</span>}
             {person.age != null && person.gender && <span>&bull;</span>}
             <span>{person.gender ? t(`missing_persons_page.filter_${person.gender.toLowerCase()}`) : ''}</span>
           </div>
 
-          <div className="mt-5 space-y-2.5 border-t border-slate-50 dark:border-gray-800 pt-4 text-xs font-semibold text-charcoal-light dark:text-gray-400">
+          <div className="mt-4 space-y-2 border-t border-slate-50 dark:border-gray-800 pt-3 text-[11px] sm:text-xs font-semibold text-charcoal-light dark:text-gray-400">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary/70 flex-shrink-0" />
+              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary/70 flex-shrink-0" />
               <span className="truncate">{location}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-secondary/70 flex-shrink-0" />
+              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-secondary/70 flex-shrink-0" />
               <span>{date}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-5.5 pb-5.5">
+      <div className="px-4 pb-4 sm:px-5 sm:pb-5">
         <Link
           href={`/missing-persons/${encodeURIComponent(displayId)}`}
-          className="w-full inline-flex items-center justify-center gap-2 px-4.5 py-3.5 rounded-xl border border-slate-200 dark:border-gray-700 text-xs font-bold text-charcoal dark:text-white hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 transform active:scale-95 group/btn focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 dark:border-gray-700 text-[11px] sm:text-xs font-bold text-charcoal dark:text-white hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 transform active:scale-95 group/btn focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
         >
           <span>{t('missing_persons_page.btn_view_details')}</span>
-          <ArrowRight className="w-4 h-4 transition-transform duration-250 group-hover/btn:translate-x-1" />
+          <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-250 group-hover/btn:translate-x-1" />
         </Link>
       </div>
     </div>

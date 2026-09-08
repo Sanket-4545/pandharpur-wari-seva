@@ -56,7 +56,7 @@ export default function ServiceCard({ icon: Icon, iconName, titleKey, descKey, d
       <div className="mt-7">
         <button
           onClick={onLearnMore || (() => alert(`More info on ${t(titleKey)} (Simulation only)`))}
-          className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-primary hover:text-primary-dark transition-colors duration-200 group-hover:translate-x-1 focus:outline-none focus:ring-2 focus:ring-primary/50"
+          className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase text-primary hover:text-primary-dark transition-colors duration-200 group-hover:translate-x-1 focus:outline-none focus:ring-2 focus:ring-primary/50"
         >
           <span>{t('services_page.learn_more') || 'Learn More'}</span>
           <ArrowRight className="w-4 h-4 transition-transform duration-250 group-hover:translate-x-1" />

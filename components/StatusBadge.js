@@ -53,7 +53,7 @@ export default function StatusBadge({ status }) {
   const label = labelKey ? t(labelKey) : (status || "Unknown");
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-full border shadow-sm ${styles}`}>
+    <span className={`inline-flex items-center px-2.5 py-1 text-[10px] sm:text-xs font-bold uppercase rounded-full border shadow-sm ${styles}`}>
       {label}
     </span>
   );

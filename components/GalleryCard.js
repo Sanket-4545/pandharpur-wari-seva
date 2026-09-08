@@ -28,13 +28,13 @@ export default function GalleryCard({ image, onClick }) {
         </div>
 
         {/* Category Badge */}
-        <span className="absolute top-4 left-4 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-widest text-white bg-primary rounded-lg shadow-sm">
+        <span className="absolute top-4 left-4 px-2.5 py-1 text-[10px] sm:text-xs font-extrabold uppercase text-white bg-primary rounded-lg shadow-sm">
           {t(`gallery_page.filter_${image.category}`)}
         </span>
       </div>
 
       {/* Description / Caption */}
-      <div className="p-4.5 border-t border-slate-50 dark:border-gray-800">
+      <div className="p-4 sm:p-5 border-t border-slate-50 dark:border-gray-800">
         <p className="text-sm font-semibold text-charcoal dark:text-white leading-snug group-hover:text-primary transition-colors duration-200">
           {t(image.titleKey)}
         </p>
