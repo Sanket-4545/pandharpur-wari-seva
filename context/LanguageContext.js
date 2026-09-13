@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import en from '@/locales/en.json';
 import mr from '@/locales/mr.json';
 
@@ -39,7 +39,7 @@ export function LanguageProvider({ children }) {
     }
   };
 
-  const t = (keyPath) => {
+  const t = useCallback((keyPath) => {
     const keys = keyPath.split('.');
     let result = dictionaries[mounted ? locale : 'en'];
     
@@ -47,7 +47,6 @@ export function LanguageProvider({ children }) {
       if (result && result[key] !== undefined) {
         result = result[key];
       } else {
-        // Fallback to English
         let fallback = dictionaries['en'];
         for (const k of keys) {
           fallback = fallback ? fallback[k] : null;
@@ -57,14 +56,14 @@ export function LanguageProvider({ children }) {
     }
     
     return result;
-  };
+  }, [mounted, locale]);
 
-  const value = {
+  const value = useMemo(() => ({
     locale: mounted ? locale : 'en',
     changeLanguage,
     t,
     isLoaded: mounted,
-  };
+  }), [mounted, locale, t]);
 
   return (
     <LanguageContext.Provider value={value}>

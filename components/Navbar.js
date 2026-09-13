@@ -31,28 +31,28 @@ export default function Navbar() {
 
   useEffect(() => {
     async function checkAuth() {
-      try {
-        const volRes = await fetch('/api/volunteer/me');
-        if (volRes.ok) {
-          const volJson = await volRes.json();
-          if (volJson.success && volJson.data) {
-            setVolunteerData(volJson.data);
-            setAuthState('volunteer');
-            return;
-          }
-        }
-      } catch {}
+      const [volResult, adminResult] = await Promise.allSettled([
+        fetch('/api/volunteer/me'),
+        fetch('/api/admins/me'),
+      ]);
 
-      try {
-        const adminRes = await fetch('/api/admins/me');
-        if (adminRes.ok) {
-          const adminJson = await adminRes.json();
-          if (adminJson.success) {
-            setAuthState('admin');
-            return;
-          }
-        }
-      } catch {}
+      const volData = volResult.status === 'fulfilled' && volResult.value.ok
+        ? await volResult.value.json()
+        : null;
+      const adminData = adminResult.status === 'fulfilled' && adminResult.value.ok
+        ? await adminResult.value.json()
+        : null;
+
+      if (volData?.success && volData?.data) {
+        setVolunteerData(volData.data);
+        setAuthState('volunteer');
+        return;
+      }
+
+      if (adminData?.success) {
+        setAuthState('admin');
+        return;
+      }
 
       setAuthState('unauthenticated');
     }

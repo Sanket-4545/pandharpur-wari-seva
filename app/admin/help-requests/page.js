@@ -133,7 +133,7 @@ export default function AdminHelpRequestsPage() {
       key: 'message',
       label: t('admin.help_requests.column_message'),
       render: (row) => (
-        <span className="truncate max-w-[140px] block text-charcoal-light dark:text-gray-400">
+        <span className="line-clamp-2 block text-charcoal-light dark:text-gray-400">
           {row.message || '—'}
         </span>
       ),

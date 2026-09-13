@@ -512,25 +512,25 @@ export default function VolunteersAdmin() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto -mx-5">
+            <div className="overflow-x-auto sm:-mx-5">
               <div className="inline-block min-w-full align-middle px-5">
                 <div className="overflow-hidden border border-slate-100 dark:border-gray-800 rounded-2xl">
                   <table className="min-w-full divide-y divide-slate-100 dark:divide-gray-850">
                     <thead className="bg-slate-50/70 dark:bg-gray-950/20 sticky top-0 z-10">
                       <tr>
-                        <th scope="col" className="px-4 py-3.5 w-12">
+                        <th scope="col" className="px-4 py-3.5 w-12 hidden sm:table-cell">
                           <span className="sr-only">{t('admin.volunteers.select_row')}</span>
                         </th>
-                        <th scope="col" className="px-4 sm:px-5 py-3.5 text-left text-[11px] font-extrabold text-charcoal-light dark:text-gray-400 tracking-wider uppercase">
+                        <th scope="col" className="px-4 sm:px-5 py-3.5 text-left text-[11px] font-extrabold text-charcoal-light dark:text-gray-400 tracking-wider uppercase hidden sm:table-cell">
                           {t('admin.volunteers.column_id')}
                         </th>
                         <th scope="col" className="px-4 sm:px-5 py-3.5 text-left text-[11px] font-extrabold text-charcoal-light dark:text-gray-400 tracking-wider uppercase">
                           {t('admin.volunteers.column_name')}
                         </th>
-                        <th scope="col" className="px-4 sm:px-5 py-3.5 text-left text-[11px] font-extrabold text-charcoal-light dark:text-gray-400 tracking-wider uppercase">
+                        <th scope="col" className="px-4 sm:px-5 py-3.5 text-left text-[11px] font-extrabold text-charcoal-light dark:text-gray-400 tracking-wider uppercase hidden sm:table-cell">
                           {t('admin.volunteers.column_phone')}
                         </th>
-                        <th scope="col" className="px-4 sm:px-5 py-3.5 text-left text-[11px] font-extrabold text-charcoal-light dark:text-gray-400 tracking-wider uppercase">
+                        <th scope="col" className="px-4 sm:px-5 py-3.5 text-left text-[11px] font-extrabold text-charcoal-light dark:text-gray-400 tracking-wider uppercase hidden sm:table-cell">
                           {t('admin.volunteers.column_registration_date')}
                         </th>
                         <th scope="col" className="px-4 sm:px-5 py-3.5 text-left text-[11px] font-extrabold text-charcoal-light dark:text-gray-400 tracking-wider uppercase">
@@ -548,7 +548,7 @@ export default function VolunteersAdmin() {
                           className="hover:bg-slate-50/45 dark:hover:bg-gray-850/40 transition-colors"
                         >
                           {/* Checkbox */}
-                          <td className="px-4 py-3.5 w-12">
+                          <td className="px-4 py-3.5 hidden sm:table-cell">
                             <input
                               type="checkbox"
                               className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30"
@@ -557,7 +557,7 @@ export default function VolunteersAdmin() {
                           </td>
 
                           {/* Volunteer ID */}
-                          <td className="px-4 sm:px-5 py-3.5 whitespace-nowrap text-xs font-bold text-primary">
+                          <td className="px-4 sm:px-5 py-3.5 whitespace-nowrap text-xs font-bold text-primary hidden sm:table-cell">
                             {row.volunteerId}
                           </td>
 
@@ -572,7 +572,7 @@ export default function VolunteersAdmin() {
                           </td>
 
                           {/* Phone */}
-                          <td className="px-4 sm:px-5 py-3.5 whitespace-nowrap text-xs font-semibold text-slate-700 dark:text-gray-300">
+                          <td className="px-4 sm:px-5 py-3.5 whitespace-nowrap text-xs font-semibold text-slate-700 dark:text-gray-300 hidden sm:table-cell">
                             <div className="flex items-center gap-1.5">
                               <Phone className="w-3 h-3 text-slate-400" />
                               {row.phone}
@@ -580,7 +580,7 @@ export default function VolunteersAdmin() {
                           </td>
 
                           {/* Registration Date */}
-                          <td className="px-4 sm:px-5 py-3.5 whitespace-nowrap text-xs font-semibold text-slate-700 dark:text-gray-300">
+                          <td className="px-4 sm:px-5 py-3.5 whitespace-nowrap text-xs font-semibold text-slate-700 dark:text-gray-300 hidden sm:table-cell">
                             <div className="flex items-center gap-1.5">
                               <Calendar className="w-3 h-3 text-slate-400" />
                               {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : '-'}
@@ -814,7 +814,7 @@ export default function VolunteersAdmin() {
             </div>
 
             {/* Info Grid */}
-            <div className="grid grid-cols-2 gap-3 text-xs font-semibold">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-semibold">
               <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl">
                 <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">{t('admin.volunteers.label_volunteer_id')}</span>
                 <span className="font-bold text-primary mt-1 block">{viewingRow.volunteerId}</span>

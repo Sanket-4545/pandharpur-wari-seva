@@ -51,7 +51,7 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isMobileOpen
     window.location.href = "/login";
   };
 
-  const renderNavList = () => (
+  const renderNavList = (isMobile = false) => (
     <div className="flex flex-col justify-between h-full py-6 px-4">
       <div>
         {/* Brand Header */}
@@ -89,7 +89,7 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isMobileOpen
               >
                 <Icon className="w-4.5 h-4.5 shrink-0" />
                 {!isCollapsed && (
-                  <span className="truncate animate-in fade-in duration-250">
+                  <span className={`${isMobile ? "line-clamp-2 break-words" : "truncate"} animate-in fade-in duration-250`}>
                     {t(item.labelKey)}
                   </span>
                 )}
@@ -114,7 +114,7 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isMobileOpen
         >
           <LogOut className="w-4.5 h-4.5 shrink-0" />
           {!isCollapsed && (
-            <span className="truncate animate-in fade-in duration-250">
+            <span className={`${isMobile ? "line-clamp-2 break-words" : "truncate"} animate-in fade-in duration-250`}>
               {t("admin.sidebar.logout")}
             </span>
           )}
@@ -145,7 +145,7 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isMobileOpen
           isCollapsed ? "w-20" : "w-64"
         }`}
       >
-        {renderNavList()}
+        {renderNavList(false)}
       </aside>
 
       {/* Mobile Drawer Slide-out Sidebar */}
@@ -157,8 +157,8 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isMobileOpen
             onClick={closeMobileDrawer}
           />
           {/* Sidebar content drawer */}
-          <aside className="relative bg-white dark:bg-gray-900 w-64 h-full border-r border-slate-200/60 dark:border-gray-800 flex flex-col justify-between z-10 animate-in slide-in-from-left duration-250">
-            {renderNavList()}
+          <aside className="relative bg-white dark:bg-gray-900 w-60 h-full border-r border-slate-200/60 dark:border-gray-800 flex flex-col justify-between z-10 animate-in slide-in-from-left duration-250">
+            {renderNavList(true)}
           </aside>
         </div>
       )}

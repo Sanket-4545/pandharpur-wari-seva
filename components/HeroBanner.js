@@ -4,6 +4,7 @@ import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import Container from './Container';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function HeroBanner({ titleKey, subtitleKey, bgImage }) {
   const { t } = useLanguage();
@@ -12,9 +13,13 @@ export default function HeroBanner({ titleKey, subtitleKey, bgImage }) {
     <section className="relative min-h-[40vh] md:min-h-[45vh] flex flex-col justify-center py-16 overflow-hidden bg-slate-950">
       {/* Background Image Overlay */}
       {bgImage && (
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-25 mix-blend-overlay"
-          style={{ backgroundImage: `url('${bgImage}')` }}
+        <Image
+          src={bgImage}
+          alt=""
+          fill
+          sizes="100vw"
+          className="opacity-25 object-cover object-center"
+          style={{ mixBlendMode: 'overlay' }}
         />
       )}
       

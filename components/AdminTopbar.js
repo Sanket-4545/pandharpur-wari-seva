@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu, Sun, Moon, User, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -10,8 +11,26 @@ import Breadcrumb from './Breadcrumb';
 
 export default function AdminTopbar({ toggleMobileOpen, isDarkMode, toggleDarkMode }) {
   const { t } = useLanguage();
+  const pathname = usePathname();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
+
+  const routeLabelMap = {
+    admin: "admin.sidebar.dashboard",
+    "missing-persons": "admin.sidebar.missing_persons",
+    volunteers: "admin.sidebar.volunteers",
+    "emergency-contacts": "admin.sidebar.emergency_contacts",
+    gallery: "admin.sidebar.gallery",
+    announcements: "admin.sidebar.announcements",
+    reports: "admin.sidebar.reports",
+    analytics: "admin.sidebar.analytics",
+    settings: "admin.sidebar.settings",
+    profile: "admin.sidebar.profile",
+  };
+
+  const pathParts = pathname ? pathname.split('/').filter(Boolean) : [];
+  const lastPathPart = pathParts[pathParts.length - 1];
+  const mobilePageLabel = t(routeLabelMap[lastPathPart] || lastPathPart || '');
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -48,6 +67,11 @@ export default function AdminTopbar({ toggleMobileOpen, isDarkMode, toggleDarkMo
         <div className="hidden sm:block">
           <Breadcrumb />
         </div>
+        <div className="block sm:hidden overflow-hidden">
+          <span className="text-[11px] font-bold text-charcoal dark:text-white break-words leading-tight max-w-[150px]">
+            {mobilePageLabel}
+          </span>
+        </div>
       </div>
 
       {/* Right controls: Theme toggle, Notifications, Language, Profile dropdown */}
@@ -66,13 +90,13 @@ export default function AdminTopbar({ toggleMobileOpen, isDarkMode, toggleDarkMo
         <NotificationDropdown />
 
         {/* Language Switcher */}
-        <LanguageSwitcher className="scale-90" />
+        <LanguageSwitcher className="sm:scale-90" />
 
         {/* User profile dropdown */}
         <div className="relative" ref={profileRef}>
           <button
             onClick={() => setProfileOpen(!profileOpen)}
-            className="flex items-center gap-2 py-1 px-2.5 rounded-2xl border border-slate-200 dark:border-gray-800 hover:border-primary/30 dark:hover:border-primary-light/30 transition-all focus:outline-none bg-white dark:bg-transparent"
+            className="flex items-center gap-2 py-1 px-2.5 min-h-[44px] rounded-2xl border border-slate-200 dark:border-gray-800 hover:border-primary/30 dark:hover:border-primary-light/30 transition-all focus:outline-none bg-white dark:bg-transparent"
             aria-label="Profile menu"
           >
             {/* Avatar placeholder */}
@@ -86,7 +110,7 @@ export default function AdminTopbar({ toggleMobileOpen, isDarkMode, toggleDarkMo
           </button>
 
           {profileOpen && (
-            <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-gray-900 border border-slate-200/70 dark:border-gray-800 shadow-2xl z-50 py-2.5 animate-in fade-in slide-in-from-top-3 duration-250">
+            <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-48 rounded-2xl bg-white dark:bg-gray-900 border border-slate-200/70 dark:border-gray-800 shadow-2xl z-50 py-2.5 animate-in fade-in slide-in-from-top-3 duration-250">
               {/* Profile Card Header Info */}
               <div className="px-4 py-2 border-b border-slate-100 dark:border-gray-850 mb-2">
                 <p className="text-xs font-extrabold text-charcoal dark:text-white leading-tight">

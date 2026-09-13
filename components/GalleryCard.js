@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
 import { Eye } from 'lucide-react';
 
@@ -14,10 +15,12 @@ export default function GalleryCard({ image, onClick }) {
     >
       {/* Image Container */}
       <div className="relative overflow-hidden aspect-video bg-slate-100 dark:bg-gray-800">
-        <img 
+        <Image 
           src={image.src} 
           alt={t('gallery_page.caption')}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         
         {/* Glow overlay */}

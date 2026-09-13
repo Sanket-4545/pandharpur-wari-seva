@@ -248,7 +248,7 @@ export default function DataTable({
       </div>
 
       {/* Grid Container */}
-      <div className="overflow-x-auto -mx-5">
+      <div className="overflow-x-auto sm:-mx-5">
         <div className="inline-block min-w-full align-middle px-5">
           <div className="overflow-hidden border border-slate-100 dark:border-gray-800 rounded-2xl">
             <table className="min-w-full divide-y divide-slate-100 dark:divide-gray-850">

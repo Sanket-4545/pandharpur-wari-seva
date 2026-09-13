@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
 import Container from './Container';
 import SectionTitle from './SectionTitle';
@@ -54,11 +55,15 @@ export default function AboutPreview() {
 
             {/* Main Image Box */}
             <div className="relative bg-white p-2 rounded-[2rem] border border-slate-100 shadow-premium overflow-hidden">
-              <img
-                src="/images/NSS help 2.png"
-                alt={t('about.image_alt')}
-                className="w-full h-[320px] md:h-[400px] object-cover rounded-[1.75rem] shadow-sm transition-transform duration-500 group-hover:scale-[1.02]"
-              />
+              <div className="relative w-full h-[320px] md:h-[400px] rounded-[1.75rem] overflow-hidden shadow-sm">
+                <Image
+                  src="/images/NSS help 2.png"
+                  alt={t('about.image_alt')}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                />
+              </div>
               {/* Hover Overlay Card */}
               <div className="absolute bottom-6 left-6 right-6 backdrop-blur-md bg-slate-900/75 border border-white/10 p-5 rounded-2xl text-white shadow-xl">
                 <span className="text-[10px] uppercase font-extrabold text-primary">NSS Volunteer Motto</span>

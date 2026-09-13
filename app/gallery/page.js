@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
 import Container from '@/components/Container';
 import HeroBanner from '@/components/HeroBanner';
@@ -222,11 +223,13 @@ export default function GalleryPage() {
             </button>
 
             {/* Modal Image */}
-            <div className="rounded-[1.75rem] overflow-hidden aspect-video bg-slate-950 max-h-[75vh]">
-              <img 
+            <div className="relative rounded-[1.75rem] overflow-hidden aspect-video bg-slate-950 max-h-[75vh]">
+              <Image 
                 src={selectedImage.src} 
                 alt={t('gallery_page.caption')}
-                className="w-full h-full object-contain"
+                fill
+                sizes="100vw"
+                className="object-contain"
               />
             </div>
 
