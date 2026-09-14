@@ -32,7 +32,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    await requireRole(request, ["super_admin", "admin"]);
+    await requireRole(request, ["super_admin"]);
     const body = await request.json();
     const coll = await Settings.getCollection();
     const result = await coll.insertOne(Settings.prepareForInsert(body));
@@ -45,7 +45,7 @@ export async function POST(request) {
 
 export async function PATCH(request) {
   try {
-    await requireRole(request, ["super_admin", "admin"]);
+    await requireRole(request, ["super_admin"]);
     const body = await request.json();
     if (!body.key) {
       return errorResponse("key is required");

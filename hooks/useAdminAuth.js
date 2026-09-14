@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useRef } from "react";
+import React, { useEffect, useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const SESSION_CHECK_INTERVAL = 5 * 60 * 1000;
@@ -15,6 +15,9 @@ export function useAdminAuth() {
   const router = useRouter();
   const intervalRef = useRef(null);
   const redirectedRef = useRef(false);
+  const [role, setRole] = useState(null);
+  const [adminName, setAdminName] = useState(null);
+  const [adminEmail, setAdminEmail] = useState(null);
 
   useEffect(() => {
     const originalFetch = window.fetch;
@@ -56,6 +59,13 @@ export function useAdminAuth() {
       });
       if (res.status === 401) {
         handleAuthError();
+      } else if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data && json.data.role) {
+          setRole((prev) => (prev !== json.data.role ? json.data.role : prev));
+          setAdminName((prev) => (prev !== json.data.name ? json.data.name : prev));
+          setAdminEmail((prev) => (prev !== json.data.email ? json.data.email : prev));
+        }
       }
     } catch {
       handleAuthError();
@@ -113,5 +123,5 @@ export function useAdminAuth() {
     [handleAuthError]
   );
 
-  return { authFetch };
+  return { authFetch, role, adminName, adminEmail };
 }

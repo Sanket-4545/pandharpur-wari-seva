@@ -90,13 +90,54 @@ export async function middleware(request) {
     return NextResponse.next();
   }
 
-  // Admin-only API routes — require auth
+  // Admin-only API routes — require auth and role-based defense-in-depth
   if (matchesAnyPrefix(pathname, ADMIN_ONLY_API_PREFIXES)) {
     if (!isAuthenticated) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
         { status: 401 }
       );
+    }
+    // Defense-in-depth: /api/db is super_admin only
+    if (pathname === "/api/db") {
+      if (payload.role !== "super_admin") {
+        return NextResponse.json(
+          { success: false, error: "Super admin access required" },
+          { status: 403 }
+        );
+      }
+      return NextResponse.next();
+    }
+    // Defense-in-depth: settings write operations are super_admin only
+    if (pathname.startsWith("/api/settings")) {
+      if (payload.role !== "super_admin") {
+        return NextResponse.json(
+          { success: false, error: "Super admin access required" },
+          { status: 403 }
+        );
+      }
+      return NextResponse.next();
+    }
+    // Defense-in-depth: admin management write operations are super_admin only
+    if (pathname === "/api/admins" && WRITE_METHODS.includes(method)) {
+      if (payload.role !== "super_admin") {
+        return NextResponse.json(
+          { success: false, error: "Super admin access required" },
+          { status: 403 }
+        );
+      }
+      return NextResponse.next();
+    }
+    if (pathname.startsWith("/api/admins/") && !pathname.startsWith("/api/admins/me") && !pathname.startsWith("/api/admins/change-password")) {
+      if (WRITE_METHODS.includes(method)) {
+        if (payload.role !== "super_admin") {
+          return NextResponse.json(
+            { success: false, error: "Super admin access required" },
+            { status: 403 }
+          );
+        }
+      }
+      return NextResponse.next();
     }
     return NextResponse.next();
   }

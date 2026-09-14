@@ -10,7 +10,13 @@
     "contact": "संपर्क",
     "missing_persons": "हरवलेले व्यक्ती",
     "lost_found": "गहाळ वस्तू कक्ष",
-    "register": "स्वयंसेवक नोंदणी"
+    "register": "स्वयंसेवक नोंदणी",
+    "login_btn": "लॉगिन",
+    "login_volunteer": "स्वयंसेवक लॉगिन",
+    "login_admin": "प्रशासक लॉगिन",
+    "dashboard": "डॅशबोर्ड",
+    "profile": "प्रोफाइल",
+    "logout": "लॉगआउट"
   },
   "hero": {
     "title": "पंढरपूर वारीतील वारकऱ्यांची समर्पित सेवा",
@@ -447,6 +453,7 @@
       "announcements": "घोषणा",
       "reports": "अहवाल",
       "analytics": "अनालिटिक्स",
+      "admin_management": "प्रशासक व्यवस्थापन",
       "settings": "सेटिंग्ज",
       "profile": "प्रोफाइल",
       "logout": "लॉगआउट"
@@ -924,9 +931,34 @@
       "activity_log": "प्रशासकीय क्रियाकलाप लॉग",
       "edit_profile": "माहिती संपादित करा",
       "change_pwd": "पासवर्ड बदला",
-      "role": "मुख्य प्रशासक (रासेयो कक्ष)",
+      "account_details": "प्रोफाइल खाते तपशील",
+      "account_desc": "तुमची वैयक्तिक माहिती, पासवर्ड व्यवस्थापित करा आणि अलीकडील प्रशासकीय क्रियाकलापांवर नजर ठेवा.",
+      "label_full_name": "पूर्ण प्रशासकाचे नाव",
+      "label_contact": "संपर्क क्रमांक",
+      "label_email": "ईमेल पत्ता",
+      "label_about": "संक्षिप्त वर्णन (माहिती)",
+      "save_profile": "प्रोफाइल माहिती जतन करा",
+      "last_login": "शेवटचा लॉगिन",
+      "profile_updated": "प्रोफाइल अद्ययावत",
+      "time_just_now": "आत्ताच",
+      "time_min_ago": "{n} मिनिटे पूर्वी",
+      "time_hours_ago": "{n} तास पूर्वी",
+      "time_days_ago": "{n} दिवस पूर्वी",
       "toast_profile": "प्रोफाइल माहिती यशस्वीरित्या अद्ययावत केली!",
-      "toast_pwd": "पासवर्ड यशस्वीरित्या बदलला!"
+      "toast_pwd": "पासवर्ड यशस्वीरित्या बदलला!",
+      "current_password": "सध्याचा पासवर्ड",
+      "new_password": "नवीन पासवर्ड",
+      "confirm_password": "नवीन पासवर्ड तपासा",
+      "update_password": "पासवर्ड अद्ययावत करा",
+      "password_mismatch": "पासवर्ड एकरीत नाहीत",
+      "password_min_length": "पासवर्ड किमान 8 अक्षरांचा असेल",
+      "same_password": "नवीन पासवर्ड सध्याच्यापेक्षा भिन्न असेल",
+      "rate_limit_error": "अत्यंत अनेक विनंती. कृपया आणि पुन्हा प्रयत्न करा.",
+      "invalid_current_password": "सध्याचा पासवर्ड चुकीआहे",
+      "password_updated": "पासवर्ड यशस्वीरित्या बदलला!",
+      "current_password_placeholder": "आपला सध्याचा पासवर्ड टाका",
+      "new_password_placeholder": "नवीन पासवर्ड टाका (किमान 8 अक्षरे)",
+      "confirm_password_placeholder": "नवीन पासवर्ड तपासा"
     }
   },
   "not_found": {
@@ -950,7 +982,20 @@
     "error_inactive": "खाते निष्क्रिय केले आहे. कृपया मुख्य प्रशासकाशी संपर्क साधा.",
     "error_network": "कनेक्शन त्रुटी. कृपया पुन्हा प्रयत्न करा.",
     "error_email_required": "ईमेल आवश्यक आहे",
-    "error_password_required": "पासवर्ड आवश्यक आहे"
+    "error_password_required": "पासवर्ड आवश्यक आहे",
+    "role_section": "प्रशासकीय भूमिका",
+    "super_admin": "मुख्य प्रशासक",
+    "super_admin_desc": "संपूर्ण प्रशासकीय प्रवेश असलेला प्रणाली मालक",
+    "sub_admin": "उप प्रशासक",
+    "sub_admin_desc": "कार्यात्मक प्रशासकीय प्रवेश",
+    "coordinator": "संयोजक",
+    "coordinator_desc": "संयोजक प्रवेश",
+    "volunteer_login_link": "स्वयंसेवक म्हणून साइन इन करा",
+    "sub_admin_login_title": "उप प्रशासक लॉगिन",
+    "sub_admin_login_subtitle": "तुमच्या उप प्रशासक ओळखपत्रांनी साइन इन करा",
+    "super_admin_login_title": "मुख्य प्रशासक लॉगिन",
+    "super_admin_login_subtitle": "तुमच्या मुख्य प्रशासक ओळखपत्रांनी साइन इन करा",
+    "portal_link": "लॉगिन पोर्टलवर परत जा"
   },
   "volunteer_login": {
     "title": "स्वयंसेवक लॉगिन",
@@ -967,7 +1012,18 @@
     "error_network": "कनेक्शन त्रुटी. कृपया पुन्हा प्रयत्न करा.",
     "error_rate_limit": "खूप विनंत्या. कृपया नंतर पुन्हा प्रयत्न करा.",
     "error_volunteer_id_required": "स्वयंसेवक आयडी आवश्यक आहे",
-    "error_password_required": "पासवर्ड आवश्यक आहे"
+    "error_password_required": "पासवर्ड आवश्यक आहे",
+    "admin_login_link": "प्रशासक म्हणून साइन इन करा"
+  },
+  "portal": {
+    "title": "पंढरपूर वारी सेवा",
+    "subtitle": "तुमचा लॉगिन प्रकार निवडा",
+    "volunteer_title": "स्वयंसेवक लॉगिन",
+    "volunteer_desc": "स्वयंसेवक सेवा आणि मदत विनंत्या ऍक्सेस करा.",
+    "sub_admin_title": "उप प्रशासक लॉगिन",
+    "sub_admin_desc": "प्रशासकीय आणि समन्वय वैशिष्ट्ये ऍक्सेस करा.",
+    "super_admin_title": "मुख्य प्रशासक लॉगिन",
+    "super_admin_desc": "संपूर्ण प्रणाली प्रशासन ऍक्सेस करा."
   },
   "volunteer_dashboard": {
     "title": "स्वयंसेवक डॅशबोर्ड",

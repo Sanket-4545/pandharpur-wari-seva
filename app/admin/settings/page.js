@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Settings as SettingsIcon, Save, Upload, Globe, Info, Loader2, AlertCircle } from 'lucide-react';
 import Toast from '@/components/Toast';
 import FormSkeleton from '@/components/FormSkeleton';
@@ -17,7 +19,9 @@ const DEFAULT_VALUES = {
 
 export default function SettingsAdmin() {
   const { t } = useLanguage();
-
+  const { role } = useAdminAuth();
+  const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -28,9 +32,9 @@ export default function SettingsAdmin() {
   const [campOfficePhone, setCampOfficePhone] = useState('');
   const [footerText, setFooterText] = useState('');
 
-  const showToast = (message, type = 'success') => {
+  const showToast = useCallback((message, type = 'success') => {
     setToast({ message, type, visible: true });
-  };
+  }, []);
 
   const fetchSettings = useCallback(async () => {
     setLoading(true);
@@ -54,11 +58,26 @@ export default function SettingsAdmin() {
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [t, showToast]);
+
+  useEffect(() => {
+    if (role !== null && role !== "super_admin") {
+      setIsRedirecting(true);
+      router.push('/admin');
+    }
+  }, [role, router]);
 
   useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
+
+  if (role === null || isRedirecting) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
 
   const handleSave = async (e) => {
     e.preventDefault();

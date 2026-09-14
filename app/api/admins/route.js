@@ -9,7 +9,11 @@ import {
   paginatedResponse,
   requireRole,
   handleAuthError,
+  rateLimitedResponse,
 } from "@/lib/api-helpers";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+
+const adminMutationLimiter = rateLimit({ interval: 60000, max: 5 });
 
 export async function GET(request) {
   try {
@@ -27,6 +31,11 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
+    const ip = getClientIp(request);
+    const limit = adminMutationLimiter(ip);
+    if (!limit.allowed) {
+      return rateLimitedResponse();
+    }
     await requireRole(request, ["super_admin"]);
     const body = await request.json();
     if (body.passwordHash) {

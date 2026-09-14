@@ -5,12 +5,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, Sun, Moon, User, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useRole, useAdminIdentity } from '@/context/AdminAuthContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import NotificationDropdown from './NotificationDropdown';
 import Breadcrumb from './Breadcrumb';
 
 export default function AdminTopbar({ toggleMobileOpen, isDarkMode, toggleDarkMode }) {
   const { t } = useLanguage();
+  const role = useRole();
+  const { name: adminName, email: adminEmail } = useAdminIdentity();
+  const roleLabel = role === "super_admin" ? "SUPER ADMIN" : role === "admin" ? "SUB ADMIN" : role === "coordinator" ? "COORDINATOR" : "Admin";
   const pathname = usePathname();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
@@ -101,10 +105,10 @@ export default function AdminTopbar({ toggleMobileOpen, isDarkMode, toggleDarkMo
           >
             {/* Avatar placeholder */}
             <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white font-extrabold text-xs tracking-tight shadow-md select-none">
-              A
+              {(adminName || 'A').charAt(0).toUpperCase()}
             </div>
             <span className="hidden lg:block text-xs font-bold text-slate-700 dark:text-gray-300">
-              Admin
+              {roleLabel}
             </span>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-gray-500" />
           </button>
@@ -113,11 +117,11 @@ export default function AdminTopbar({ toggleMobileOpen, isDarkMode, toggleDarkMo
             <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-48 rounded-2xl bg-white dark:bg-gray-900 border border-slate-200/70 dark:border-gray-800 shadow-2xl z-50 py-2.5 animate-in fade-in slide-in-from-top-3 duration-250">
               {/* Profile Card Header Info */}
               <div className="px-4 py-2 border-b border-slate-100 dark:border-gray-850 mb-2">
-                <p className="text-xs font-extrabold text-charcoal dark:text-white leading-tight">
-                  NSS Coordinator
+                <p className="text-xs font-extrabold text-charcoal dark:text-white leading-tight truncate">
+                  {adminName || roleLabel}
                 </p>
-                <p className="text-[10px] font-semibold text-slate-400 dark:text-gray-500 leading-tight mt-0.5">
-                  admin@wariportal.gov.in
+                <p className="text-[10px] font-semibold text-slate-400 dark:text-gray-500 leading-tight mt-0.5 truncate">
+                  {adminEmail || ''}
                 </p>
               </div>
 
@@ -130,6 +134,7 @@ export default function AdminTopbar({ toggleMobileOpen, isDarkMode, toggleDarkMo
                 {t("admin.sidebar.profile")}
               </Link>
 
+              {role === "super_admin" && (
               <Link
                 href="/admin/settings"
                 onClick={() => setProfileOpen(false)}
@@ -138,6 +143,7 @@ export default function AdminTopbar({ toggleMobileOpen, isDarkMode, toggleDarkMo
                 <Settings className="w-4 h-4" />
                 {t("admin.sidebar.settings")}
               </Link>
+            )}
 
               <button
                 onClick={() => {

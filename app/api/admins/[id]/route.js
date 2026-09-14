@@ -7,7 +7,11 @@ import {
   errorResponse,
   requireRole,
   handleAuthError,
+  rateLimitedResponse,
 } from "@/lib/api-helpers";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+
+const adminMutationLimiter = rateLimit({ interval: 60000, max: 5 });
 
 export async function GET(request, { params }) {
   try {
@@ -22,6 +26,11 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
+    const ip = getClientIp(request);
+    const limit = adminMutationLimiter(ip);
+    if (!limit.allowed) {
+      return rateLimitedResponse();
+    }
     await requireRole(request, ["super_admin"]);
     const adminId = requireObjectId(params.id);
     const body = await request.json();
@@ -55,6 +64,11 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
+    const ip = getClientIp(request);
+    const limit = adminMutationLimiter(ip);
+    if (!limit.allowed) {
+      return rateLimitedResponse();
+    }
     await requireRole(request, ["super_admin"]);
     const coll = await Admin.getCollection();
     const result = await coll.deleteOne({ _id: requireObjectId(params.id) });

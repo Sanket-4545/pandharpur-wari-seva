@@ -18,14 +18,17 @@ import {
   User, 
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ShieldCheck
 } from 'lucide-react';
 import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
+import { useRole } from '@/context/AdminAuthContext';
 
 export default function AdminSidebar({ isCollapsed, toggleCollapse, isMobileOpen, closeMobileDrawer }) {
   const pathname = usePathname();
   const { t } = useLanguage();
+  const role = useRole();
 
   const menuItems = [
     { href: "/admin", labelKey: "admin.sidebar.dashboard", icon: LayoutDashboard },
@@ -38,7 +41,10 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isMobileOpen
     { href: "/admin/announcements", labelKey: "admin.sidebar.announcements", icon: Megaphone },
     { href: "/admin/reports", labelKey: "admin.sidebar.reports", icon: FileText },
     { href: "/admin/analytics", labelKey: "admin.sidebar.analytics", icon: BarChart3 },
-    { href: "/admin/settings", labelKey: "admin.sidebar.settings", icon: Settings },
+    ...(role === "super_admin" ? [
+      { href: "/admin/admin-manage", labelKey: "admin.sidebar.admin_management", icon: ShieldCheck },
+      { href: "/admin/settings", labelKey: "admin.sidebar.settings", icon: Settings },
+    ] : []),
     { href: "/admin/profile", labelKey: "admin.sidebar.profile", icon: User },
   ];
 

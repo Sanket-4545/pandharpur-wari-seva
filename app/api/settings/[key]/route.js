@@ -21,7 +21,7 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    await requireRole(request, ["super_admin", "admin"]);
+    await requireRole(request, ["super_admin"]);
     const body = await request.json();
     await Settings.upsert(params.key, body.value, body.type || "string", body.updatedBy || null);
     const updated = await Settings.findByKey(params.key);
@@ -33,7 +33,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    await requireRole(request, ["super_admin", "admin"]);
+    await requireRole(request, ["super_admin"]);
     const result = await Settings.deleteByKey(params.key);
     if (result.deletedCount === 0) return notFoundResponse("Setting");
     return successResponse({ deleted: true });

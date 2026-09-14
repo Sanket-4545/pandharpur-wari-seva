@@ -18,6 +18,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [authState, setAuthState] = useState('loading');
   const [volunteerData, setVolunteerData] = useState(null);
+  const [adminRole, setAdminRole] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -49,7 +50,8 @@ export default function Navbar() {
         return;
       }
 
-      if (adminData?.success) {
+      if (adminData?.success && adminData?.data?.role) {
+        setAdminRole(adminData.data.role);
         setAuthState('admin');
         return;
       }
@@ -156,7 +158,7 @@ export default function Navbar() {
                           className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-charcoal dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-800 rounded-xl transition-colors"
                         >
                           <LayoutDashboard className="w-4 h-4 text-charcoal-light dark:text-gray-500" />
-                          Dashboard
+                          {t('nav.dashboard')}
                         </Link>
                         <Link
                           href="/volunteer/dashboard"
@@ -164,7 +166,7 @@ export default function Navbar() {
                           className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-charcoal dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-800 rounded-xl transition-colors"
                         >
                           <User className="w-4 h-4 text-charcoal-light dark:text-gray-500" />
-                          Profile
+                          {t('nav.profile')}
                         </Link>
                       </div>
                       <div className="p-1.5 border-t border-slate-100 dark:border-gray-800">
@@ -173,7 +175,7 @@ export default function Navbar() {
                           className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-colors w-full"
                         >
                           <LogOut className="w-4 h-4" />
-                          Logout
+                          {t('nav.logout')}
                         </button>
                       </div>
                     </div>
@@ -186,7 +188,7 @@ export default function Navbar() {
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-all"
                   >
                     <Shield className="w-4 h-4" />
-                    <span>Admin</span>
+                    <span className="max-w-[100px] truncate">{adminRole ? t(`login.${adminRole === 'admin' ? 'sub_admin' : adminRole}`) : 'Admin'}</span>
                     <ChevronDown className={`w-3.5 h-3.5 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {dropdownOpen && (
@@ -198,7 +200,8 @@ export default function Navbar() {
                           className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-charcoal dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-800 rounded-xl transition-colors"
                         >
                           <LayoutDashboard className="w-4 h-4 text-charcoal-light dark:text-gray-500" />
-                          Admin Dashboard
+                          {t('admin.sidebar.dashboard')}
+                          {adminRole ? ` (${t(`login.${adminRole === 'admin' ? 'sub_admin' : adminRole}`)})` : ''}
                         </Link>
                       </div>
                       <div className="p-1.5 border-t border-slate-100 dark:border-gray-800">
@@ -207,7 +210,7 @@ export default function Navbar() {
                           className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-colors w-full"
                         >
                           <LogOut className="w-4 h-4" />
-                          Logout
+                          {t('nav.logout')}
                         </button>
                       </div>
                     </div>
@@ -219,7 +222,7 @@ export default function Navbar() {
                     onClick={() => setDropdownOpen(!dropdownOpen)}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary-dark transition-all shadow-saffron-glow"
                   >
-                    Login
+                    {t('nav.login_btn')}
                     <ChevronDown className={`w-3.5 h-3.5 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {dropdownOpen && (
@@ -231,7 +234,7 @@ export default function Navbar() {
                           className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-charcoal dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-800 rounded-xl transition-colors"
                         >
                           <User className="w-4 h-4 text-charcoal-light dark:text-gray-500" />
-                          Volunteer Login
+                          {t('nav.login_volunteer')}
                         </Link>
                         <Link
                           href="/login"
@@ -239,7 +242,7 @@ export default function Navbar() {
                           className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-charcoal dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-800 rounded-xl transition-colors"
                         >
                           <Shield className="w-4 h-4 text-charcoal-light dark:text-gray-500" />
-                          Admin Login
+                          {t('nav.login_admin')}
                         </Link>
                       </div>
                     </div>
@@ -289,14 +292,14 @@ export default function Navbar() {
                     className="flex items-center gap-2 font-heading text-base font-semibold text-charcoal hover:text-primary transition-colors px-3 py-2 rounded-xl hover:bg-slate-50"
                   >
                     <LayoutDashboard className="w-4 h-4" />
-                    Dashboard
+                    {t('nav.dashboard')}
                   </Link>
                   <button
                     onClick={() => { handleVolunteerLogout(); setIsOpen(false); }}
                     className="flex items-center gap-2 font-heading text-base font-semibold text-red-600 hover:text-red-700 transition-colors px-3 py-2 rounded-xl hover:bg-red-50 w-full text-left"
                   >
                     <LogOut className="w-4 h-4" />
-                    Logout
+                    {t('nav.logout')}
                   </button>
                 </>
               ) : authState === 'admin' ? (
@@ -307,14 +310,15 @@ export default function Navbar() {
                     className="flex items-center gap-2 font-heading text-base font-semibold text-charcoal hover:text-primary transition-colors px-3 py-2 rounded-xl hover:bg-slate-50"
                   >
                     <LayoutDashboard className="w-4 h-4" />
-                    Admin Dashboard
+                    {t('admin.sidebar.dashboard')}
+                    {adminRole ? ` (${t(`login.${adminRole === 'admin' ? 'sub_admin' : adminRole}`)})` : ''}
                   </Link>
                   <button
                     onClick={() => { handleAdminLogout(); setIsOpen(false); }}
                     className="flex items-center gap-2 font-heading text-base font-semibold text-red-600 hover:text-red-700 transition-colors px-3 py-2 rounded-xl hover:bg-red-50 w-full text-left"
                   >
                     <LogOut className="w-4 h-4" />
-                    Logout
+                    {t('nav.logout')}
                   </button>
                 </>
               ) : (
@@ -325,7 +329,7 @@ export default function Navbar() {
                     className="flex items-center gap-2 font-heading text-base font-semibold text-charcoal hover:text-primary transition-colors px-3 py-2 rounded-xl hover:bg-slate-50"
                   >
                     <User className="w-4 h-4" />
-                    Volunteer Login
+                    {t('nav.login_volunteer')}
                   </Link>
                   <Link
                     href="/login"
@@ -333,7 +337,7 @@ export default function Navbar() {
                     className="flex items-center gap-2 font-heading text-base font-semibold text-charcoal hover:text-primary transition-colors px-3 py-2 rounded-xl hover:bg-slate-50"
                   >
                     <Shield className="w-4 h-4" />
-                    Admin Login
+                    {t('nav.login_admin')}
                   </Link>
                 </>
               )}

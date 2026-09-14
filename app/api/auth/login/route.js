@@ -20,7 +20,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password, purpose } = body;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -50,6 +50,22 @@ export async function POST(request) {
         { success: false, error: "Account is deactivated. Contact a super administrator." },
         { status: 403 }
       );
+    }
+
+    if (purpose) {
+      const allowedRoles =
+        purpose === "sub_admin"
+          ? ["admin", "coordinator"]
+          : purpose === "super_admin"
+            ? ["super_admin"]
+            : null;
+
+      if (!allowedRoles || !allowedRoles.includes(admin.role)) {
+        return NextResponse.json(
+          { success: false, error: "Invalid email or password" },
+          { status: 401 }
+        );
+      }
     }
 
     await Admin.setLastLogin(admin._id);

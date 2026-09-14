@@ -1,18 +1,18 @@
 "use client";
 
-import React, { Suspense, useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-function VolunteerLoginForm() {
+export default function AdminLoginForm({ purpose, titleKey, subtitleKey, footerLinks }) {
   const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [volunteerId, setVolunteerId] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -22,41 +22,33 @@ function VolunteerLoginForm() {
     e.preventDefault();
     setError('');
 
-    if (!volunteerId.trim()) {
-      setError(t('volunteer_login.error_volunteer_id_required'));
+    if (!email.trim()) {
+      setError(t('login.error_email_required'));
       return;
     }
     if (!password) {
-      setError(t('volunteer_login.error_password_required'));
+      setError(t('login.error_password_required'));
       return;
     }
 
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/volunteer/login', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ volunteerId: volunteerId.trim(), password }),
+        body: JSON.stringify({ email: email.trim(), password, purpose }),
       });
       const json = await res.json();
       if (!res.ok) {
-        if (res.status === 403 && json.error?.includes('pending')) {
-          setError(t('volunteer_login.error_pending'));
-        } else if (res.status === 403) {
-          setError(t('volunteer_login.error_inactive'));
-        } else if (res.status === 429) {
-          setError(t('volunteer_login.error_rate_limit'));
-        } else {
-          setError(json.error || t('volunteer_login.error_invalid'));
-        }
+        setError(json.error || t('login.error_invalid'));
         setLoading(false);
         return;
       }
-      const redirect = searchParams.get('redirect') || '/volunteer/dashboard';
-      const safeRedirect = redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/volunteer/dashboard';
+      const redirect = searchParams.get('redirect') || '/admin';
+      const safeRedirect = redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/admin';
       router.push(safeRedirect);
     } catch {
-      setError(t('volunteer_login.error_network'));
+      setError(t('login.error_network'));
       setLoading(false);
     }
   };
@@ -69,10 +61,10 @@ function VolunteerLoginForm() {
             <Image src="/images/logo.jpg" alt="NSS Seva Portal logo" fill sizes="64px" className="object-cover" priority />
           </div>
           <h1 className="font-heading text-2xl font-extrabold text-secondary dark:text-white">
-            {t('volunteer_login.title')}
+            {t(titleKey)}
           </h1>
           <p className="mt-2 text-sm text-charcoal-light dark:text-gray-400">
-            {t('volunteer_login.subtitle')}
+            {t(subtitleKey)}
           </p>
         </div>
 
@@ -84,32 +76,32 @@ function VolunteerLoginForm() {
           )}
 
           <div>
-            <label htmlFor="volunteerId" className="block text-sm font-semibold text-charcoal dark:text-gray-200 mb-1.5">
-              {t('volunteer_login.volunteer_id')}
+            <label htmlFor={`email-${purpose}`} className="block text-sm font-semibold text-charcoal dark:text-gray-200 mb-1.5">
+              {t('login.email')}
             </label>
             <input
-              id="volunteerId"
-              type="text"
-              value={volunteerId}
-              onChange={(e) => setVolunteerId(e.target.value)}
-              placeholder={t('volunteer_login.volunteer_id_placeholder')}
-              autoComplete="username"
+              id={`email-${purpose}`}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t('login.email_placeholder')}
+              autoComplete="email"
               autoFocus
               className="w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-charcoal dark:text-white text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-gray-500 min-h-[44px]"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-semibold text-charcoal dark:text-gray-200 mb-1.5">
-              {t('volunteer_login.password')}
+            <label htmlFor={`password-${purpose}`} className="block text-sm font-semibold text-charcoal dark:text-gray-200 mb-1.5">
+              {t('login.password')}
             </label>
             <div className="relative">
               <input
-                id="password"
+                id={`password-${purpose}`}
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={t('volunteer_login.password_placeholder')}
+                placeholder={t('login.password_placeholder')}
                 autoComplete="current-password"
                 className="w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-charcoal dark:text-white text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all pr-12 placeholder:text-slate-400 dark:placeholder:text-gray-500 min-h-[44px]"
               />
@@ -135,38 +127,33 @@ function VolunteerLoginForm() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                {t('volunteer_login.submitting')}
+                {t('login.submitting')}
               </span>
             ) : (
               <span className="flex items-center gap-2">
                 <LogIn className="w-4 h-4" />
-                {t('volunteer_login.submit')}
+                {t('login.submit')}
               </span>
             )}
           </button>
         </form>
 
-        <div className="mt-4 text-center">
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-primary dark:text-primary-light hover:text-primary-dark transition-all min-h-[44px]"
-          >
-            {t('volunteer_login.admin_login_link')}
-          </Link>
-        </div>
+        {footerLinks && footerLinks.length > 0 && (
+          <div className="mt-4 text-center space-y-2">
+            {footerLinks.map((link, i) => (
+              <div key={i}>
+                <Link
+                  href={link.href}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-primary dark:text-primary-light hover:text-primary-dark transition-all min-h-[44px]"
+                >
+                  {link.icon && <link.icon className="w-3.5 h-3.5" />}
+                  {t(link.labelKey)}
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
-  );
-}
-
-export default function VolunteerLoginPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-[80vh] flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    }>
-      <VolunteerLoginForm />
-    </Suspense>
   );
 }

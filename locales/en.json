@@ -10,7 +10,13 @@
     "contact": "Contact",
     "missing_persons": "Missing Persons",
     "lost_found": "Lost & Found",
-    "register": "Volunteer Registration"
+    "register": "Volunteer Registration",
+    "login_btn": "Login",
+    "login_volunteer": "Volunteer Login",
+    "login_admin": "Admin Login",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "logout": "Logout"
   },
   "hero": {
     "title": "Dedicated Seva to Warkaris at Pandharpur Wari",
@@ -447,6 +453,7 @@
       "announcements": "Announcements",
       "reports": "Reports",
       "analytics": "Analytics",
+      "admin_management": "Admin Management",
       "settings": "Settings",
       "profile": "Profile",
       "logout": "Logout"
@@ -924,9 +931,34 @@
       "activity_log": "Administrative Activity Log",
       "edit_profile": "Edit Info",
       "change_pwd": "Change Password",
-      "role": "Super Admin (NSS Cell)",
+      "account_details": "Profile Account Details",
+      "account_desc": "Manage your personal information, passwords, and track recent admin events.",
+      "label_full_name": "Full Admin Name",
+      "label_contact": "Contact Number",
+      "label_email": "Email Address",
+      "label_about": "Short Description (About)",
+      "save_profile": "Save Profile Info",
+      "last_login": "Last login",
+      "profile_updated": "Profile updated",
+      "time_just_now": "Just now",
+      "time_min_ago": "{n} min ago",
+      "time_hours_ago": "{n} hours ago",
+      "time_days_ago": "{n} days ago",
       "toast_profile": "Profile data updated successfully!",
-      "toast_pwd": "Password updated successfully!"
+      "toast_pwd": "Password updated successfully!",
+      "current_password": "Current Password",
+      "new_password": "New Password",
+      "confirm_password": "Confirm New Password",
+      "update_password": "Update Password",
+      "password_mismatch": "Passwords do not match",
+      "password_min_length": "Password must be at least 8 characters",
+      "same_password": "New password must differ from current password",
+      "rate_limit_error": "Too many requests. Please try again later.",
+      "invalid_current_password": "Current password is incorrect",
+      "password_updated": "Password updated successfully!",
+      "current_password_placeholder": "Enter your current password",
+      "new_password_placeholder": "Enter new password (min 8 characters)",
+      "confirm_password_placeholder": "Confirm new password"
     }
   },
   "not_found": {
@@ -950,7 +982,20 @@
     "error_inactive": "Account is deactivated. Contact a super administrator.",
     "error_network": "Connection error. Please try again.",
     "error_email_required": "Email is required",
-    "error_password_required": "Password is required"
+    "error_password_required": "Password is required",
+    "role_section": "Administrative Roles",
+    "super_admin": "Super Admin",
+    "super_admin_desc": "System owner with full administrative access",
+    "sub_admin": "Sub Admin",
+    "sub_admin_desc": "Operational administration access",
+    "coordinator": "Coordinator",
+    "coordinator_desc": "Coordinator access",
+    "volunteer_login_link": "Sign in as a volunteer",
+    "sub_admin_login_title": "Sub Admin Login",
+    "sub_admin_login_subtitle": "Sign in with your Sub Admin credentials",
+    "super_admin_login_title": "Super Admin Login",
+    "super_admin_login_subtitle": "Sign in with your Super Admin credentials",
+    "portal_link": "Back to login portal"
   },
   "volunteer_login": {
     "title": "Volunteer Login",
@@ -967,7 +1012,18 @@
     "error_network": "Connection error. Please try again.",
     "error_rate_limit": "Too many requests. Please try again later.",
     "error_volunteer_id_required": "Volunteer ID is required",
-    "error_password_required": "Password is required"
+    "error_password_required": "Password is required",
+    "admin_login_link": "Sign in as an admin"
+  },
+  "portal": {
+    "title": "Pandharpur Wari Seva",
+    "subtitle": "Choose your login type",
+    "volunteer_title": "Volunteer Login",
+    "volunteer_desc": "Access volunteer services and help requests.",
+    "sub_admin_title": "Sub Admin Login",
+    "sub_admin_desc": "Access administrative and coordination features.",
+    "super_admin_title": "Super Admin Login",
+    "super_admin_desc": "Access full system administration."
   },
   "volunteer_dashboard": {
     "title": "Volunteer Dashboard",

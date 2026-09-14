@@ -5,7 +5,7 @@ import { successResponse, handleApiError, requireRole, handleAuthError } from "@
 
 export async function GET(request) {
   try {
-    await requireRole(request, ["super_admin", "admin"]);
+    await requireRole(request, ["super_admin"]);
     const [stats, collections] = await Promise.all([
       getDbStats(),
       listCollections(),
