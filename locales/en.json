@@ -66,6 +66,10 @@
     "button_register": "Register Now",
     "button_contact": "Contact Support"
   },
+  "announcements": {
+    "label": "Announcements",
+    "aria_label": "Latest announcements and updates"
+  },
   "footer": {
     "desc": "Empowering volunteers to assist pilgrims and support local administration during the holy Pandharpur Wari pilgrimage.",
     "quick_links": "Quick Links",

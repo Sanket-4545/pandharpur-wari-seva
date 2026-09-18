@@ -50,6 +50,21 @@ export async function POST(request) {
     const result = await Announcements.insertOne(body);
     const coll = await Announcements.getCollection();
     const inserted = await coll.findOne({ _id: result.insertedId });
+
+    if (inserted && inserted.status === "published") {
+      try {
+        const { sendPushToAllVolunteers } = await import("@/lib/push-notifications");
+        await sendPushToAllVolunteers({
+          title: inserted.title,
+          body: inserted.description,
+          url: "/",
+          tag: "wari-announcement",
+        });
+      } catch (pushErr) {
+        console.error("[announcements] Push notification failed:", pushErr?.message);
+      }
+    }
+
     return createdResponse(sanitizeDocId(inserted));
   } catch (error) {
     return handleAuthError(error);

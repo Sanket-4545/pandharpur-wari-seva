@@ -1,4 +1,5 @@
 import React from 'react';
+import AnnouncementTicker from '@/components/AnnouncementTicker';
 import Hero from '@/components/Hero';
 import AboutPreview from '@/components/AboutPreview';
 import ServicesPreview from '@/components/ServicesPreview';
@@ -17,6 +18,7 @@ export const metadata = {
 export default function Home() {
   return (
     <>
+      <AnnouncementTicker />
       <Hero />
       <AboutPreview />
       <ServicesPreview />

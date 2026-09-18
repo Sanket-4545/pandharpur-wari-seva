@@ -7,7 +7,7 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  let data = { title: "New Help Request", body: "A new help request is waiting for volunteer action.", url: "/volunteer/help-requests" };
+  let data = { title: "Wari Seva Portal", body: "You have a new notification.", url: "/" };
 
   if (event.data) {
     try {
@@ -20,11 +20,13 @@ self.addEventListener("push", (event) => {
     }
   }
 
+  const tag = data.url?.includes("help-request") ? "wari-help-request" : "wari-announcement";
+
   const options = {
     body: data.body,
     icon: "/images/logo.jpg",
     badge: "/images/logo-192.png",
-    tag: "wari-help-request",
+    tag,
     renotify: true,
     requireInteraction: false,
     data: { url: data.url },

@@ -36,6 +36,21 @@ export async function PATCH(request, { params }) {
       { $set: update },
       { returnDocument: "after" }
     );
+
+    if (updated && updated.status === "published" && existing.status !== "published") {
+      try {
+        const { sendPushToAllVolunteers } = await import("@/lib/push-notifications");
+        await sendPushToAllVolunteers({
+          title: updated.title,
+          body: updated.description,
+          url: "/",
+          tag: "wari-announcement",
+        });
+      } catch (pushErr) {
+        console.error("[announcements] Push notification failed:", pushErr?.message);
+      }
+    }
+
     return successResponse(sanitizeDocId(updated));
   } catch (error) {
     return handleAuthError(error);
