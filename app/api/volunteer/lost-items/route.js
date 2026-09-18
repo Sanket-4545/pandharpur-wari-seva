@@ -16,7 +16,7 @@ export async function GET(request) {
   try {
     const volunteer = await requireVolunteerAuth(request);
     const { page, limit, skip, status, search } = parseQueryParams(request);
-    const filter = { volunteerId: volunteer.volunteerId };
+    const filter = {};
     if (status) filter.status = status;
     if (search) filter.$text = { $search: search };
     const [items, total] = await Promise.all([

@@ -15,7 +15,6 @@ export async function GET(request, { params }) {
     const volunteer = await requireVolunteerAuth(request);
     const item = await LostItems.findByItemId(params.id);
     if (!item) return notFoundResponse("Lost item");
-    if (item.volunteerId !== volunteer.volunteerId) return notFoundResponse("Lost item");
     return successResponse(sanitizeDocId(item));
   } catch (error) {
     return handleAuthError(error);

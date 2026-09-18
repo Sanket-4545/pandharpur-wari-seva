@@ -14,7 +14,6 @@ export async function GET(request, { params }) {
     const volunteer = await requireVolunteerAuth(request);
     const person = await MissingPersons.findByCaseId(params.id);
     if (!person) return notFoundResponse("Missing person");
-    if (person.volunteerId !== volunteer.volunteerId) return notFoundResponse("Missing person");
     return successResponse(sanitizeDocId(person));
   } catch (error) {
     return handleAuthError(error);

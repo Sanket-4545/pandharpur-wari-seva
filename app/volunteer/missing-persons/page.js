@@ -9,6 +9,7 @@ import Link from 'next/link';
 
 const FILTERS = [
   { key: 'all', labelKey: 'volunteer_missing_persons.filter_all' },
+  { key: 'Pending', labelKey: 'volunteer_missing_persons.filter_pending' },
   { key: 'Missing', labelKey: 'volunteer_missing_persons.filter_missing' },
   { key: 'Found', labelKey: 'volunteer_missing_persons.filter_found' },
 ];

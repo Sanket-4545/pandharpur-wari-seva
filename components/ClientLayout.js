@@ -9,15 +9,14 @@ import { usePathname } from 'next/navigation';
 export default function ClientLayout({ children }) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith('/admin');
+  const isLoginPage = pathname === '/login' || pathname === '/volunteer/login' || pathname === '/sub-admin/login' || pathname === '/super-admin/login';
 
   return (
     <>
       <NavigationProgress />
-      {!isAdmin && <Navbar />}
-      <main className="flex-grow">
-        {children}
-      </main>
-      {!isAdmin && <Footer />}
+      {!isAdmin && !isLoginPage && <Navbar />}
+      <main className={isLoginPage ? '' : 'flex-grow'}>{children}</main>
+      {!isAdmin && !isLoginPage && <Footer />}
     </>
   );
 }

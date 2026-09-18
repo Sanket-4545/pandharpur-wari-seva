@@ -3,8 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
-import Image from 'next/image';
+import { Eye, EyeOff, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminLoginForm({ purpose, titleKey, subtitleKey, footerLinks }) {
@@ -54,29 +53,39 @@ export default function AdminLoginForm({ purpose, titleKey, subtitleKey, footerL
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-white shadow-saffron-glow mx-auto mb-4 relative overflow-hidden">
-            <Image src="/images/logo.jpg" alt="NSS Seva Portal logo" fill sizes="64px" className="object-cover" priority />
-          </div>
-          <h1 className="font-heading text-2xl font-extrabold text-secondary dark:text-white">
-            {t(titleKey)}
-          </h1>
-          <p className="mt-2 text-sm text-charcoal-light dark:text-gray-400">
-            {t(subtitleKey)}
+    <div className="login-shell">
+      <section className="login-image-panel" aria-label="Background image">
+        <div className="login-image-wash" />
+        <div className="login-image-content">
+          <p className="login-eyebrow">{t('portal.eyebrow') || 'NSS Wari Seva Portal'}</p>
+          <p className="login-quote">
+            {t('portal.quote_line1') || '"Where devotion'}<br />
+            {t('portal.quote_line2') || 'becomes a daily practice."'}
           </p>
+          <div className="login-divider" />
+          <p className="login-caption">NSS WARI SEWA</p>
         </div>
+      </section>
 
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-2xl shadow-premium p-6 sm:p-8 space-y-5 border border-slate-100 dark:border-gray-800">
-          {error && (
-            <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-400 text-sm rounded-xl px-4 py-3">
-              {error}
-            </div>
-          )}
+      <section className="login-form-panel" aria-labelledby="admin-login-title">
+        <div className="login-form-wrap">
+          <div className="login-form-heading">
+            <p className="login-eyebrow">{t('portal.welcome_back') || 'Welcome back'}</p>
+            <h1 id="admin-login-title">
+              {t('portal.signin_to') || 'Sign in to'}<br />
+              <em>{t('portal.continue') || 'continue.'}</em>
+            </h1>
+            <p className="login-intro">{t(subtitleKey)}</p>
+          </div>
 
-          <div>
-            <label htmlFor={`email-${purpose}`} className="block text-sm font-semibold text-charcoal dark:text-gray-200 mb-1.5">
+          <form onSubmit={handleSubmit}>
+            {error && (
+              <div className="login-error-banner" role="alert">
+                {error}
+              </div>
+            )}
+
+            <label htmlFor={`email-${purpose}`} className="login-label">
               {t('login.email')}
             </label>
             <input
@@ -87,15 +96,17 @@ export default function AdminLoginForm({ purpose, titleKey, subtitleKey, footerL
               placeholder={t('login.email_placeholder')}
               autoComplete="email"
               autoFocus
-              className="w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-charcoal dark:text-white text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-gray-500 min-h-[44px]"
+              className="login-input"
+              style={{ marginTop: 6 }}
+              required
             />
-          </div>
 
-          <div>
-            <label htmlFor={`password-${purpose}`} className="block text-sm font-semibold text-charcoal dark:text-gray-200 mb-1.5">
-              {t('login.password')}
-            </label>
-            <div className="relative">
+            <div className="login-label-row">
+              <label htmlFor={`password-${purpose}`} className="login-label">
+                {t('login.password')}
+              </label>
+            </div>
+            <div style={{ position: 'relative' }}>
               <input
                 id={`password-${purpose}`}
                 type={showPassword ? 'text' : 'password'}
@@ -103,57 +114,85 @@ export default function AdminLoginForm({ purpose, titleKey, subtitleKey, footerL
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={t('login.password_placeholder')}
                 autoComplete="current-password"
-                className="w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-charcoal dark:text-white text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all pr-12 placeholder:text-slate-400 dark:placeholder:text-gray-500 min-h-[44px]"
+                className="login-input"
+                style={{ paddingRight: 48, marginTop: 6 }}
+                required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-charcoal dark:hover:text-gray-300 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                style={{
+                  position: 'absolute',
+                  right: 8,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  padding: 8,
+                  color: '#b8a99b',
+                  cursor: 'pointer',
+                  minWidth: 44,
+                  minHeight: 44,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
                 tabIndex={-1}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-primary to-amber-500 hover:from-primary-dark hover:to-amber-600 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm shadow-md hover:shadow-lg min-h-[44px]"
-          >
-            {loading ? (
-              <span className="flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                {t('login.submitting')}
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <LogIn className="w-4 h-4" />
-                {t('login.submit')}
-              </span>
-            )}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="login-submit-btn"
+              style={{ width: '100%', marginTop: 16 }}
+            >
+              {loading ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <svg style={{ animation: 'spin 1s linear infinite', width: 16, height: 16 }} viewBox="0 0 24 24">
+                    <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  {t('login.submitting')}
+                </span>
+              ) : (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {t('login.submit')}
+                  <span className="arrow" aria-hidden="true">
+                    <ArrowUpRight size={18} />
+                  </span>
+                </span>
+              )}
+            </button>
+          </form>
 
-        {footerLinks && footerLinks.length > 0 && (
-          <div className="mt-4 text-center space-y-2">
-            {footerLinks.map((link, i) => (
-              <div key={i}>
-                <Link
-                  href={link.href}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-primary dark:text-primary-light hover:text-primary-dark transition-all min-h-[44px]"
-                >
-                  {link.icon && <link.icon className="w-3.5 h-3.5" />}
-                  {t(link.labelKey)}
-                </Link>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+          {footerLinks && footerLinks.length > 0 && (
+            <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 10, textAlign: 'center' }}>
+              {footerLinks.map((link, i) => (
+                <div key={i}>
+                  <Link
+                    href={link.href}
+                    style={{ color: '#a35e2d', textDecoration: 'none', borderBottom: '1px solid rgba(163,94,45,.35)', fontSize: 12, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  >
+                    {link.icon && <link.icon size={14} />}
+                    {t(link.labelKey)}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p className="login-legal">
+            {t('portal.by_continuing') || 'By continuing, you agree to our'}{' '}
+            <a href="#" className="login-link-subtle">{t('portal.terms') || 'Terms'}</a>
+            {' '}{t('portal.and') || 'and'}{' '}
+            <a href="#" className="login-link-subtle">{t('portal.privacy') || 'Privacy Policy'}</a>.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

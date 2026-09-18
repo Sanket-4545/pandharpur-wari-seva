@@ -1,18 +1,26 @@
 export default function LoginLoading() {
-  const shimmer = "animate-pulse bg-slate-200 dark:bg-gray-800 rounded-xl";
-
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-3">
-          <div className={`w-16 h-16 mx-auto rounded-2xl ${shimmer}`} />
-          <div className={`h-7 w-48 mx-auto rounded-lg ${shimmer}`} />
-          <div className={`h-4 w-64 mx-auto rounded-lg ${shimmer}`} />
+    <div className="login-shell">
+      <div className="login-image-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="login-image-wash" />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ width: 40, height: 40, border: '3px solid #e7af6a', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
         </div>
-        <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl p-8 space-y-5">
-          <div className={`h-10 w-full rounded-xl ${shimmer}`} />
-          <div className={`h-10 w-full rounded-xl ${shimmer}`} />
-          <div className={`h-10 w-full rounded-xl ${shimmer}`} />
+      </div>
+      <div className="login-form-panel">
+        <div className="login-form-wrap">
+          <div style={{ marginBottom: 35 }}>
+            <div style={{ height: 12, width: 120, background: '#e5ddd3', borderRadius: 3, marginBottom: 14 }} />
+            <div style={{ height: 44, width: '80%', background: '#e5ddd3', borderRadius: 3, marginBottom: 8 }} />
+            <div style={{ height: 14, width: 200, background: '#e5ddd3', borderRadius: 3 }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ height: 12, width: 80, background: '#e5ddd3', borderRadius: 3 }} />
+            <div style={{ height: 52, width: '100%', background: '#e5ddd3', borderRadius: 3 }} />
+            <div style={{ height: 12, width: 80, background: '#e5ddd3', borderRadius: 3, marginTop: 8 }} />
+            <div style={{ height: 52, width: '100%', background: '#e5ddd3', borderRadius: 3 }} />
+            <div style={{ height: 53, width: '100%', background: '#e5ddd3', borderRadius: 3, marginTop: 8 }} />
+          </div>
         </div>
       </div>
     </div>

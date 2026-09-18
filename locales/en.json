@@ -1023,7 +1023,17 @@
     "sub_admin_title": "Sub Admin Login",
     "sub_admin_desc": "Access administrative and coordination features.",
     "super_admin_title": "Super Admin Login",
-    "super_admin_desc": "Access full system administration."
+    "super_admin_desc": "Access full system administration.",
+    "eyebrow": "NSS Wari Seva Portal",
+    "quote_line1": "\"Where devotion",
+    "quote_line2": "becomes a daily practice.\"",
+    "welcome_back": "Welcome back",
+    "signin_to": "Sign in to",
+    "continue": "continue.",
+    "by_continuing": "By continuing, you agree to our",
+    "terms": "Terms",
+    "and": "and",
+    "privacy": "Privacy Policy"
   },
   "volunteer_dashboard": {
     "title": "Volunteer Dashboard",
@@ -1179,6 +1189,7 @@
     "subtitle": "Report and track missing persons found during the pilgrimage.",
     "search_placeholder": "Search by name, age, location...",
     "filter_all": "All",
+    "filter_pending": "Pending",
     "filter_missing": "Missing",
     "filter_found": "Found",
     "status_missing": "Missing",

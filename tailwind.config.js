@@ -30,6 +30,7 @@ module.exports = {
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
         heading: ['Outfit', 'sans-serif'],
+        serif: ['Playfair Display', 'serif'],
       },
       boxShadow: {
         'premium': '0 10px 30px -10px rgba(0, 0, 0, 0.08)',
