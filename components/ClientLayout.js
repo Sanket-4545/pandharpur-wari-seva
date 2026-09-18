@@ -14,7 +14,7 @@ export default function ClientLayout({ children }) {
   return (
     <>
       <NavigationProgress />
-      {!isAdmin && !isLoginPage && <Navbar />}
+      {!isAdmin && <Navbar />}
       <main className={isLoginPage ? '' : 'flex-grow'}>{children}</main>
       {!isAdmin && !isLoginPage && <Footer />}
     </>

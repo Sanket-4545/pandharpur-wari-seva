@@ -36,7 +36,7 @@
 
 /* Login page styles */
 .login-shell {
-  min-height: 100svh;
+  min-height: calc(100svh - 72px);
   display: grid;
   grid-template-columns: minmax(340px, 1.08fr) minmax(400px, .92fr);
   background: #f4eee5;
@@ -44,7 +44,7 @@
 
 .login-image-panel {
   position: relative;
-  min-height: 100svh;
+  min-height: calc(100svh - 72px);
   overflow: hidden;
   color: #fff9ec;
   background-color: #302016;
