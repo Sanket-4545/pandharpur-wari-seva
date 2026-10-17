@@ -1,4 +1,5 @@
 import { NssActivities } from "@/lib/models";
+import { deleteAsset } from "@/lib/cloudinary";
 import {
   successResponse,
   notFoundResponse,
@@ -40,6 +41,13 @@ export async function PATCH(request, { params }) {
       ...cleanBody
     } = body;
 
+    // Handle Cloudinary asset cleanup if posterPublicId changes
+    const newPublicId = cleanBody.posterPublicId;
+    const oldPublicId = existing.posterPublicId;
+    if (newPublicId !== undefined && newPublicId !== oldPublicId && oldPublicId) {
+      await deleteAsset(oldPublicId);
+    }
+
     const update = NssActivities.prepareForUpdate(cleanBody, existing);
     const coll = await NssActivities.getCollection();
     const updated = await coll.findOneAndUpdate(
@@ -57,6 +65,14 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await requireRole(request, ["super_admin", "admin"]);
+    const existing = await NssActivities.findByActivityId(params.id);
+    if (!existing) return notFoundResponse("Activity");
+
+    // Delete Cloudinary asset if posterPublicId exists
+    if (existing.posterPublicId) {
+      await deleteAsset(existing.posterPublicId);
+    }
+
     const coll = await NssActivities.getCollection();
     const result = await coll.deleteOne({ activityId: params.id });
     if (result.deletedCount === 0) return notFoundResponse("Activity");

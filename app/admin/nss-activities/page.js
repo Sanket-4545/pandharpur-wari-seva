@@ -7,6 +7,7 @@ import Toast from '@/components/Toast';
 import ConfirmationDialog from '@/components/ConfirmationDialog';
 import LoadingButton from '@/components/LoadingButton';
 import Modal from '@/components/Modal';
+import NSSActivityPosterUpload from '@/components/NSSActivityPosterUpload';
 
 const FORM_DEFAULTS = {
   title: '',
@@ -16,6 +17,7 @@ const FORM_DEFAULTS = {
   startTime: '',
   endTime: '',
   posterUrl: '',
+  posterPublicId: '',
   boysCount: 0,
   girlsCount: 0,
   status: 'draft',
@@ -33,6 +35,7 @@ export default function NssActivitiesAdmin() {
   const [editingId, setEditingId] = useState(null);
   const [showFormModal, setShowFormModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPosterUploading, setIsPosterUploading] = useState(false);
 
   const [deletingId, setDeletingId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -80,14 +83,20 @@ export default function NssActivitiesAdmin() {
     });
   };
 
+  const handlePosterUploadState = useCallback((uploading) => {
+    setIsPosterUploading(Boolean(uploading));
+  }, []);
+
   const openCreateModal = () => {
     setEditingId(null);
+    setIsPosterUploading(false);
     setForm({ ...FORM_DEFAULTS, activityDate: new Date().toISOString().slice(0, 10) });
     setShowFormModal(true);
   };
 
   const openEditModal = (activity) => {
     setEditingId(activity.activityId);
+    setIsPosterUploading(false);
     setForm({
       title: activity.title || '',
       description: activity.description || '',
@@ -98,6 +107,7 @@ export default function NssActivitiesAdmin() {
       startTime: activity.startTime || '',
       endTime: activity.endTime || '',
       posterUrl: activity.posterUrl || '',
+      posterPublicId: activity.posterPublicId || '',
       boysCount: activity.boysCount || 0,
       girlsCount: activity.girlsCount || 0,
       status: activity.status || 'draft',
@@ -106,6 +116,10 @@ export default function NssActivitiesAdmin() {
   };
 
   const handleSave = async () => {
+    if (isPosterUploading) {
+      showToast('Please wait for the poster upload to finish before saving', 'error');
+      return;
+    }
     if (!form.title || !form.description || !form.venue) {
       showToast('Please fill in all required fields', 'error');
       return;
@@ -498,29 +512,20 @@ export default function NssActivitiesAdmin() {
                 </div>
               </div>
 
-              {/* Poster URL */}
-              <div>
-                <label className="block text-slate-400 dark:text-gray-500 mb-1.5 uppercase">
-                  {t("admin.activities.poster_label")}
-                </label>
-                <input
-                  type="url"
-                  placeholder={t("admin.activities.poster_placeholder")}
-                  value={form.posterUrl}
-                  onChange={(e) => handleFormChange('posterUrl', e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-gray-850 border border-slate-200 dark:border-gray-800 rounded-2xl px-4 py-3 text-xs placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary dark:text-white"
-                />
-                {form.posterUrl && (
-                  <div className="mt-2">
-                    <img
-                      src={form.posterUrl}
-                      alt="Poster preview"
-                      className="max-w-xs h-auto rounded-lg border border-slate-200 dark:border-gray-700"
-                      onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                  </div>
-                )}
-              </div>
+              {/* Poster Upload */}
+              <NSSActivityPosterUpload
+                value={form.posterUrl}
+                publicIdValue={form.posterPublicId}
+                onChange={(url) => handleFormChange('posterUrl', url)}
+                onPublicIdChange={(publicId) => handleFormChange('posterPublicId', publicId)}
+                onUploadStateChange={handlePosterUploadState}
+                disabled={isSubmitting}
+              />
+              {isPosterUploading && (
+                <p className="text-[11px] text-primary font-semibold">
+                  {t("admin.activities.uploading") || "Uploading poster... Please wait before saving."}
+                </p>
+              )}
 
               {/* Participants */}
               <div className="bg-slate-50 dark:bg-gray-850 rounded-2xl p-4 border border-slate-200 dark:border-gray-800">
@@ -594,6 +599,7 @@ export default function NssActivitiesAdmin() {
                 <LoadingButton
                   type="submit"
                   loading={isSubmitting}
+                  disabled={isPosterUploading}
                   className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-saffron-glow text-xs font-bold"
                 >
                   <Save className="w-4 h-4 mr-1.5" />

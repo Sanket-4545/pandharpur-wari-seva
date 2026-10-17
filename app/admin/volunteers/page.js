@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { bloodGroups, shifts, skills as allSkills, languages as allLanguages } from '@/data/volunteers';
+import { bloodGroups } from '@/data/volunteers';
 import { useLanguage } from '@/context/LanguageContext';
 import Modal from '@/components/Modal';
 import ConfirmationDialog from '@/components/ConfirmationDialog';
@@ -17,8 +17,8 @@ import {
 
 const FORM_DEFAULTS = {
   name: '', email: '', phone: '', gender: 'Male', age: '',
-  city: '', college: '', nssUnit: '', bloodGroup: 'O+',
-  emergencyPhone: '', skills: [], languages: [], shift: 'morning', status: 'pending',
+  city: '', college: '', bloodGroup: 'O+',
+  emergencyPhone: '', aadhaar: '', status: 'pending',
 };
 
 const STATUS_FILTERS = ['all', 'pending', 'approved', 'rejected', 'inactive'];
@@ -203,12 +203,9 @@ export default function VolunteersAdmin() {
       age: volunteer.age || '',
       city: volunteer.city || '',
       college: volunteer.college || '',
-      nssUnit: volunteer.nssUnit || '',
       bloodGroup: volunteer.bloodGroup || 'O+',
       emergencyPhone: volunteer.emergencyPhone || '',
-      skills: volunteer.skills || [],
-      languages: volunteer.languages || [],
-      shift: volunteer.shift || 'morning',
+      aadhaar: volunteer.aadhaar || '',
       status: volunteer.status || 'pending',
     });
     setShowFormModal(true);
@@ -218,18 +215,8 @@ export default function VolunteersAdmin() {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleToggleArrayField = (field, value) => {
-    setForm(prev => {
-      const arr = prev[field] || [];
-      if (arr.includes(value)) {
-        return { ...prev, [field]: arr.filter(v => v !== value) };
-      }
-      return { ...prev, [field]: [...arr, value] };
-    });
-  };
-
   const handleSave = async () => {
-    if (!form.name || !form.email || !form.phone || !form.city || !form.college || !form.nssUnit || !form.emergencyPhone) {
+    if (!form.name || !form.email || !form.phone || !form.city || !form.college || !form.emergencyPhone) {
       showToast(t('admin.common.required'), 'error');
       return;
     }
@@ -834,11 +821,8 @@ export default function VolunteersAdmin() {
               </div>
 
               <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl">
-                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">{t('admin.volunteers.shift_location')}</span>
-                <span className="font-bold text-charcoal dark:text-white mt-1 block">
-                  {t('admin.volunteers.shift_label')} {(viewingRow.shift || '').toUpperCase()} <br />
-                  {t('admin.volunteers.blood_group_label')} {viewingRow.bloodGroup}
-                </span>
+                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">{t('admin.volunteers.blood_group_label')}</span>
+                <span className="font-bold text-charcoal dark:text-white mt-1 block">{viewingRow.bloodGroup}</span>
               </div>
 
               <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl">
@@ -850,41 +834,21 @@ export default function VolunteersAdmin() {
               </div>
 
               <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl">
+                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">{t('admin.volunteers.label_aadhaar')}</span>
+                <span className="font-bold text-charcoal dark:text-white mt-1 block">
+                  {viewingRow.aadhaar ? (() => {
+                    const d = String(viewingRow.aadhaar).replace(/\D/g, '');
+                    return d.length === 12 ? 'XXXX-XXXX-' + d.slice(8) : '-';
+                  })() : '-'}
+                </span>
+              </div>
+
+              <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl">
                 <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">{t('admin.volunteers.column_registration_date')}</span>
                 <span className="font-bold text-charcoal dark:text-white mt-1 block flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5" />
                   {viewingRow.createdAt ? new Date(viewingRow.createdAt).toLocaleDateString() : '-'}
                 </span>
-              </div>
-
-              {/* Skills */}
-              <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl col-span-2">
-                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">{t('admin.volunteers.skills_competences')}</span>
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {(viewingRow.skills || []).length > 0 ? (viewingRow.skills || []).map(sk => {
-                    const skObj = allSkills.find(s => s.value === sk);
-                    return (
-                      <span key={sk} className="bg-slate-200 dark:bg-gray-700 text-charcoal dark:text-gray-300 px-2 py-0.5 rounded-full text-[10px] font-bold">
-                        {skObj ? t(skObj.labelKey) : sk}
-                      </span>
-                    );
-                  }) : <span className="text-slate-400 text-[10px]">-</span>}
-                </div>
-              </div>
-
-              {/* Languages */}
-              <div className="p-3 bg-slate-50 dark:bg-gray-850 rounded-xl col-span-2">
-                <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase">{t('admin.volunteers.label_languages')}</span>
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {(viewingRow.languages || []).length > 0 ? (viewingRow.languages || []).map(lang => {
-                    const langObj = allLanguages.find(l => l.value === lang);
-                    return (
-                      <span key={lang} className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded-full text-[10px] font-bold">
-                        {langObj ? t(langObj.labelKey) : lang}
-                      </span>
-                    );
-                  }) : <span className="text-slate-400 text-[10px]">-</span>}
-                </div>
               </div>
 
               {/* ===== FEATURE 8: View Modal Actions ===== */}
@@ -1059,23 +1023,6 @@ export default function VolunteersAdmin() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_nss_unit')} *</label>
-                  <input type="text" value={form.nssUnit} onChange={e => handleFormChange('nssUnit', e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_shift')}</label>
-                  <select value={form.shift} onChange={e => handleFormChange('shift', e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white">
-                    {shifts.map(s => (
-                      <option key={s.value} value={s.value}>{t(s.labelKey)}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
               <div>
                 <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_emergency_phone')} *</label>
                 <input type="text" value={form.emergencyPhone} onChange={e => handleFormChange('emergencyPhone', e.target.value)}
@@ -1083,31 +1030,10 @@ export default function VolunteersAdmin() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_skills')}</label>
-                <div className="flex flex-wrap gap-2">
-                  {allSkills.map(sk => (
-                    <label key={sk.value} className="flex items-center gap-1.5 cursor-pointer">
-                      <input type="checkbox" checked={(form.skills || []).includes(sk.value)}
-                        onChange={() => handleToggleArrayField('skills', sk.value)}
-                        className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30" />
-                      <span className="text-xs text-charcoal-light dark:text-gray-400">{t(sk.labelKey)}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_languages')}</label>
-                <div className="flex flex-wrap gap-2">
-                  {allLanguages.map(lang => (
-                    <label key={lang.value} className="flex items-center gap-1.5 cursor-pointer">
-                      <input type="checkbox" checked={(form.languages || []).includes(lang.value)}
-                        onChange={() => handleToggleArrayField('languages', lang.value)}
-                        className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30" />
-                      <span className="text-xs text-charcoal-light dark:text-gray-400">{t(lang.labelKey)}</span>
-                    </label>
-                  ))}
-                </div>
+                <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t('admin.volunteers.form_aadhaar')}</label>
+                <input type="text" value={form.aadhaar} onChange={e => handleFormChange('aadhaar', e.target.value)} maxLength={12}
+                  placeholder={t('admin.volunteers.placeholder_aadhaar')}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white" />
               </div>
 
               {editingVolunteer && (

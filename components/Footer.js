@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { navLinks } from '@/data/dummyData';
+import { footerNavLinks } from '@/data/dummyData';
 import Link from 'next/link';
 import Container from './Container';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -73,7 +73,7 @@ export default function Footer() {
               {t('footer.quick_links')}
             </h3>
             <ul className="flex flex-col gap-3">
-              {navLinks.map((link) => (
+              {footerNavLinks.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-sm text-slate-400 hover:text-primary transition-colors duration-200">
                     {t(link.labelKey)}

@@ -21,6 +21,16 @@ export const navLinks = [
   { href: '/emergency-contacts', labelKey: 'nav.emergency_contacts' },
   { href: '/help', labelKey: 'help_page.nav_help' },
   { href: '/gallery', labelKey: 'nav.gallery' },
+  { href: '/nss-activities', labelKey: 'nav.nss_activities' }
+];
+
+export const footerNavLinks = [
+  { href: '/', labelKey: 'nav.home' },
+  { href: '/about', labelKey: 'nav.about' },
+  { href: '/services', labelKey: 'nav.services' },
+  { href: '/emergency-contacts', labelKey: 'nav.emergency_contacts' },
+  { href: '/help', labelKey: 'help_page.nav_help' },
+  { href: '/gallery', labelKey: 'nav.gallery' },
   { href: '/faq', labelKey: 'nav.faq' },
   { href: '/contact', labelKey: 'nav.contact' }
 ];

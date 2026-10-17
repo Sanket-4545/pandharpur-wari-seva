@@ -22,8 +22,15 @@ function SuperAdminLoginForm() {
 export default function SuperAdminLoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-[80vh] flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      <div className="login-page">
+        <div className="login-card" style={{ textAlign: 'center' }}>
+          <div className="login-accent" style={{ margin: '0 auto 16px' }} />
+          <div style={{ height: 20, width: 140, background: '#eadfce', borderRadius: 6, margin: '0 auto 10px' }} />
+          <div style={{ height: 12, width: 190, background: '#efe6d8', borderRadius: 6, margin: '0 auto 26px' }} />
+          <div style={{ height: 52, width: '100%', background: '#efe6d8', borderRadius: 10, marginBottom: 14 }} />
+          <div style={{ height: 52, width: '100%', background: '#efe6d8', borderRadius: 10, marginBottom: 18 }} />
+          <div style={{ height: 52, width: '100%', background: '#e8dbc9', borderRadius: 10 }} />
+        </div>
       </div>
     }>
       <SuperAdminLoginForm />

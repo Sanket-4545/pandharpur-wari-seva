@@ -75,7 +75,7 @@ async function requireVolunteerAuth(request) {
 export async function GET(request) {
   try {
     const payload = await requireVolunteerAuth(request);
-    const volunteer = await Volunteers.findById(payload.volunteerId);
+    const volunteer = payload.volunteer || (await Volunteers.findById(payload.volunteerId));
     if (!volunteer) return notFoundResponse("Volunteer");
     return successResponse(Volunteers.sanitizeVolunteer(volunteer));
   } catch (error) {
@@ -100,25 +100,6 @@ export async function PUT(request) {
         return errorResponse("Emergency phone must be a valid 10-15 digit number", 400);
       }
       allowedFields.emergencyPhone = body.emergencyPhone || null;
-    }
-    if (body.skills !== undefined) {
-      if (!Array.isArray(body.skills)) {
-        return errorResponse("Skills must be an array", 400);
-      }
-      allowedFields.skills = body.skills;
-    }
-    if (body.languages !== undefined) {
-      if (!Array.isArray(body.languages)) {
-        return errorResponse("Languages must be an array", 400);
-      }
-      allowedFields.languages = body.languages;
-    }
-    if (body.shift !== undefined) {
-      const VALID_SHIFTS = ["morning", "afternoon", "evening", "night"];
-      if (!VALID_SHIFTS.includes(body.shift)) {
-        return errorResponse("Shift must be one of: morning, afternoon, evening, night", 400);
-      }
-      allowedFields.shift = body.shift;
     }
 
     if (Object.keys(allowedFields).length === 0) {

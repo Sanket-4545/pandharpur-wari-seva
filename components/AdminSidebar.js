@@ -19,7 +19,8 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Calendar
 } from 'lucide-react';
 import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
@@ -39,6 +40,7 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isMobileOpen
     { href: "/admin/emergency-contacts", labelKey: "admin.sidebar.emergency_contacts", icon: Phone },
     { href: "/admin/gallery", labelKey: "admin.sidebar.gallery", icon: ImageIcon },
     { href: "/admin/announcements", labelKey: "admin.sidebar.announcements", icon: Megaphone },
+    { href: "/admin/nss-activities", labelKey: "admin.sidebar.nss_activities", icon: Calendar },
     { href: "/admin/reports", labelKey: "admin.sidebar.reports", icon: FileText },
     { href: "/admin/analytics", labelKey: "admin.sidebar.analytics", icon: BarChart3 },
     ...(role === "super_admin" ? [

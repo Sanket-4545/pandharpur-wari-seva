@@ -13,7 +13,7 @@ import {
 export async function GET(request) {
   try {
     const payload = await requireAuth(request);
-    const admin = await Admin.findById(requireObjectId(payload.userId));
+    const admin = payload.admin || (await Admin.findById(requireObjectId(payload.userId)));
     if (!admin) return notFoundResponse("Admin");
     return successResponse(Admin.sanitizeAdmin(admin));
   } catch (error) {

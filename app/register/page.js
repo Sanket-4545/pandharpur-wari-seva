@@ -13,29 +13,7 @@ import Toast from '@/components/Toast';
 import { CheckCircle2, ArrowLeft } from 'lucide-react';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-
-const SHIFT_OPTIONS = [
-  { value: 'morning', key: 'register_page.shift_morning' },
-  { value: 'afternoon', key: 'register_page.shift_afternoon' },
-  { value: 'evening', key: 'register_page.shift_evening' },
-  { value: 'night', key: 'register_page.shift_night' },
-];
-
-const SKILL_OPTIONS = [
-  { value: 'first_aid', key: 'register_page.skill_first_aid' },
-  { value: 'crowd_mgmt', key: 'register_page.skill_crowd_mgmt' },
-  { value: 'translation', key: 'register_page.skill_translation' },
-  { value: 'logistics', key: 'register_page.skill_logistics' },
-  { value: 'it_support', key: 'register_page.skill_it_support' },
-];
-
-const LANG_OPTIONS = [
-  { value: 'marathi', key: 'register_page.lang_marathi' },
-  { value: 'hindi', key: 'register_page.lang_hindi' },
-  { value: 'english', key: 'register_page.lang_english' },
-  { value: 'kannada', key: 'register_page.lang_kannada' },
-  { value: 'telugu', key: 'register_page.lang_telugu' },
-];
+const AADHAAR_REGEX = /^\d{12}$/;
 
 export default function RegisterPage() {
   const { t } = useLanguage();
@@ -49,12 +27,9 @@ export default function RegisterPage() {
     address: '',
     city: '',
     college: '',
-    nssUnit: '',
     bloodGroup: '',
     emergencyPhone: '',
-    skills: [],
-    languages: [],
-    shift: '',
+    aadhaar: '',
     terms: false,
   });
 
@@ -73,22 +48,6 @@ export default function RegisterPage() {
     }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const handleCheckboxGroup = (field, value) => {
-    setFormData((prev) => {
-      const current = [...prev[field]];
-      const idx = current.indexOf(value);
-      if (idx === -1) {
-        current.push(value);
-      } else {
-        current.splice(idx, 1);
-      }
-      return { ...prev, [field]: current };
-    });
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -119,17 +78,14 @@ export default function RegisterPage() {
     if (!formData.college || formData.college.trim().length < 2) {
       temp.college = t('register_page.err_college');
     }
-    if (!formData.nssUnit || formData.nssUnit.trim().length < 2) {
-      temp.nssUnit = t('register_page.err_nss_unit');
-    }
     if (!formData.bloodGroup) {
       temp.bloodGroup = t('register_page.err_blood');
     }
     if (!formData.emergencyPhone || !phoneRegex.test(formData.emergencyPhone)) {
       temp.emergencyPhone = t('register_page.err_emergency');
     }
-    if (!formData.shift) {
-      temp.shift = t('register_page.err_shift');
+    if (formData.aadhaar && !AADHAAR_REGEX.test(formData.aadhaar)) {
+      temp.aadhaar = t('register_page.err_aadhaar');
     }
     if (!formData.terms) {
       temp.terms = t('register_page.err_terms');
@@ -148,12 +104,9 @@ export default function RegisterPage() {
     address: formData.address.trim() || undefined,
     city: formData.city.trim(),
     college: formData.college.trim(),
-    nssUnit: formData.nssUnit.trim(),
     bloodGroup: formData.bloodGroup,
     emergencyPhone: formData.emergencyPhone.trim(),
-    skills: formData.skills,
-    languages: formData.languages,
-    shift: formData.shift,
+    aadhaar: formData.aadhaar.trim() || undefined,
   });
 
   const handleSubmit = async (e) => {
@@ -195,12 +148,9 @@ export default function RegisterPage() {
       address: '',
       city: '',
       college: '',
-      nssUnit: '',
       bloodGroup: '',
       emergencyPhone: '',
-      skills: [],
-      languages: [],
-      shift: '',
+      aadhaar: '',
       terms: false,
     });
     setErrors({});
@@ -392,17 +342,6 @@ export default function RegisterPage() {
                           error={errors.college}
                           required
                         />
-                        <FormInput
-                          label={t('register_page.nss_unit')}
-                          id="nssUnit"
-                          placeholder={t('register_page.nss_unit_placeholder')}
-                          value={formData.nssUnit}
-                          onChange={handleChange}
-                          error={errors.nssUnit}
-                          required
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="flex flex-col gap-2 w-full text-left">
                           <label htmlFor="bloodGroup" className="text-sm font-bold text-charcoal dark:text-gray-200">
                             {t('register_page.blood')} <span className="text-primary">*</span>
@@ -427,6 +366,8 @@ export default function RegisterPage() {
                             <span role="alert" className="text-xs font-semibold text-red-500 mt-1">{errors.bloodGroup}</span>
                           )}
                         </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <FormInput
                           label={t('register_page.emergency_phone')}
                           id="emergencyPhone"
@@ -437,99 +378,17 @@ export default function RegisterPage() {
                           error={errors.emergencyPhone}
                           required
                         />
+                        <FormInput
+                          label={t('register_page.aadhaar')}
+                          id="aadhaar"
+                          placeholder={t('register_page.aadhaar_placeholder')}
+                          value={formData.aadhaar}
+                          onChange={handleChange}
+                          error={errors.aadhaar}
+                          required={false}
+                        />
                       </div>
                     </div>
-                  </fieldset>
-
-                  {/* Skills & Languages */}
-                  <fieldset>
-                    <legend className="font-heading text-xl font-extrabold text-charcoal tracking-tight mb-6 pb-2 border-b border-slate-100 w-full">
-                      {t('register_page.skills_languages')}
-                    </legend>
-                    <div className="space-y-6">
-                      <div>
-                        <p className="text-sm font-bold text-charcoal dark:text-gray-200 mb-3">
-                          {t('register_page.skills_label')}
-                        </p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {SKILL_OPTIONS.map((skill) => (
-                            <label
-                              key={skill.value}
-                              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border cursor-pointer transition-all min-h-[44px] ${
-                                formData.skills.includes(skill.value)
-                                  ? 'bg-primary/5 border-primary/30 text-charcoal'
-                                  : 'bg-white border-slate-200 hover:border-slate-300 text-slate-600'
-                              }`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={formData.skills.includes(skill.value)}
-                                onChange={() => handleCheckboxGroup('skills', skill.value)}
-                                className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30"
-                              />
-                              <span className="text-sm font-semibold">{t(skill.key)}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-charcoal dark:text-gray-200 mb-3">
-                          {t('register_page.languages_label')}
-                        </p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {LANG_OPTIONS.map((lang) => (
-                            <label
-                              key={lang.value}
-                              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border cursor-pointer transition-all min-h-[44px] ${
-                                formData.languages.includes(lang.value)
-                                  ? 'bg-primary/5 border-primary/30 text-charcoal'
-                                  : 'bg-white border-slate-200 hover:border-slate-300 text-slate-600'
-                              }`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={formData.languages.includes(lang.value)}
-                                onChange={() => handleCheckboxGroup('languages', lang.value)}
-                                className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30"
-                              />
-                              <span className="text-sm font-semibold">{t(lang.key)}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </fieldset>
-
-                  {/* Shift Availability */}
-                  <fieldset>
-                    <legend className="font-heading text-xl font-extrabold text-charcoal tracking-tight mb-6 pb-2 border-b border-slate-100 w-full">
-                      {t('register_page.availability')}
-                    </legend>
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {SHIFT_OPTIONS.map((shift) => (
-                          <label
-                            key={shift.value}
-                            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border cursor-pointer transition-all min-h-[44px] ${
-                              formData.shift === shift.value
-                                ? 'bg-secondary/5 border-secondary/30 text-charcoal'
-                                : 'bg-white border-slate-200 hover:border-slate-300 text-slate-600'
-                            } ${errors.shift ? 'border-red-500' : ''}`}
-                          >
-                            <input
-                              type="radio"
-                              name="shift"
-                              value={shift.value}
-                              checked={formData.shift === shift.value}
-                              onChange={handleChange}
-                              className="w-4 h-4 border-slate-300 text-secondary focus:ring-secondary/30"
-                            />
-                            <span className="text-sm font-semibold">{t(shift.key)}</span>
-                          </label>
-                        ))}
-                      </div>
-                    {errors.shift && (
-                      <span role="alert" className="text-xs font-semibold text-red-500 mt-2 block">{errors.shift}</span>
-                    )}
                   </fieldset>
 
                   {/* Terms */}

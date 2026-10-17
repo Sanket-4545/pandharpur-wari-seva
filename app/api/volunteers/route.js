@@ -40,12 +40,9 @@ export async function POST(request) {
       age: body.age,
       city: body.city,
       college: body.college,
-      nssUnit: body.nssUnit,
       bloodGroup: body.bloodGroup,
       emergencyPhone: body.emergencyPhone,
-      shift: body.shift,
-      skills: body.skills,
-      languages: body.languages,
+      aadhaar: body.aadhaar || undefined,
       passwordHash: body.passwordHash,
     };
     const result = await Volunteers.insertOne(registrationBody);

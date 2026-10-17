@@ -244,29 +244,25 @@ export async function GET(request) {
       if (cfg.id === "contact_messages") return queryCounts(db, "contact_messages", start, previousStart);
       if (cfg.id === "engagement") {
         return (async () => {
-          const [v, m, l, c, a] = await Promise.all([
+          const [v, m, l, c, a, vR, mR, lR, cR, aR, vP, mP, lP, cP, aP] = await Promise.all([
             getCounts(db, "volunteers"),
             getCounts(db, "missing_persons"),
             getCounts(db, "lost_items"),
             getCounts(db, "contact_messages"),
             getCounts(db, "announcements"),
-          ]);
-          const total = v + m + l + c + a;
-          const [vR, mR, lR, cR, aR] = await Promise.all([
             getCounts(db, "volunteers", getFilterRecent(start)),
             getCounts(db, "missing_persons", getFilterRecent(start)),
             getCounts(db, "lost_items", getFilterRecent(start)),
             getCounts(db, "contact_messages", getFilterRecent(start)),
             getCounts(db, "announcements", getFilterRecent(start)),
-          ]);
-          const recent = vR + mR + lR + cR + aR;
-          const [vP, mP, lP, cP, aP] = await Promise.all([
             getCounts(db, "volunteers", getFilterPrevious(previousStart, start)),
             getCounts(db, "missing_persons", getFilterPrevious(previousStart, start)),
             getCounts(db, "lost_items", getFilterPrevious(previousStart, start)),
             getCounts(db, "contact_messages", getFilterPrevious(previousStart, start)),
             getCounts(db, "announcements", getFilterPrevious(previousStart, start)),
           ]);
+          const total = v + m + l + c + a;
+          const recent = vR + mR + lR + cR + aR;
           const previous = vP + mP + lP + cP + aP;
           return { total, recent, previous };
         })();
@@ -286,7 +282,36 @@ export async function GET(request) {
       return { total: 0, recent: 0, previous: 0 };
     });
 
-    const countResults = await Promise.all(countPromises);
+    const alertsColl = db.collection("announcements");
+
+    const [
+      countResults,
+      [recentVolunteers, recentMissing, recentLost, recentMessages, recentAnnouncements],
+      alerts,
+      [volunteerRegistrations, lostItemCategories, dailyActivityTrendsData, missingPersonReportsData, campOperationsStatus],
+    ] = await Promise.all([
+      Promise.all(countPromises),
+      Promise.all([
+        getRecentItems(db, "volunteers", { name: 1, volunteerId: 1, college: 1, createdAt: 1 }),
+        getRecentItems(db, "missing_persons", { name: 1, caseId: 1, age: 1, lastSeenLocation: 1, status: 1, createdAt: 1 }),
+        getRecentItems(db, "lost_items", { name: 1, itemId: 1, category: 1, locationFound: 1, status: 1, createdAt: 1 }),
+        getRecentItems(db, "contact_messages", { name: 1, email: 1, message: 1, createdAt: 1 }),
+        getRecentItems(db, "announcements", { title: 1, announcementId: 1, category: 1, priority: 1, createdAt: 1 }),
+      ]),
+      alertsColl
+        .find({ status: "published" })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .project({ title: 1, description: 1, priority: 1, createdAt: 1, category: 1 })
+        .toArray(),
+      Promise.all([
+        getVolunteerAnalytics(db, start, range),
+        getLostItemCategories(db, start),
+        getDailyActivityTrends(db, start),
+        getMissingPersonReports(db, start),
+        getCampOperations(db),
+      ]),
+    ]);
 
     const stats = STAT_CONFIGS.map((cfg, i) => {
       const { total, recent, previous } = countResults[i];
@@ -303,14 +328,6 @@ export async function GET(request) {
       };
     });
 
-    const [recentVolunteers, recentMissing, recentLost, recentMessages, recentAnnouncements] = await Promise.all([
-      getRecentItems(db, "volunteers", { name: 1, volunteerId: 1, nssUnit: 1, college: 1, createdAt: 1 }),
-      getRecentItems(db, "missing_persons", { name: 1, caseId: 1, age: 1, lastSeenLocation: 1, status: 1, createdAt: 1 }),
-      getRecentItems(db, "lost_items", { name: 1, itemId: 1, category: 1, locationFound: 1, status: 1, createdAt: 1 }),
-      getRecentItems(db, "contact_messages", { name: 1, email: 1, message: 1, createdAt: 1 }),
-      getRecentItems(db, "announcements", { title: 1, announcementId: 1, category: 1, priority: 1, createdAt: 1 }),
-    ]);
-
     const rawActivities = [
       ...recentVolunteers.map((v) => ({
         id: v._id.toString(),
@@ -318,7 +335,7 @@ export async function GET(request) {
         titleKey: "admin.activities.volunteer_registered",
         titleArgs: { name: v.name || "Unknown" },
         timestamp: v.createdAt || new Date(),
-        details: v.nssUnit ? `NSS Unit: ${v.nssUnit}, ${v.college || ""}` : "New volunteer registration",
+        details: v.college || "New volunteer registration",
       })),
       ...recentMissing.map((m) => ({
         id: m._id.toString(),
@@ -357,13 +374,6 @@ export async function GET(request) {
     rawActivities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     const recentActivities = rawActivities.slice(0, 6);
 
-    const alertsColl = db.collection("announcements");
-    const alerts = await alertsColl
-      .find({ status: "published" })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .project({ title: 1, description: 1, priority: 1, createdAt: 1, category: 1 })
-      .toArray();
     alerts.sort((a, b) => (PRIORITY_RANK[b.priority] || 0) - (PRIORITY_RANK[a.priority] || 0));
 
     const formattedAlerts = alerts.map((a) => ({
@@ -374,14 +384,6 @@ export async function GET(request) {
       category: a.category || "general",
       timestamp: a.createdAt || new Date(),
     }));
-
-    const [volunteerRegistrations, lostItemCategories, dailyActivityTrendsData, missingPersonReportsData, campOperationsStatus] = await Promise.all([
-      getVolunteerAnalytics(db, start, range),
-      getLostItemCategories(db, start),
-      getDailyActivityTrends(db, start),
-      getMissingPersonReports(db, start),
-      getCampOperations(db),
-    ]);
 
     return successResponse({
       stats,

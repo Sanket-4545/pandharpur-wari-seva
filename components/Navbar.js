@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Shield } from 'lucide-react';
+import { Menu, X, ChevronDown, ChevronRight, LogIn, User, LogOut, LayoutDashboard, Shield } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -217,37 +217,13 @@ export default function Navbar() {
                   )}
                 </>
               ) : (
-                <>
-                  <button
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary-dark transition-all shadow-saffron-glow"
-                  >
-                    {t('nav.login_btn')}
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl shadow-premium-hover overflow-hidden z-50">
-                      <div className="p-1.5">
-                        <Link
-                          href="/volunteer/login"
-                          onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-charcoal dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-800 rounded-xl transition-colors"
-                        >
-                          <User className="w-4 h-4 text-charcoal-light dark:text-gray-500" />
-                          {t('nav.login_volunteer')}
-                        </Link>
-                        <Link
-                          href="/login"
-                          onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-charcoal dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-800 rounded-xl transition-colors"
-                        >
-                          <Shield className="w-4 h-4 text-charcoal-light dark:text-gray-500" />
-                          {t('nav.login_admin')}
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-                </>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary-dark transition-all shadow-saffron-glow active:scale-95"
+                >
+                  {t('nav.login_btn')}
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
               )}
             </div>
 
@@ -322,24 +298,14 @@ export default function Navbar() {
                   </button>
                 </>
               ) : (
-                <>
-                  <Link
-                    href="/volunteer/login"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2 font-heading text-base font-semibold text-charcoal hover:text-primary transition-colors px-3 py-2 rounded-xl hover:bg-slate-50"
-                  >
-                    <User className="w-4 h-4" />
-                    {t('nav.login_volunteer')}
-                  </Link>
-                  <Link
-                    href="/login"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2 font-heading text-base font-semibold text-charcoal hover:text-primary transition-colors px-3 py-2 rounded-xl hover:bg-slate-50"
-                  >
-                    <Shield className="w-4 h-4" />
-                    {t('nav.login_admin')}
-                  </Link>
-                </>
+                <Link
+                  href="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2 font-heading text-base font-semibold text-charcoal hover:text-primary transition-colors px-3 py-2 rounded-xl hover:bg-slate-50"
+                >
+                  <LogIn className="w-4 h-4" />
+                  {t('nav.login_btn')}
+                </Link>
               )}
             </div>
           </div>
