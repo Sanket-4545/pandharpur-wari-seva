@@ -72,7 +72,26 @@ export default function NSSActivityPosterUpload({
 
   const handleUploadError = useCallback((error) => {
     console.error("Upload error:", error);
-    setUploadError(t("admin.activities.upload_error") || "Failed to upload poster. Please try again.");
+    // Extract useful error information from Cloudinary widget error
+    let errorMessage = t("admin.activities.upload_error") || "Failed to upload poster. Please try again.";
+    if (error?.message) {
+      // Cloudinary widget errors often include specific error codes/messages
+      const msg = error.message;
+      if (msg.includes("Invalid Signature") || msg.includes("signature")) {
+        errorMessage = "Upload signature invalid. Please refresh the page and try again.";
+      } else if (msg.includes("File size") || msg.includes("too large")) {
+        errorMessage = t("admin.activities.upload_file_large") || "File too large (max 10MB).";
+      } else if (msg.includes("Invalid file type") || msg.includes("format")) {
+        errorMessage = t("admin.activities.upload_invalid_type") || "Invalid file type. Use JPG, PNG, WebP, or AVIF.";
+      } else if (msg.includes("Unauthorized") || msg.includes("401") || msg.includes("403")) {
+        errorMessage = "Authentication failed. Please log in again.";
+      } else if (msg.includes("rate limit") || msg.includes("429")) {
+        errorMessage = "Too many upload attempts. Please wait a moment and try again.";
+      } else {
+        errorMessage = `${t("admin.activities.upload_error") || "Upload failed"}: ${msg}`;
+      }
+    }
+    setUploadError(errorMessage);
     // Unblock saving so a failed upload never permanently blocks the form.
     setUploadingState(false);
   }, [setUploadingState, t]);

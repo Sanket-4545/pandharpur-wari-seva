@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getUploadSignature } from "@/lib/cloudinary";
-import { requireRole, handleAuthError, rateLimitedResponse } from "@/lib/api-helpers";
+import { requireRoleNoCsrf, handleAuthError, rateLimitedResponse } from "@/lib/api-helpers";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 const signatureRateLimit = rateLimit({ interval: 60000, max: 10 });
@@ -58,7 +58,7 @@ function filterSignParams(params) {
 
 export async function POST(request) {
   try {
-    await requireRole(request, ["super_admin", "admin"]);
+    await requireRoleNoCsrf(request, ["super_admin", "admin"]);
 
     const ip = getClientIp(request);
     const rlResult = await signatureRateLimit(ip);
@@ -81,6 +81,7 @@ export async function POST(request) {
 
     return NextResponse.json({ signature: signatureData.signature });
   } catch (error) {
+    console.error("[Cloudinary Signature] Error:", error?.message || error);
     return handleAuthError(error);
   }
 }
