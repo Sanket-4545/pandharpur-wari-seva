@@ -885,7 +885,9 @@
       "upload_max_files": "फक्त एक पोस्टर परवानगी आहे",
       "remove_poster": "पोस्टर काढा",
       "poster_uploaded": "पोस्टर अपलोड झाले",
-      "upload_constraints": "JPG, PNG, WebP, AVIF · जास्तीत जास्त 10MB"
+      "upload_constraints": "JPG, PNG, WebP, AVIF · जास्तीत जास्त 10MB",
+      "upload_unavailable": "अपलोड उपलब्ध नाही — Cloudinary कॉन्फिगर केलेले नाही",
+      "cloudinary_not_configured": "Cloudinary अपलोडसाठी NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME आणि NEXT_PUBLIC_CLOUDINARY_API_KEY एन्व्हायरनमेंट वेरिएबल्स आवश्यक आहेत. कॉन्फिगर केलेपर्यंत पोस्टर अपलोड करता येणार नाहीत."
     },
     "reports": {
       "title": "प्रणाली लॉग आणि अहवाल",

@@ -91,56 +91,64 @@ export default function NSSActivityPosterUpload({
     setUploadError(null);
   }, []);
 
+  // Determine if Cloudinary is configured. Both cloudName and apiKey must be present
+  // for the upload widget to initialize. These are set via NEXT_PUBLIC_* env vars.
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
+  const isCloudinaryConfigured = Boolean(cloudName && apiKey);
+
   // next-cloudinary v6 reads widget configuration from the `options` prop.
   // Passing these fields as top-level props (cloudName/apiKey/folder/...) is
   // silently ignored, which disabled folder targeting and the file constraints.
-  const widgetOptions = {
-    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
-    sources: ["local"],
-    maxFiles: 1,
-    maxFileSize,
-    clientAllowedFormats: ["jpg", "jpeg", "png", "webp", "avif"],
-    resourceType: "image",
-    folder: "nss-activities",
-    showAdvancedOptions: false,
-    showPoweredBy: false,
-    styles: {
-      palette: {
-        window: "#FFFFFF",
-        windowBorder: "#94A3B8",
-        tabIcon: "#0EA5E9",
-        menuIcons: "#64748B",
-        textDark: "#0F172A",
-        textLight: "#FFFFFF",
-        link: "#0EA5E9",
-        action: "#0EA5E9",
-        inactiveTabIcon: "#94A3B8",
-        error: "#EF4444",
-        inProgress: "#0EA5E9",
-        complete: "#22C55E",
-        sourceBg: "#F8FAFC",
-      },
-      fonts: {
-        default: "'Inter', system-ui, sans-serif",
-      },
-    },
-    text: {
-      en: {
-        or: t("admin.activities.upload_or") || "or",
-        browse: t("admin.activities.upload_browse") || "Browse",
-        dropFiles: t("admin.activities.upload_drop") || "Drop files here",
-        selectFiles: t("admin.activities.upload_select") || "Select files",
-        uploadButton: t("admin.activities.upload_button") || "Upload",
-        uploading: t("admin.activities.upload_uploading") || "Uploading...",
-        uploadComplete: t("admin.activities.upload_complete") || "Upload complete",
-        uploadError: t("admin.activities.upload_error") || "Upload failed",
-        fileTooLarge: t("admin.activities.upload_file_large") || "File too large",
-        invalidFileType: t("admin.activities.upload_invalid_type") || "Invalid file type",
-        maxFilesExceeded: t("admin.activities.upload_max_files") || "Maximum files exceeded",
-      },
-    },
-  };
+  const widgetOptions = isCloudinaryConfigured
+    ? {
+        cloudName,
+        apiKey,
+        sources: ["local"],
+        maxFiles: 1,
+        maxFileSize,
+        clientAllowedFormats: ["jpg", "jpeg", "png", "webp", "avif"],
+        resourceType: "image",
+        folder: "nss-activities",
+        showAdvancedOptions: false,
+        showPoweredBy: false,
+        styles: {
+          palette: {
+            window: "#FFFFFF",
+            windowBorder: "#94A3B8",
+            tabIcon: "#0EA5E9",
+            menuIcons: "#64748B",
+            textDark: "#0F172A",
+            textLight: "#FFFFFF",
+            link: "#0EA5E9",
+            action: "#0EA5E9",
+            inactiveTabIcon: "#94A3B8",
+            error: "#EF4444",
+            inProgress: "#0EA5E9",
+            complete: "#22C55E",
+            sourceBg: "#F8FAFC",
+          },
+          fonts: {
+            default: "'Inter', system-ui, sans-serif",
+          },
+        },
+        text: {
+          en: {
+            or: t("admin.activities.upload_or") || "or",
+            browse: t("admin.activities.upload_browse") || "Browse",
+            dropFiles: t("admin.activities.upload_drop") || "Drop files here",
+            selectFiles: t("admin.activities.upload_select") || "Select files",
+            uploadButton: t("admin.activities.upload_button") || "Upload",
+            uploading: t("admin.activities.upload_uploading") || "Uploading...",
+            uploadComplete: t("admin.activities.upload_complete") || "Upload complete",
+            uploadError: t("admin.activities.upload_error") || "Upload failed",
+            fileTooLarge: t("admin.activities.upload_file_large") || "File too large",
+            invalidFileType: t("admin.activities.upload_invalid_type") || "Invalid file type",
+            maxFilesExceeded: t("admin.activities.upload_max_files") || "Maximum files exceeded",
+          },
+        },
+      }
+    : null;
 
   return (
     <div className="space-y-4">
@@ -180,42 +188,60 @@ export default function NSSActivityPosterUpload({
           <p className="text-sm text-slate-500 dark:text-gray-400 mb-4">
             {t("admin.activities.upload_prompt") || "Upload an activity poster"}
           </p>
-          <CldUploadWidget
-            signatureEndpoint="/api/upload/cloudinary-signature"
-            options={widgetOptions}
-            onSuccess={handleUploadSuccess}
-            onError={handleUploadError}
-            onClose={handleWidgetClose}
-            onQueuesStart={() => setUploadingState(true)}
-            onQueuesEnd={handleWidgetClose}
-            buttonProps={{
-              className: "inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all shadow-saffron-glow focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed",
-              disabled: isUploading || disabled,
-              "aria-label": t("admin.activities.upload_poster") || "Upload poster",
-            }}
-          >
-            {({ open }) => (
+          {isCloudinaryConfigured ? (
+            <>
+              <CldUploadWidget
+                signatureEndpoint="/api/upload/cloudinary-signature"
+                options={widgetOptions}
+                onSuccess={handleUploadSuccess}
+                onError={handleUploadError}
+                onClose={handleWidgetClose}
+                onQueuesStart={() => setUploadingState(true)}
+                onQueuesEnd={handleWidgetClose}
+                buttonProps={{
+                  className: "inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all shadow-saffron-glow focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed",
+                  disabled: isUploading || disabled,
+                  "aria-label": t("admin.activities.upload_poster") || "Upload poster",
+                }}
+              >
+                {({ open }) => (
+                  <button
+                    type="button"
+                    onClick={() => handleWidgetOpen(open)}
+                    disabled={isUploading || disabled}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all shadow-saffron-glow focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Upload className="w-4 h-4" />
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {t("admin.activities.uploading") || "Uploading..."}
+                      </>
+                    ) : (
+                      t("admin.activities.upload_btn") || "Upload Poster"
+                    )}
+                  </button>
+                )}
+              </CldUploadWidget>
+              <p className="mt-3 text-[10px] text-slate-400 dark:text-gray-500 max-w-xs mx-auto">
+                {t("admin.activities.upload_constraints") || "JPG, PNG, WebP, AVIF · Max 10MB"}
+              </p>
+            </>
+          ) : (
+            <div className="space-y-3">
               <button
                 type="button"
-                onClick={() => handleWidgetOpen(open)}
-                disabled={isUploading || disabled}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all shadow-saffron-glow focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-200 dark:bg-gray-700 text-slate-400 dark:text-gray-500 rounded-xl text-xs font-bold cursor-not-allowed"
               >
                 <Upload className="w-4 h-4" />
-                {isUploading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    {t("admin.activities.uploading") || "Uploading..."}
-                  </>
-                ) : (
-                  t("admin.activities.upload_btn") || "Upload Poster"
-                )}
+                {t("admin.activities.upload_unavailable") || "Upload unavailable — Cloudinary not configured"}
               </button>
-            )}
-          </CldUploadWidget>
-          <p className="mt-3 text-[10px] text-slate-400 dark:text-gray-500 max-w-xs mx-auto">
-            {t("admin.activities.upload_constraints") || "JPG, PNG, WebP, AVIF · Max 10MB"}
-          </p>
+              <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                {t("admin.activities.cloudinary_not_configured") || "Cloudinary upload requires NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_API_KEY environment variables. Posters cannot be uploaded until configured."}
+              </p>
+            </div>
+          )}
         </div>
       )}
 

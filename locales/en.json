@@ -885,7 +885,9 @@
       "upload_max_files": "Only one poster allowed",
       "remove_poster": "Remove poster",
       "poster_uploaded": "Poster uploaded",
-      "upload_constraints": "JPG, PNG, WebP, AVIF · Max 10MB"
+      "upload_constraints": "JPG, PNG, WebP, AVIF · Max 10MB",
+      "upload_unavailable": "Upload unavailable — Cloudinary not configured",
+      "cloudinary_not_configured": "Cloudinary upload requires NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_API_KEY environment variables. Posters cannot be uploaded until configured."
     },
     "reports": {
       "title": "System Logs & Reports",
