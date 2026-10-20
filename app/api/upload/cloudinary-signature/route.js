@@ -125,7 +125,29 @@ export async function POST(request) {
 
     return NextResponse.json({ signature: signatureData.signature });
   } catch (error) {
-    console.error("[Cloudinary Signature] Error:", error?.message || error);
+    const message = error?.message || String(error);
+    console.error("[Cloudinary Signature] Error:", message);
+
+    // Specific, safe error codes for production diagnosis (no secrets exposed)
+    if (message.includes("Cloudinary configuration is incomplete")) {
+      return NextResponse.json(
+        { success: false, error: "Server Cloudinary configuration missing", code: "CLOUDINARY_CONFIG_MISSING" },
+        { status: 500 }
+      );
+    }
+    if (message.includes("redacted placeholder")) {
+      return NextResponse.json(
+        { success: false, error: "Server Cloudinary API secret is a placeholder", code: "CLOUDINARY_SECRET_PLACEHOLDER" },
+        { status: 500 }
+      );
+    }
+    if (message.includes("Invalid request origin")) {
+      return NextResponse.json(
+        { success: false, error: "Invalid request origin", code: "INVALID_ORIGIN" },
+        { status: 403 }
+      );
+    }
+
     return handleAuthError(error);
   }
 }

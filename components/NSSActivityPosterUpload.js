@@ -87,6 +87,12 @@ export default function NSSActivityPosterUpload({
         errorMessage = "Authentication failed. Please log in again.";
       } else if (msg.includes("rate limit") || msg.includes("429")) {
         errorMessage = "Too many upload attempts. Please wait a moment and try again.";
+      } else if (msg.includes("CLOUDINARY_CONFIG_MISSING") || msg.includes("Cloudinary configuration missing")) {
+        errorMessage = "Upload service not configured. Please contact administrator.";
+      } else if (msg.includes("CLOUDINARY_SECRET_PLACEHOLDER") || msg.includes("placeholder")) {
+        errorMessage = "Upload service misconfigured. Please contact administrator.";
+      } else if (msg.includes("INVALID_ORIGIN")) {
+        errorMessage = "Request blocked. Please refresh the page and try again.";
       } else {
         errorMessage = `${t("admin.activities.upload_error") || "Upload failed"}: ${msg}`;
       }
