@@ -40,11 +40,51 @@ const ALLOWED_SIGN_PARAMS = new Set([
   "resource_type",
   "timestamp",
   "api_key",
+  "max_files",
   // The Upload Widget automatically includes source=uw in every upload request.
   // Cloudinary's own documentation states that source MUST be included in the
   // string to sign. Excluding it causes an "Invalid Signature" error.
   "source",
 ]);
+
+// Cloudinary Upload Widget sends parameters in camelCase (e.g., resourceType, maxFileSize,
+// clientAllowedFormats, maxFiles, apiKey, uploadPreset, publicId).
+// Cloudinary's upload API expects snake_case. Convert before filtering so the signature
+// matches what Cloudinary verifies.
+const CAMEL_TO_SNAKE = {
+  apiKey: "api_key",
+  cloudName: "cloud_name",
+  maxFileSize: "max_file_size",
+  maxImageFileSize: "max_image_file_size",
+  maxVideoFileSize: "max_video_file_size",
+  maxRawFileSize: "max_raw_file_size",
+  clientAllowedFormats: "allowed_formats",
+  faceDetection: "face_detection",
+  imageMetadata: "image_metadata",
+  qualityAnalysis: "quality_analysis",
+  accessControl: "access_control",
+  eagerAsync: "eager_async",
+  eagerNotificationUrl: "eager_notification_url",
+  autoTagging: "auto_tagging",
+  backgroundRemoval: "background_removal",
+  rawConvert: "raw_convert",
+  saveOriginal: "save_original",
+  saveOriginalVersion: "save_original_version",
+  notificationUrl: "notification_url",
+  uploadPreset: "upload_preset",
+  resourceType: "resource_type",
+  maxFiles: "max_files",
+  publicId: "public_id",
+};
+
+function toSnakeCase(params) {
+  const converted = {};
+  for (const [key, value] of Object.entries(params)) {
+    const snakeKey = CAMEL_TO_SNAKE[key] ?? key;
+    converted[snakeKey] = value;
+  }
+  return converted;
+}
 
 function filterSignParams(params) {
   const filtered = {};
@@ -70,7 +110,11 @@ export async function POST(request) {
 
     const paramsToSign = body.paramsToSign || body;
 
-    const allowedParams = filterSignParams(paramsToSign);
+    // Convert camelCase widget parameters to snake_case before filtering.
+    // The Upload Widget sends camelCase; Cloudinary verifies against snake_case.
+    const normalizedParams = toSnakeCase(paramsToSign);
+
+    const allowedParams = filterSignParams(normalizedParams);
 
     // Do NOT inject folder or resource_type here.
     // The Upload Widget sends exactly the params it wants signed (paramsToSign).
