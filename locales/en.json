@@ -1217,7 +1217,17 @@
     "status_in_progress": "In Progress",
     "status_completed": "Completed",
     "accepted_time": "Accepted Time",
-    "requests_count": "{count} request{plural} available"
+    "requests_count": "{count} request{plural} available",
+    "confirm_accept_title": "Accept This Help Request?",
+    "confirm_accept_message": "Do you want to accept this help request and assist this person?",
+    "confirm_accept_yes": "Accept Request",
+    "confirm_start_title": "Start Helping?",
+    "confirm_start_message": "Are you ready to begin helping this person?",
+    "confirm_start_yes": "Start Help",
+    "confirm_complete_title": "Confirm Help Completion",
+    "confirm_complete_message": "Have you provided the requested assistance? Confirm only after the person has received the help they needed.",
+    "confirm_complete_yes": "Complete Help",
+    "confirm_cancel": "Cancel"
   },
   "volunteer_missing_persons": {
     "title": "Missing Persons",

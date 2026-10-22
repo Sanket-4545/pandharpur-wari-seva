@@ -5,6 +5,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import Container from "@/components/Container";
 import LoadingButton from "@/components/LoadingButton";
 import Toast from "@/components/Toast";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { HeartHandshake, MapPin, Phone, Clock, RefreshCw, CheckCircle2, Navigation, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -38,7 +39,6 @@ function ActiveCard({r,onStart,onComplete,busy}){
         {acc&&<LoadingButton onClick={()=>onStart(r.requestId)} loading={busy} variant="primary" className="w-full !py-3.5 text-sm">{t("volunteer_help_requests.start_helping")}</LoadingButton>}
         {ip&&<LoadingButton onClick={()=>onComplete(r.requestId)} loading={busy} variant="secondary" className="w-full !py-3.5 text-sm">{t("volunteer_help_requests.mark_completed")}</LoadingButton>}
       </div></div></div>);}
-
 function PendingCard({r,onAccept,accepting}){
   const{t}=useLanguage();
   const loc=r.location&&typeof r.location==="object"&&r.location.lat&&r.location.lng;
@@ -57,7 +57,6 @@ function PendingCard({r,onAccept,accepting}){
       <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-secondary/70 flex-shrink-0" /><span>{r.requestId} &middot; {fd(r.createdAt)}</span></div></div>
     <div className="mt-4"><LoadingButton onClick={()=>onAccept(r.requestId)} loading={accepting} variant="primary" className="w-full !py-3.5 text-sm">{t("volunteer_help_requests.accept_request")}</LoadingButton></div>
     </div></div>);}
-
 function DoneCard({r}){
   const ic=HI[HM[r.helpType]]||"\u{2753}";
   return(<div className="bg-white dark:bg-gray-900 rounded-xl border border-slate-200 dark:border-gray-800 p-4 opacity-75">
@@ -65,7 +64,6 @@ function DoneCard({r}){
       <div className="flex-1 min-w-0"><p className="font-heading text-sm font-bold text-charcoal dark:text-white truncate">{r.helpType} &mdash; {r.fullName||"Unknown"}</p>
         <p className="text-xs text-charcoal-light dark:text-gray-400">{r.requestId} &middot; {fd(r.completedAt)}</p></div>
       <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" /></div></div>);}
-
 export default function VolunteerHelpRequestsPage(){
   const{t}=useLanguage();
   const[pending,setPending]=useState([]);
@@ -78,6 +76,9 @@ export default function VolunteerHelpRequestsPage(){
   const[busyActionId,setBusyActionId]=useState(null);
   const[toast,setToast]=useState({message:"",type:"success",visible:false});
   const showToast=useCallback((m,tp="success")=>setToast({message:m,type:tp,visible:true}),[]);
+
+  // Confirmation dialog state
+  const [confirmAction, setConfirmAction] = useState(null); // { type: 'accept'|'start'|'complete', id, title, message, confirmLabel, cancelLabel, variant }
 
   const fetchAll=useCallback(async(refresh=false)=>{
     try{
@@ -131,6 +132,63 @@ export default function VolunteerHelpRequestsPage(){
     finally{setBusyActionId(null);}
   };
 
+  // Confirmation dialog handlers
+  const openAcceptConfirm = useCallback((id) => {
+    setConfirmAction({
+      type: 'accept',
+      id,
+      title: t('volunteer_help_requests.confirm_accept_title'),
+      message: t('volunteer_help_requests.confirm_accept_message'),
+      confirmLabel: t('volunteer_help_requests.confirm_accept_yes'),
+      cancelLabel: t('volunteer_help_requests.confirm_cancel'),
+      variant: 'success',
+    });
+  }, [t]);
+
+  const openStartConfirm = useCallback((id) => {
+    setConfirmAction({
+      type: 'start',
+      id,
+      title: t('volunteer_help_requests.confirm_start_title'),
+      message: t('volunteer_help_requests.confirm_start_message'),
+      confirmLabel: t('volunteer_help_requests.confirm_start_yes'),
+      cancelLabel: t('volunteer_help_requests.confirm_cancel'),
+      variant: 'success',
+    });
+  }, [t]);
+
+  const openCompleteConfirm = useCallback((id) => {
+    setConfirmAction({
+      type: 'complete',
+      id,
+      title: t('volunteer_help_requests.confirm_complete_title'),
+      message: t('volunteer_help_requests.confirm_complete_message'),
+      confirmLabel: t('volunteer_help_requests.confirm_complete_yes'),
+      cancelLabel: t('volunteer_help_requests.confirm_cancel'),
+      variant: 'warning',
+    });
+  }, [t]);
+
+  const executeConfirmAction = useCallback(async () => {
+    if (!confirmAction) return;
+    const { type, id } = confirmAction;
+    try {
+      if (type === 'accept') {
+        await handleAccept(id);
+      } else if (type === 'start') {
+        await handleStatus(id, 'In Progress');
+      } else if (type === 'complete') {
+        await handleStatus(id, 'Completed');
+      }
+    } finally {
+      setConfirmAction(null);
+    }
+  }, [confirmAction, handleAccept, handleStatus]);
+
+  const closeConfirmDialog = useCallback(() => {
+    setConfirmAction(null);
+  }, []);
+
   return(
     <div className="bg-slate-50 dark:bg-gray-950 min-h-screen pb-20">
       <section className="relative min-h-[30vh] md:min-h-[35vh] flex flex-col justify-center py-16 overflow-hidden bg-gradient-to-br from-red-500 to-rose-600">
@@ -164,13 +222,13 @@ export default function VolunteerHelpRequestsPage(){
               <button onClick={()=>fetchAll(true)} className="mt-4 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all">{t("common.retry")}</button>
             </div>)}
 
-            {!error&&active.length>0&&(<div className="mb-10">{active.map(r=>(<ActiveCard key={r.requestId||r._id} r={r} onStart={id=>handleStatus(id,"In Progress")} onComplete={id=>handleStatus(id,"Completed")} busy={busyActionId===r.requestId} />))}</div>)}
+            {!error&&active.length>0&&(<div className="mb-10">{active.map(r=>(<ActiveCard key={r.requestId||r._id} r={r} onStart={id=>openStartConfirm(id)} onComplete={id=>openCompleteConfirm(id)} busy={busyActionId===r.requestId} />))}</div>)}
 
             {!error&&!loading&&active.length===0&&(<div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 p-8 text-center mb-8"><HeartHandshake className="w-10 h-10 text-slate-300 dark:text-gray-600 mx-auto mb-3" /><p className="text-sm text-charcoal-light dark:text-gray-400 font-semibold">{t("volunteer_help_requests.empty_active")}</p></div>)}
 
             {loading?(<div className="space-y-4">{[1,2,3].map(i=>(<div key={i} className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 p-6 animate-pulse"><div className="flex items-center gap-4"><div className="w-12 h-12 bg-slate-200 dark:bg-gray-700 rounded-xl" /><div className="flex-1 space-y-3"><div className="h-5 bg-slate-200 dark:bg-gray-700 rounded w-1/3" /><div className="h-4 bg-slate-200 dark:bg-gray-700 rounded w-1/2" /><div className="h-4 bg-slate-200 dark:bg-gray-700 rounded w-2/3" /></div></div></div>))}</div>)
             :!error&&pending.length===0?(<div className="text-center py-16 bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl p-8 max-w-md mx-auto"><div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center"><HeartHandshake className="w-7 h-7 text-slate-400 dark:text-gray-500" /></div><p className="text-lg font-heading font-extrabold text-charcoal dark:text-white">{t("volunteer_help_requests.empty_pending")}</p><p className="text-sm text-charcoal-light dark:text-gray-400 mt-2">{t("volunteer_help_requests.empty_pending_desc")}</p><button onClick={()=>fetchAll(true)} className="mt-6 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all">{t("volunteer_help_requests.refresh")}</button></div>)
-            :(<div className="space-y-4">{pending.map(r=>(<PendingCard key={r.requestId||r._id} r={r} onAccept={handleAccept} accepting={acceptingId===r.requestId} />))}</div>)}
+            :(<div className="space-y-4">{pending.map(r=>(<PendingCard key={r.requestId||r._id} r={r} onAccept={openAcceptConfirm} accepting={acceptingId===r.requestId} />))}</div>)}
 
             {!loading&&completed.length>0&&(<div className="mt-12"><h2 className="font-heading text-xl font-extrabold text-charcoal dark:text-white mb-6">{t("volunteer_help_requests.completed_today")}</h2><div className="space-y-3">{completed.map(r=>(<DoneCard key={r.requestId||r._id} r={r} />))}</div></div>)}
 
@@ -179,6 +237,16 @@ export default function VolunteerHelpRequestsPage(){
       </section>
 
       <Toast message={toast.message} type={toast.type} isVisible={toast.visible} onClose={()=>setToast(prev=>({...prev,visible:false}))} duration={4000} />
+      <ConfirmationDialog
+        isOpen={!!confirmAction}
+        onClose={closeConfirmDialog}
+        onConfirm={executeConfirmAction}
+        title={confirmAction?.title}
+        message={confirmAction?.message}
+        confirmLabel={confirmAction?.confirmLabel}
+        cancelLabel={confirmAction?.cancelLabel}
+        variant={confirmAction?.variant}
+      />
     </div>
   );
 }

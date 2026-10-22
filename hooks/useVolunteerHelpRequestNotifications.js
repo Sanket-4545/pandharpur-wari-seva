@@ -206,21 +206,69 @@ export function VolunteerNotificationProvider({ children }) {
   const [hasNewRequests, setHasNewRequests] = useState(false);
   const seenIdsRef = useRef(new Set());
   const dismissedRef = useRef(new Set());
-  const intervalRef = useRef(null);
+  const pollTimeoutRef = useRef(null);
   const mountedRef = useRef(true);
+  const abortControllerRef = useRef(null);
+  const retryCountRef = useRef(0);
+  const generationRef = useRef(0); // Tracks which poll generation is current
   const browserNotificationGrantedRef = useRef(false);
   const pushRegisteredRef = useRef(false);
 
-  const fetchPending = useCallback(async () => {
-    try {
-      const res = await fetch("/api/volunteer/help-requests?status=Pending&limit=50");
-      if (!res.ok) return;
-      const json = await res.json();
-      const items = json.data?.items || [];
-      const currentIds = items.map((r) => r.requestId || r._id).filter(Boolean);
+  const pollOnce = useCallback(async () => {
+    // Clear any pending timeout (safety for rapid calls)
+    if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
 
+    // Increment generation to mark this as the current poll
+    const currentGeneration = ++generationRef.current;
+
+    // Abort any in-flight request from previous generation
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    const signal = controller.signal;
+
+    // Track if timeout fires for this specific request
+    let timeoutFired = false;
+    const timeoutId = setTimeout(() => {
+      // Only abort if this is still the current generation
+      if (generationRef.current === currentGeneration) {
+        controller.abort();
+      }
+    }, 10000);
+
+    try {
+      const res = await fetch("/api/volunteer/help-requests?status=Pending&limit=50", { signal });
+      clearTimeout(timeoutId);
+
+      // If this generation is no longer current, discard the response
+      if (generationRef.current !== currentGeneration) return;
       if (!mountedRef.current) return;
 
+      // Handle HTTP errors - don't retry permanent client errors
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403 || res.status === 404) {
+          // Permanent client errors - don't retry, don't increment backoff
+          console.warn(`[poll] HTTP ${res.status}: stopping polling`);
+          return;
+        }
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const json = await res.json();
+
+      // If this generation is no longer current, discard the response
+      if (generationRef.current !== currentGeneration) return;
+      if (!mountedRef.current) return;
+
+      // SUCCESS: reset backoff
+      retryCountRef.current = 0;
+
+      // === EXISTING NOTIFICATION LOGIC (UNCHANGED) ===
+      const items = json.data?.items || [];
+      const currentIds = items.map((r) => r.requestId || r._id).filter(Boolean);
       setPendingCount(currentIds.length);
 
       const trulyNew = currentIds.filter((id) => {
@@ -231,10 +279,7 @@ export function VolunteerNotificationProvider({ children }) {
 
       if (trulyNew.length > 0) {
         seenIdsRef.current = new Set([...seenIdsRef.current, ...trulyNew]);
-        setNewRequestIds((prev) => {
-          const merged = [...new Set([...prev, ...trulyNew])];
-          return merged;
-        });
+        setNewRequestIds((prev) => [...new Set([...prev, ...trulyNew])]);
         setHasNewRequests(true);
 
         if (browserNotificationGrantedRef.current) {
@@ -256,8 +301,38 @@ export function VolunteerNotificationProvider({ children }) {
           } catch {}
         }
       }
-    } catch {}
-  }, []);
+    } catch (err) {
+      // If this generation is no longer current, ignore the error
+      if (generationRef.current !== currentGeneration) return;
+
+      clearTimeout(timeoutId);
+      if (!mountedRef.current) return;
+
+      // Ignore intentional aborts (superseded by newer poll, visibility hidden, unmount)
+      // Only treat timeout (which we detect via AbortError with no response) as a network failure
+      if (err.name === 'AbortError') {
+        // If we got an abort but it's not from our timeout, it's an intentional cancel
+        // We can't distinguish timeout from other aborts perfectly, but since we only
+        // set abort on timeout, any other abort is intentional
+        // Actually, the controller could be aborted by: timeout, visibility change, unmount, or superseded
+        // All of these are intentional - we only want to retry on genuine network errors
+        return;
+      }
+
+      // NETWORK/TIMEOUT ERROR or 5xx: exponential backoff
+      retryCountRef.current = Math.min(retryCountRef.current + 1, 5);
+    }
+
+    // Schedule next poll (recursive) - only if this generation is still current
+    if (mountedRef.current && generationRef.current === currentGeneration) {
+      // Correct exponential backoff: 12s → 24s → 48s → 96s → 192s → 384s
+      // retryCount 0 = 12s (base), 1 = 24s, 2 = 48s, 3 = 96s, 4 = 192s, 5 = 384s
+      const delay = retryCountRef.current === 0
+        ? POLL_INTERVAL
+        : POLL_INTERVAL * Math.pow(2, retryCountRef.current);
+      pollTimeoutRef.current = setTimeout(pollOnce, delay);
+    }
+  }, []); // Stable: only refs + constants
 
   const dismissAlert = useCallback(() => {
     setHasNewRequests(false);
@@ -271,13 +346,17 @@ export function VolunteerNotificationProvider({ children }) {
 
   useEffect(() => {
     mountedRef.current = true;
-    fetchPending();
-    intervalRef.current = setInterval(fetchPending, POLL_INTERVAL);
+    retryCountRef.current = 0;
+    generationRef.current = 0;
+    pollOnce(); // immediate first fetch
     return () => {
       mountedRef.current = false;
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
-  }, [fetchPending]);
+  }, [pollOnce]);
 
   useEffect(() => {
     if (typeof Notification !== "undefined" && Notification.permission === "granted") {
@@ -309,6 +388,29 @@ export function VolunteerNotificationProvider({ children }) {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
+
+  // Polling pause/resume on visibility change (separate from push renewal)
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+      } else {
+        // Tab became visible - reset backoff and start fresh poll
+        retryCountRef.current = 0;
+        // Increment generation to cancel any in-flight request from before hidden
+        generationRef.current++;
+        pollOnce(); // immediate refresh, schedules own next
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [pollOnce]);
 
   const requestBrowserPermission = useCallback(async () => {
     if (typeof Notification === "undefined") return "unavailable";

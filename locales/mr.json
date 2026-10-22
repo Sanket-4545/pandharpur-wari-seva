@@ -1217,7 +1217,17 @@
     "status_in_progress": "चालू आहे",
     "status_completed": "पूर्ण",
     "accepted_time": "स्वीकारलेली वेळ",
-    "requests_count": "{count} विनंती उपलब्ध"
+    "requests_count": "{count} विनंती उपलब्ध",
+    "confirm_accept_title": "ही मदत विनंती स्वीकारायची?",
+    "confirm_accept_message": "तुम्ही या मदत विनंती स्वीकारून या व्यक्तीला मदत कराल का?",
+    "confirm_accept_yes": "विनंती स्वीकारा",
+    "confirm_start_title": "मदत सुरू करायची?",
+    "confirm_start_message": "तुम्ही या व्यक्तीला मदत करण्यासाठी तयार आहात का?",
+    "confirm_start_yes": "मदत सुरू करा",
+    "confirm_complete_title": "मदत पूर्ण झाल्याची पुष्टी करा",
+    "confirm_complete_message": "तुम्ही विनंतीप्रमाणे मदत केलेली आहे का? व्यक्तीला आवश्यक मदत मिळाल्यावरच पूर्ण केले असे चिन्हांकित करा.",
+    "confirm_complete_yes": "मदत पूर्ण झाली",
+    "confirm_cancel": "रद्द करा"
   },
   "volunteer_missing_persons": {
     "title": "गमावलेले व्यक्ती",
