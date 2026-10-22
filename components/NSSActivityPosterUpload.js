@@ -24,6 +24,9 @@ export default function NSSActivityPosterUpload({
   const onChangeRef = useRef(onChange);
   const onPublicIdChangeRef = useRef(onPublicIdChange);
   const onUploadStateChangeRef = useRef(onUploadStateChange);
+  // Safety-net timer: if widget callbacks never fire (e.g., signature request fails
+  // silently), force-unblock the UI after 60 seconds.
+  const safetyTimerRef = useRef(null);
   useEffect(() => {
     onChangeRef.current = onChange;
     onPublicIdChangeRef.current = onPublicIdChange;
@@ -43,19 +46,46 @@ export default function NSSActivityPosterUpload({
     setPublicId(publicIdValue || null);
   }, [publicIdValue]);
 
+  // Cleanup safety-net timer on unmount
+  useEffect(() => {
+    return () => {
+      if (safetyTimerRef.current) {
+        clearTimeout(safetyTimerRef.current);
+        safetyTimerRef.current = null;
+      }
+    };
+  }, []);
+
   const setUploadingState = useCallback((uploading) => {
     setIsUploading(uploading);
   }, []);
 
   const handleWidgetOpen = useCallback((open) => {
     setUploadError(null);
+    // Clear any existing safety timer from a previous widget open
+    if (safetyTimerRef.current) {
+      clearTimeout(safetyTimerRef.current);
+      safetyTimerRef.current = null;
+    }
     // Mark uploading as soon as the widget opens so a fast Save cannot
     // race the async Cloudinary upload; cleared on success/error/close.
     setUploadingState(true);
     open();
+
+    // Safety net: if widget callbacks never fire (e.g., signature request fails
+    // silently), unblock the form after 60 seconds.
+    safetyTimerRef.current = setTimeout(() => {
+      setUploadingState(false);
+      safetyTimerRef.current = null;
+    }, 60000);
   }, [setUploadingState]);
 
   const handleUploadSuccess = useCallback((result) => {
+    // Clear safety-net timer since upload completed successfully
+    if (safetyTimerRef.current) {
+      clearTimeout(safetyTimerRef.current);
+      safetyTimerRef.current = null;
+    }
     const info = result?.info || result;
     if (info?.secure_url && info?.public_id) {
       setPreviewUrl(info.secure_url);
@@ -71,6 +101,11 @@ export default function NSSActivityPosterUpload({
   }, [setUploadingState, t]);
 
   const handleUploadError = useCallback((error) => {
+    // Clear safety-net timer since upload errored (widget callback fired)
+    if (safetyTimerRef.current) {
+      clearTimeout(safetyTimerRef.current);
+      safetyTimerRef.current = null;
+    }
     console.error("Upload error:", error);
     // Extract useful error information from Cloudinary widget error
     let errorMessage = t("admin.activities.upload_error") || "Failed to upload poster. Please try again.";
@@ -103,6 +138,11 @@ export default function NSSActivityPosterUpload({
   }, [setUploadingState, t]);
 
   const handleWidgetClose = useCallback(() => {
+    // Clear safety-net timer since widget closed (user cancelled or success)
+    if (safetyTimerRef.current) {
+      clearTimeout(safetyTimerRef.current);
+      safetyTimerRef.current = null;
+    }
     // User cancelled without uploading, or dialog closed after success.
     // Never leave the form blocked: success already stored the URLs above.
     setUploadingState(false);

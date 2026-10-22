@@ -1,12 +1,13 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
 import { Users, Calendar, MapPin, Clock } from 'lucide-react';
 
 export default function ActivityCard({ activity }) {
   const { t } = useLanguage();
+  const [imgError, setImgError] = useState(false);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return null;
@@ -36,21 +37,23 @@ export default function ActivityCard({ activity }) {
     <article className="group bg-white dark:bg-gray-900 rounded-2xl border border-slate-150 dark:border-gray-800 overflow-hidden shadow-premium hover:shadow-premium-hover hover:-translate-y-1 transition-all duration-350 flex flex-col">
       {/* Poster Image */}
       <div className="relative overflow-hidden aspect-[4/3] bg-slate-100 dark:bg-gray-800">
-        {activity.posterUrl ? (
+        {activity.posterUrl && !imgError ? (
           <Image
             src={activity.posterUrl}
             alt={activity.title}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
-            onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+            onError={() => setImgError(true)}
           />
         ) : null}
-        <div className={`w-full h-full items-center justify-center text-slate-400 dark:text-gray-600 ${activity.posterUrl ? 'hidden' : 'flex'}`}>
-          <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-        </div>
+        {(!activity.posterUrl || imgError) && (
+          <div className="w-full h-full items-center justify-center text-slate-400 dark:text-gray-600 flex">
+            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+        )}
 
         {/* Date Badge */}
         {activityDate && (
