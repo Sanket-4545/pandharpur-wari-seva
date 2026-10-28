@@ -10,6 +10,7 @@ import {
   sanitizeDocIds,
   requireRole,
   handleAuthError,
+  conflictResponse,
 } from "@/lib/api-helpers";
 
 export async function GET(request) {
@@ -43,30 +44,50 @@ export async function GET(request) {
   }
 }
 
+async function notifyPublishedAnnouncement(announcement) {
+  if (!announcement || announcement.status !== "published") return;
+
+  try {
+    const { sendPushToAllVolunteers } = await import("@/lib/push-notifications");
+    await sendPushToAllVolunteers({
+      title: announcement.title,
+      body: announcement.description,
+      url: "/",
+      tag: "wari-announcement",
+    });
+  } catch (pushErr) {
+    console.error("[announcements] Push notification failed:", pushErr?.message);
+  }
+}
+
 export async function POST(request) {
   try {
     await requireRole(request, ["super_admin", "admin"]);
     const body = await request.json();
-    const result = await Announcements.insertOne(body);
-    const coll = await Announcements.getCollection();
-    const inserted = await coll.findOne({ _id: result.insertedId });
 
-    if (inserted && inserted.status === "published") {
-      try {
-        const { sendPushToAllVolunteers } = await import("@/lib/push-notifications");
-        await sendPushToAllVolunteers({
-          title: inserted.title,
-          body: inserted.description,
-          url: "/",
-          tag: "wari-announcement",
-        });
-      } catch (pushErr) {
-        console.error("[announcements] Push notification failed:", pushErr?.message);
-      }
+    let inserted;
+
+    if (body?.status === "published") {
+      // Demote any previously published announcement and insert the new one in
+      // the same transaction. createPublished() resolves only after commit, so
+      // the notification below remains an external post-commit side effect.
+      const result = await Announcements.createPublished(body);
+      inserted = result.announcement;
+    } else {
+      // Preserve the existing creation behavior, including the model's default
+      // status (draft), ID generation, timestamps, and validation.
+      const result = await Announcements.insertOne(body);
+      const coll = await Announcements.getCollection();
+      inserted = await coll.findOne({ _id: result.insertedId });
     }
+
+    await notifyPublishedAnnouncement(inserted);
 
     return createdResponse(sanitizeDocId(inserted));
   } catch (error) {
+    if (Announcements.isPublishStatusConflictError(error)) {
+      return conflictResponse("An announcement is already published. Only one announcement can be published at a time.");
+    }
     return handleAuthError(error);
   }
 }

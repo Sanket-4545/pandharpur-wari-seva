@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useRole } from '@/context/AdminAuthContext';
 import { Plus, Calendar, Tag, Trash2, Megaphone, Save, X, Edit3 } from 'lucide-react';
 import Toast from '@/components/Toast';
 import ConfirmationDialog from '@/components/ConfirmationDialog';
@@ -18,21 +19,52 @@ const FORM_DEFAULTS = {
   publishDate: new Date().toISOString().slice(0, 16),
 };
 
+function createEmptyForm() {
+  return {
+    ...FORM_DEFAULTS,
+    publishDate: new Date().toISOString().slice(0, 16),
+  };
+}
+
+async function getApiErrorMessage(response, fallback) {
+  try {
+    const json = await response.json();
+    return json?.error || `${fallback} (HTTP ${response.status})`;
+  } catch {
+    return `${fallback} (HTTP ${response.status})`;
+  }
+}
+
 export default function AnnouncementsAdmin() {
   const { t } = useLanguage();
+  const role = useRole();
+  const canManage = role === 'super_admin' || role === 'admin';
 
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
 
-  const [form, setForm] = useState({ ...FORM_DEFAULTS });
+  const [createForm, setCreateForm] = useState(createEmptyForm);
+  const [editForm, setEditForm] = useState(createEmptyForm);
   const [editingId, setEditingId] = useState(null);
   const [showFormModal, setShowFormModal] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const [deletingId, setDeletingId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const [archivingId, setArchivingId] = useState(null);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [restoringId, setRestoringId] = useState(null);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreStatus, setRestoreStatus] = useState('draft');
+  const [showRestoreDialog, setShowRestoreDialog] = useState(false);
+
+  const deletingAnnouncement = announcements.find(a => a.announcementId === deletingId);
+  const archivingAnnouncement = announcements.find(a => a.announcementId === archivingId);
+  const restoringAnnouncement = announcements.find(a => a.announcementId === restoringId);
 
   const showToast = useCallback((message, type = 'success') => {
     setToast({ message, type, visible: true });
@@ -43,7 +75,7 @@ export default function AnnouncementsAdmin() {
       setLoading(true);
       setError(null);
       const res = await fetch('/api/announcements?limit=100');
-      if (!res.ok) throw new Error('Failed to load announcements');
+      if (!res.ok) throw new Error(await getApiErrorMessage(res, 'Failed to load announcements'));
       const json = await res.json();
       if (json.success && json.data?.items) {
         const mapped = json.data.items.map(item => ({
@@ -65,19 +97,28 @@ export default function AnnouncementsAdmin() {
     fetchAnnouncements();
   }, [fetchAnnouncements]);
 
-  const handleFormChange = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+  const handleCreateChange = (field, value) => {
+    setCreateForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const openCreateModal = () => {
+  const handleEditChange = (field, value) => {
+    setEditForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const closeEditModal = () => {
+    setShowFormModal(false);
     setEditingId(null);
-    setForm({ ...FORM_DEFAULTS, publishDate: new Date().toISOString().slice(0, 16) });
-    setShowFormModal(true);
+    setEditForm(createEmptyForm());
   };
 
   const openEditModal = (announcement) => {
-    setEditingId(announcement.announcementId);
-    setForm({
+    const announcementId = announcement.announcementId;
+    if (!announcementId) {
+      showToast('Cannot edit this announcement because its announcement ID is missing. Repair the record first.', 'error');
+      return;
+    }
+    setEditingId(announcementId);
+    setEditForm({
       title: announcement.title || '',
       description: announcement.description || '',
       category: announcement.category || 'safety',
@@ -90,47 +131,75 @@ export default function AnnouncementsAdmin() {
     setShowFormModal(true);
   };
 
-  const handleSave = async () => {
-    if (!form.title || !form.description) {
+  const handleCreate = async () => {
+    if (!createForm.title || !createForm.description) {
       showToast('Please fill in all required fields', 'error');
       return;
     }
-    setIsSubmitting(true);
+    setIsCreating(true);
     try {
       const payload = {
-        ...form,
-        publishDate: new Date(form.publishDate).toISOString(),
+        ...createForm,
+        publishDate: new Date(createForm.publishDate).toISOString(),
       };
 
-      if (editingId) {
-        const res = await fetch(`/api/announcements/${editingId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) {
-          const json = await res.json();
-          throw new Error(json.error || 'Failed to update announcement');
+      const res = await fetch('/api/announcements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        throw new Error(await getApiErrorMessage(res, 'Failed to create announcement'));
+      }
+      const fetchRes = await fetch('/api/announcements?limit=100');
+      if (fetchRes.ok) {
+        const fetchJson = await fetchRes.json();
+        if (fetchJson.success && fetchJson.data?.items) {
+          const mapped = fetchJson.data.items.map(item => ({
+            ...item,
+            id: item.announcementId,
+          }));
+          setAnnouncements(mapped);
         }
-        const json = await res.json();
-        if (json.success && json.data) {
-          setAnnouncements(prev => prev.map(a =>
-            a.announcementId === editingId
-              ? { ...a, ...json.data, id: json.data.announcementId }
-              : a
-          ));
-        }
-        showToast('Announcement updated successfully');
-      } else {
-        const res = await fetch('/api/announcements', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) {
-          const json = await res.json();
-          throw new Error(json.error || 'Failed to create announcement');
-        }
+      }
+      showToast('Announcement created successfully');
+      setCreateForm(createEmptyForm());
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!editingId) {
+      showToast('Cannot update this announcement because its announcement ID is missing. Repair the record first.', 'error');
+      return;
+    }
+    if (!editForm.title || !editForm.description) {
+      showToast('Please fill in all required fields', 'error');
+      return;
+    }
+    setIsUpdating(true);
+    try {
+      const payload = {
+        ...editForm,
+        publishDate: new Date(editForm.publishDate).toISOString(),
+      };
+
+      const res = await fetch(`/api/announcements/${editingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        throw new Error(await getApiErrorMessage(res, 'Failed to update announcement'));
+      }
+      const json = await res.json();
+      if (json.success && json.data) {
+        // Refetch the full list so that automatic demotions (e.g. when
+        // publishing this announcement, the previously published one is
+        // demoted to draft in the same transaction) are reflected in the UI.
         const fetchRes = await fetch('/api/announcements?limit=100');
         if (fetchRes.ok) {
           const fetchJson = await fetchRes.json();
@@ -142,17 +211,21 @@ export default function AnnouncementsAdmin() {
             setAnnouncements(mapped);
           }
         }
-        showToast('Announcement created successfully');
       }
-      setShowFormModal(false);
+      showToast('Announcement updated successfully');
+      closeEditModal();
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
-      setIsSubmitting(false);
+      setIsUpdating(false);
     }
   };
 
   const handleDeleteTrigger = (id) => {
+    if (!id) {
+      showToast('Cannot delete this announcement because its announcement ID is missing. Repair the record first.', 'error');
+      return;
+    }
     setDeletingId(id);
   };
 
@@ -161,7 +234,7 @@ export default function AnnouncementsAdmin() {
     setIsDeleting(true);
     try {
       const res = await fetch(`/api/announcements/${deletingId}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete announcement');
+      if (!res.ok) throw new Error(await getApiErrorMessage(res, 'Failed to delete announcement'));
       setAnnouncements(prev => prev.filter(a => a.announcementId !== deletingId));
       showToast('Announcement deleted successfully');
     } catch (err) {
@@ -169,6 +242,61 @@ export default function AnnouncementsAdmin() {
     } finally {
       setDeletingId(null);
       setIsDeleting(false);
+    }
+  };
+
+  const handleArchiveTrigger = (id) => {
+    if (!id) {
+      showToast('Cannot archive this announcement because its announcement ID is missing. Repair the record first.', 'error');
+      return;
+    }
+    setArchivingId(id);
+  };
+
+  const handleArchiveConfirm = async () => {
+    if (!archivingId) return;
+    setIsArchiving(true);
+    try {
+      const res = await fetch(`/api/announcements/${archivingId}/archive`, { method: 'POST' });
+      if (!res.ok) throw new Error(await getApiErrorMessage(res, t('admin.announcements.toast_archive_error')));
+      await fetchAnnouncements();
+      showToast(t('admin.announcements.toast_archived'));
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setArchivingId(null);
+      setIsArchiving(false);
+    }
+  };
+
+  const handleRestoreTrigger = (id, status) => {
+    if (!id) {
+      showToast('Cannot restore this announcement because its announcement ID is missing. Repair the record first.', 'error');
+      return;
+    }
+    setRestoringId(id);
+    setRestoreStatus(status);
+    setShowRestoreDialog(true);
+  };
+
+  const handleRestoreConfirm = async () => {
+    if (!restoringId) return;
+    setIsRestoring(true);
+    try {
+      const res = await fetch(`/api/announcements/${restoringId}/restore`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: restoreStatus }),
+      });
+      if (!res.ok) throw new Error(await getApiErrorMessage(res, t('admin.announcements.toast_restore_error')));
+      await fetchAnnouncements();
+      showToast(t('admin.announcements.toast_restored'));
+      setShowRestoreDialog(false);
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setRestoringId(null);
+      setIsRestoring(false);
     }
   };
 
@@ -266,7 +394,7 @@ export default function AnnouncementsAdmin() {
               {t("admin.announcements.create_title")}
             </h3>
 
-            <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-4 text-xs font-semibold">
+            <form onSubmit={(e) => { e.preventDefault(); handleCreate(); }} className="space-y-4 text-xs font-semibold">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4.5">
 
                 {/* Title */}
@@ -278,8 +406,8 @@ export default function AnnouncementsAdmin() {
                     type="text"
                     required
                     placeholder={t("admin.announcements.placeholder_title")}
-                    value={form.title}
-                    onChange={(e) => handleFormChange('title', e.target.value)}
+                    value={createForm.title}
+                    onChange={(e) => handleCreateChange('title', e.target.value)}
                     className="w-full bg-slate-50 dark:bg-gray-850 border border-slate-200 dark:border-gray-800 rounded-2xl px-4 py-3 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary dark:text-white"
                   />
                 </div>
@@ -290,8 +418,8 @@ export default function AnnouncementsAdmin() {
                     {t("admin.announcements.category_label")}
                   </label>
                   <select
-                    value={form.category}
-                    onChange={(e) => handleFormChange('category', e.target.value)}
+                    value={createForm.category}
+                    onChange={(e) => handleCreateChange('category', e.target.value)}
                     className="w-full bg-slate-50 dark:bg-gray-850 border border-slate-200 dark:border-gray-800 rounded-2xl px-4 py-3 focus:outline-none cursor-pointer dark:text-white"
                   >
                     <option value="safety">Safety Alerts</option>
@@ -307,8 +435,8 @@ export default function AnnouncementsAdmin() {
                     {t("admin.announcements.priority_label")}
                   </label>
                   <select
-                    value={form.priority}
-                    onChange={(e) => handleFormChange('priority', e.target.value)}
+                    value={createForm.priority}
+                    onChange={(e) => handleCreateChange('priority', e.target.value)}
                     className="w-full bg-slate-50 dark:bg-gray-850 border border-slate-200 dark:border-gray-800 rounded-2xl px-4 py-3 focus:outline-none cursor-pointer dark:text-white"
                   >
                     <option value="high">High Importance</option>
@@ -323,8 +451,8 @@ export default function AnnouncementsAdmin() {
                     {t("admin.announcements.status_label")}
                   </label>
                   <select
-                    value={form.status}
-                    onChange={(e) => handleFormChange('status', e.target.value)}
+                    value={createForm.status}
+                    onChange={(e) => handleCreateChange('status', e.target.value)}
                     className="w-full bg-slate-50 dark:bg-gray-850 border border-slate-200 dark:border-gray-800 rounded-2xl px-4 py-3 focus:outline-none cursor-pointer dark:text-white"
                   >
                     <option value="published">Publish Now</option>
@@ -341,8 +469,8 @@ export default function AnnouncementsAdmin() {
                   <input
                     type="datetime-local"
                     required
-                    value={form.publishDate}
-                    onChange={(e) => handleFormChange('publishDate', e.target.value)}
+                    value={createForm.publishDate}
+                    onChange={(e) => handleCreateChange('publishDate', e.target.value)}
                     className="w-full bg-slate-50 dark:bg-gray-850 border border-slate-200 dark:border-gray-800 rounded-2xl px-4 py-3 focus:outline-none dark:text-white"
                   />
                 </div>
@@ -356,8 +484,8 @@ export default function AnnouncementsAdmin() {
                     rows={4}
                     required
                     placeholder={t("admin.announcements.placeholder_desc")}
-                    value={form.description}
-                    onChange={(e) => handleFormChange('description', e.target.value)}
+                    value={createForm.description}
+                    onChange={(e) => handleCreateChange('description', e.target.value)}
                     className="w-full bg-slate-50 dark:bg-gray-850 border border-slate-200 dark:border-gray-800 rounded-2xl px-4 py-3 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary dark:text-white"
                   />
                 </div>
@@ -366,8 +494,8 @@ export default function AnnouncementsAdmin() {
 
               <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-gray-850">
                 <LoadingButton
-                  onClick={handleSave}
-                  loading={isSubmitting}
+                  onClick={handleCreate}
+                  loading={isCreating}
                   className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-2xl shadow-saffron-glow transition-all focus:outline-none text-xs font-bold"
                 >
                   <Megaphone className="w-4 h-4 mr-1.5" />
@@ -399,67 +527,132 @@ export default function AnnouncementsAdmin() {
             </div>
           ) : (
             <div className="space-y-4">
-              {announcements.map((ann) => (
-                <div key={ann.announcementId} className="p-3 border border-slate-150 dark:border-gray-800 rounded-2xl relative group hover:border-primary/20 transition-all">
-                  <div className="flex justify-between items-center gap-2">
-                    <span className={`px-1.5 py-0.5 rounded border text-[8px] font-bold uppercase tracking-wider ${getPriorityStyle(ann.priority)}`}>
-                      {ann.priority}
-                    </span>
+              {announcements.map((ann) => {
+                const hasAnnouncementId = Boolean(ann.announcementId);
+                return (
+                  <div key={ann.announcementId || ann._id} className="p-3 border border-slate-150 dark:border-gray-800 rounded-2xl relative group hover:border-primary/20 transition-all">
+                    <div className="flex justify-between items-center gap-2">
+                      <span className={`px-1.5 py-0.5 rounded border text-[8px] font-bold uppercase tracking-wider ${getPriorityStyle(ann.priority)}`}>
+                        {ann.priority}
+                      </span>
 
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => openEditModal(ann)}
-                        className="p-1 rounded text-slate-400 hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-all focus:outline-none"
-                        aria-label="Edit announcement"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTrigger(ann.announcementId)}
-                        className="p-1 rounded text-slate-400 hover:text-red-650 hover:bg-red-50 dark:hover:bg-red-955/20 transition-all focus:outline-none"
-                        aria-label="Delete announcement"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {canManage && (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => openEditModal(ann)}
+                            disabled={!hasAnnouncementId}
+                            title={hasAnnouncementId ? 'Edit announcement' : 'Announcement ID is missing; editing is disabled'}
+                            className="p-1 rounded text-slate-400 hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-all focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
+                            aria-label="Edit announcement"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+
+                          {ann.status === 'archived' ? (
+                            <>
+                              <button
+                                onClick={() => handleRestoreTrigger(ann.announcementId, 'draft')}
+                                disabled={!hasAnnouncementId || isRestoring}
+                                title={
+                                  !hasAnnouncementId
+                                    ? 'Announcement ID is missing; restore is disabled'
+                                    : 'Restore as draft'
+                                }
+                                className="p-1 rounded text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-955/20 transition-all focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
+                                aria-label="Restore as draft"
+                              >
+                                <span className="text-[8px] font-bold uppercase">Draft</span>
+                              </button>
+                              <button
+                                onClick={() => handleRestoreTrigger(ann.announcementId, 'published')}
+                                disabled={!hasAnnouncementId || isRestoring}
+                                title={
+                                  !hasAnnouncementId
+                                    ? 'Announcement ID is missing; restore is disabled'
+                                    : 'Restore and publish'
+                                }
+                                className="p-1 rounded text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-955/20 transition-all focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
+                                aria-label="Restore and publish"
+                              >
+                                <span className="text-[8px] font-bold uppercase">Publish</span>
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              {(ann.status === 'published' || ann.status === 'scheduled') && (
+                                <button
+                                  onClick={() => handleArchiveTrigger(ann.announcementId)}
+                                  disabled={!hasAnnouncementId || isArchiving}
+                                  title={
+                                    !hasAnnouncementId
+                                      ? 'Announcement ID is missing; archiving is disabled'
+                                      : 'Archive announcement'
+                                  }
+                                  className="p-1 rounded text-slate-400 hover:text-red-650 hover:bg-red-50 dark:hover:bg-red-955/20 transition-all focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
+                                  aria-label="Archive announcement"
+                                >
+                                  <span className="text-[8px] font-bold uppercase">Archive</span>
+                                </button>
+                              )}
+                            </>
+                          )}
+
+                          <button
+                            onClick={() => handleDeleteTrigger(ann.announcementId)}
+                            disabled={!hasAnnouncementId}
+                            title={hasAnnouncementId ? 'Delete announcement' : 'Announcement ID is missing; deletion is disabled'}
+                            className="p-1 rounded text-slate-400 hover:text-red-650 hover:bg-red-50 dark:hover:bg-red-955/20 transition-all focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
+                            aria-label="Delete announcement"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <h5 className="mt-2 font-heading text-xs font-extrabold text-charcoal dark:text-white leading-tight truncate pr-4">
+                      {ann.title}
+                    </h5>
+                    <p className="mt-1 text-[10px] text-charcoal-light dark:text-gray-400 leading-normal line-clamp-2 pr-2">
+                      {ann.description}
+                    </p>
+
+                    {!hasAnnouncementId && (
+                      <p className="mt-2 text-[10px] font-semibold text-amber-600 dark:text-amber-400 leading-normal">
+                        This record is missing its announcement ID, so it cannot be edited or deleted until the data is repaired.
+                      </p>
+                    )}
+
+                    <div className="mt-3.5 flex items-center justify-between text-[8px] font-bold text-slate-400 dark:text-gray-500">
+                      <span className="bg-slate-100 dark:bg-gray-850 px-1.5 py-0.5 rounded uppercase">
+                        {ann.category}
+                      </span>
+                      <span>
+                        {(() => {
+                          const d = new Date(ann.publishDate);
+                          return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString();
+                        })()}
+                      </span>
                     </div>
                   </div>
-
-                  <h5 className="mt-2 font-heading text-xs font-extrabold text-charcoal dark:text-white leading-tight truncate pr-4">
-                    {ann.title}
-                  </h5>
-                  <p className="mt-1 text-[10px] text-charcoal-light dark:text-gray-400 leading-normal line-clamp-2 pr-2">
-                    {ann.description}
-                  </p>
-
-                  <div className="mt-3.5 flex items-center justify-between text-[8px] font-bold text-slate-400 dark:text-gray-500">
-                    <span className="bg-slate-100 dark:bg-gray-850 px-1.5 py-0.5 rounded uppercase">
-                      {ann.category}
-                    </span>
-                    <span>
-                      {(() => {
-                        const d = new Date(ann.publishDate);
-                        return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString();
-                      })()}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
 
       </div>
 
-      {/* Create/Edit Modal */}
+      {/* Edit Modal */}
       {showFormModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setShowFormModal(false)} />
+          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={closeEditModal} />
           <div className="relative bg-white dark:bg-gray-900 rounded-3xl border border-slate-200/60 dark:border-gray-800 shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-heading text-lg font-extrabold text-charcoal dark:text-white">
-                {editingId ? 'Edit Announcement' : 'Add New Announcement'}
+                Edit Announcement
               </h2>
-              <button onClick={() => setShowFormModal(false)} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-gray-800 text-slate-400 transition-all">
+              <button onClick={closeEditModal} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-gray-800 text-slate-400 transition-all">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -470,8 +663,8 @@ export default function AnnouncementsAdmin() {
                 <input
                   type="text"
                   required
-                  value={form.title}
-                  onChange={e => handleFormChange('title', e.target.value)}
+                  value={editForm.title}
+                  onChange={e => handleEditChange('title', e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
                   placeholder={t("admin.announcements.placeholder_title")}
                 />
@@ -482,8 +675,8 @@ export default function AnnouncementsAdmin() {
                 <textarea
                   rows={3}
                   required
-                  value={form.description}
-                  onChange={e => handleFormChange('description', e.target.value)}
+                  value={editForm.description}
+                  onChange={e => handleEditChange('description', e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white resize-none"
                   placeholder={t("admin.announcements.placeholder_desc")}
                 />
@@ -493,8 +686,8 @@ export default function AnnouncementsAdmin() {
                 <div>
                   <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t("admin.announcements.category_label")}</label>
                   <select
-                    value={form.category}
-                    onChange={e => handleFormChange('category', e.target.value)}
+                    value={editForm.category}
+                    onChange={e => handleEditChange('category', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
                   >
                     <option value="safety">Safety Alerts</option>
@@ -507,8 +700,8 @@ export default function AnnouncementsAdmin() {
                 <div>
                   <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t("admin.announcements.priority_label")}</label>
                   <select
-                    value={form.priority}
-                    onChange={e => handleFormChange('priority', e.target.value)}
+                    value={editForm.priority}
+                    onChange={e => handleEditChange('priority', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
                   >
                     <option value="high">High</option>
@@ -522,8 +715,8 @@ export default function AnnouncementsAdmin() {
                 <div>
                   <label className="block text-xs font-bold text-charcoal dark:text-white mb-1.5">{t("admin.announcements.status_label")}</label>
                   <select
-                    value={form.status}
-                    onChange={e => handleFormChange('status', e.target.value)}
+                    value={editForm.status}
+                    onChange={e => handleEditChange('status', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
                   >
                     <option value="published">Published</option>
@@ -537,8 +730,8 @@ export default function AnnouncementsAdmin() {
                   <input
                     type="datetime-local"
                     required
-                    value={form.publishDate}
-                    onChange={e => handleFormChange('publishDate', e.target.value)}
+                    value={editForm.publishDate}
+                    onChange={e => handleEditChange('publishDate', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-white"
                   />
                 </div>
@@ -547,18 +740,18 @@ export default function AnnouncementsAdmin() {
 
             <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-gray-800">
               <button
-                onClick={() => setShowFormModal(false)}
+                onClick={closeEditModal}
                 className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-gray-800 text-xs font-bold text-charcoal dark:text-white hover:bg-slate-50 dark:hover:bg-gray-800 transition-all"
               >
                 Cancel
               </button>
               <LoadingButton
-                onClick={handleSave}
-                loading={isSubmitting}
+                onClick={handleUpdate}
+                loading={isUpdating}
                 className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs font-bold transition-all shadow-saffron-glow"
               >
                 <Save className="w-4 h-4 mr-1" />
-                {editingId ? 'Save Changes' : 'Create'}
+                Save Changes
               </LoadingButton>
             </div>
           </div>
@@ -571,7 +764,38 @@ export default function AnnouncementsAdmin() {
         onClose={() => setDeletingId(null)}
         onConfirm={handleDeleteConfirm}
         title="Delete Announcement"
-        messageKey="admin.common.confirm"
+        message={
+          deletingAnnouncement
+            ? `Delete "${deletingAnnouncement.title}"? This will permanently remove it.`
+            : 'This will permanently remove the announcement.'
+        }
+        confirmLabel={t('admin.common.delete')}
+      />
+
+      <ConfirmationDialog
+        isOpen={!!archivingId}
+        onClose={() => setArchivingId(null)}
+        onConfirm={handleArchiveConfirm}
+        title={t('admin.announcements.confirm_archive_title')}
+        message={
+          archivingAnnouncement
+            ? t('admin.announcements.confirm_archive_message')
+            : 'This will archive the announcement.'
+        }
+        confirmLabel={t('admin.announcements.btn_archive')}
+      />
+
+      <ConfirmationDialog
+        isOpen={showRestoreDialog}
+        onClose={() => setShowRestoreDialog(false)}
+        onConfirm={handleRestoreConfirm}
+        title={t('admin.announcements.confirm_restore_title')}
+        message={t('admin.announcements.confirm_restore_message')}
+        confirmLabel={
+          restoreStatus === 'published'
+            ? t('admin.announcements.confirm_restore_published')
+            : t('admin.announcements.confirm_restore_draft')
+        }
       />
 
     </div>
