@@ -1,11 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import Container from '@/components/Container';
 import StatusBadge from '@/components/StatusBadge';
-import { ArrowLeft, MapPin, Calendar, UserX, User, Clock, Phone, Ruler, Shirt } from 'lucide-react';
+import Toast from '@/components/Toast';
+import ConfirmationDialog from '@/components/ConfirmationDialog';
+import LoadingButton from '@/components/LoadingButton';
+import { ArrowLeft, MapPin, Calendar, UserX, User, Clock, Phone, Ruler, Shirt, CheckCircle2, UserCheck } from 'lucide-react';
 import Link from 'next/link';
+
+const ACTIVE_STATUSES = ['Pending', 'Missing'];
 
 const CATEGORY_GRADIENTS = {
   'Child': 'from-pink-500 to-rose-600',
@@ -81,34 +86,77 @@ export default function VolunteerMissingPersonDetailPage({ params }) {
   const [person, setPerson] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [markingFound, setMarkingFound] = useState(false);
+  const [showFoundConfirm, setShowFoundConfirm] = useState(false);
+  const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
+
+  const showToast = useCallback((message, type = 'success') => {
+    setToast({ message, type, visible: true });
+  }, []);
 
   const caseId = params.id;
 
+  const fetchPerson = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch(`/api/volunteer/missing-persons/${encodeURIComponent(caseId)}`);
+      if (res.status === 404) {
+        setError('NOT_FOUND');
+        return;
+      }
+      if (!res.ok) throw new Error('Failed to load person details');
+      const json = await res.json();
+      if (json.success && json.data) {
+        setPerson(json.data);
+      } else {
+        setError('NOT_FOUND');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [caseId]);
+
   useEffect(() => {
-    async function fetchPerson() {
-      try {
-        setLoading(true);
-        setError(null);
-        const res = await fetch(`/api/volunteer/missing-persons/${encodeURIComponent(caseId)}`);
-        if (res.status === 404) {
-          setError('NOT_FOUND');
-          return;
-        }
-        if (!res.ok) throw new Error('Failed to load person details');
+    fetchPerson();
+  }, [fetchPerson]);
+
+  const handleMarkFound = useCallback(async () => {
+    setMarkingFound(true);
+    try {
+      const res = await fetch(
+        `/api/volunteer/missing-persons/${encodeURIComponent(caseId)}/resolve`,
+        { method: 'PATCH' }
+      );
+      if (res.ok) {
         const json = await res.json();
         if (json.success && json.data) {
           setPerson(json.data);
-        } else {
-          setError('NOT_FOUND');
         }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+        showToast(t('volunteer_missing_persons.mark_found_success'));
+        return;
       }
+      if (res.status === 409) {
+        showToast(t('volunteer_missing_persons.mark_found_already'), 'error');
+        await fetchPerson();
+      } else if (res.status === 400) {
+        showToast(t('volunteer_missing_persons.mark_found_invalid'), 'error');
+        await fetchPerson();
+      } else if (res.status === 404) {
+        showToast(t('volunteer_missing_persons.not_found_desc'), 'error');
+        setError('NOT_FOUND');
+      } else {
+        const j = await res.json().catch(() => ({}));
+        showToast(j.error || t('volunteer_missing_persons.mark_found_error'), 'error');
+      }
+    } catch {
+      showToast(t('volunteer_missing_persons.mark_found_error'), 'error');
+    } finally {
+      setMarkingFound(false);
     }
-    fetchPerson();
-  }, [caseId]);
+  }, [caseId, fetchPerson, showToast, t]);
 
   if (loading) return <LoadingState />;
 
@@ -157,6 +205,8 @@ export default function VolunteerMissingPersonDetailPage({ params }) {
   const name = person.name || 'Unknown';
   const normCat = (person.category || '').toLowerCase().replace(/\s+/g, '_');
   const gradient = CATEGORY_GRADIENTS[person.category] || 'from-red-500 to-rose-600';
+  const canResolve = ACTIVE_STATUSES.includes(person.status);
+  const isResolved = person.status === 'Found';
 
   return (
     <div className="bg-slate-50 dark:bg-gray-950 min-h-screen pb-20">
@@ -261,6 +311,22 @@ export default function VolunteerMissingPersonDetailPage({ params }) {
                     value={<StatusBadge status={person.status} />}
                     spanFull
                   />
+                  {isResolved && person.resolvedAt && (
+                    <DetailCard
+                      icon={<Calendar className="w-4 h-4 text-emerald-500" />}
+                      label={t('volunteer_missing_persons.resolved_on_label')}
+                      value={formatDateTime(person.resolvedAt)}
+                      spanFull
+                    />
+                  )}
+                  {isResolved && (person.resolvedByName || person.resolvedByVolunteerId) && (
+                    <DetailCard
+                      icon={<UserCheck className="w-4 h-4 text-emerald-500" />}
+                      label={t('volunteer_missing_persons.resolved_by_label')}
+                      value={person.resolvedByName || person.resolvedByVolunteerId}
+                      spanFull
+                    />
+                  )}
                 </div>
 
                 {person.description && (
@@ -276,6 +342,24 @@ export default function VolunteerMissingPersonDetailPage({ params }) {
               </div>
             </div>
 
+            {canResolve && (
+              <div className="mt-8 bg-white dark:bg-gray-900 rounded-2xl border border-emerald-200 dark:border-emerald-900/40 p-6 text-center shadow-premium">
+                <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
+                <p className="text-sm font-semibold text-charcoal-light dark:text-gray-400 mb-5">
+                  {t('volunteer_missing_persons.mark_found_confirm')}
+                </p>
+                <LoadingButton
+                  onClick={() => setShowFoundConfirm(true)}
+                  loading={markingFound}
+                  variant="secondary"
+                  className="!bg-emerald-600 hover:!bg-emerald-700 !text-white !rounded-xl !py-3.5 text-sm w-full sm:w-auto"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  {t('volunteer_missing_persons.btn_mark_found')}
+                </LoadingButton>
+              </div>
+            )}
+
             <div className="flex items-center justify-center mt-8">
               <Link
                 href="/volunteer/missing-persons"
@@ -288,6 +372,25 @@ export default function VolunteerMissingPersonDetailPage({ params }) {
           </div>
         </Container>
       </section>
+
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.visible}
+        onClose={() => setToast(prev => ({ ...prev, visible: false }))}
+        duration={4000}
+      />
+
+      <ConfirmationDialog
+        isOpen={showFoundConfirm}
+        onClose={() => setShowFoundConfirm(false)}
+        onConfirm={handleMarkFound}
+        title={t('volunteer_missing_persons.mark_found_title')}
+        message={t('volunteer_missing_persons.mark_found_confirm')}
+        confirmLabel={t('volunteer_missing_persons.btn_mark_found')}
+        cancelLabel={t('volunteer_missing_persons.btn_cancel')}
+        variant="success"
+      />
     </div>
   );
 }

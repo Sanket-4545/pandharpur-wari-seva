@@ -16,7 +16,13 @@ export async function GET(request) {
     const volunteer = await requireVolunteerAuth(request);
     const { page, limit, skip, status, search } = parseQueryParams(request);
     const filter = {};
-    if (status) filter.status = status;
+    // "active" is a virtual status that matches every open case (Pending or
+    // Missing) so volunteers can view the active list in a single request.
+    if (status === "active") {
+      filter.status = { $in: MissingPersons.ACTIVE_STATUSES };
+    } else if (status) {
+      filter.status = status;
+    }
     if (search) filter.$text = { $search: search };
     const [items, total] = await Promise.all([
       MissingPersons.getCollection().then(c =>

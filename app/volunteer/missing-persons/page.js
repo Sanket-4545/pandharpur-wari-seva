@@ -8,6 +8,7 @@ import { Search, X, Plus, MapPin, Calendar, ArrowRight, UserX, User, Users, Hear
 import Link from 'next/link';
 
 const FILTERS = [
+  { key: 'active', labelKey: 'volunteer_missing_persons.filter_active' },
   { key: 'all', labelKey: 'volunteer_missing_persons.filter_all' },
   { key: 'Pending', labelKey: 'volunteer_missing_persons.filter_pending' },
   { key: 'Missing', labelKey: 'volunteer_missing_persons.filter_missing' },
@@ -155,7 +156,7 @@ export default function VolunteerMissingPersonsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState('active');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {

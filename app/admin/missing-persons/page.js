@@ -462,6 +462,18 @@ export default function MissingPersonsAdmin() {
                 </span>
               </div>
 
+              {viewingRow.status === 'Found' && (viewingRow.resolvedAt || viewingRow.resolvedByVolunteerId) && (
+                <div className="p-3 bg-emerald-50/70 dark:bg-emerald-950/20 rounded-xl col-span-2">
+                  <span className="text-slate-400 dark:text-gray-500 font-bold block text-[10px] uppercase tracking-wide">Resolution</span>
+                  <span className="font-bold text-charcoal dark:text-white mt-0.5 block">
+                    {viewingRow.resolvedAt ? `Found on ${formatDate(viewingRow.resolvedAt)}` : 'Found'}
+                    {viewingRow.resolvedByVolunteerId
+                      ? ` — Marked found by ${viewingRow.resolvedByName || viewingRow.resolvedByVolunteerId}`
+                      : ''}
+                  </span>
+                </div>
+              )}
+
               <div className="col-span-2 border-t border-slate-100 dark:border-gray-800 pt-4 mt-2 flex justify-end gap-3">
                 <button
                   onClick={() => {
