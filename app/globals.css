@@ -458,12 +458,16 @@
 @media (prefers-reduced-motion: reduce) {
   .announcement-track {
     animation: none;
+    padding-bottom: 2px;
+  }
+  /* With the animation off the strip is static, so let users scroll it
+     themselves instead of clipping whatever sits beyond the viewport. */
+  .announcement-wrapper .announcement-viewport {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding-bottom: 2px;
   }
-  .announcement-track::-webkit-scrollbar {
+  .announcement-wrapper .announcement-viewport::-webkit-scrollbar {
     display: none;
   }
   .announcement-wrapper {
